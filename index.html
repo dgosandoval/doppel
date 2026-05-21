@@ -3,243 +3,256 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Doppel | Productora Audiovisual</title>
+<title>Home | Doppel</title>
 <meta name="description" content="Doppel, producción de contenidos audiovisuales. Desarrollo creativo, producción y postproducción en Santiago, Chile.">
-<meta property="og:title" content="Doppel | Productora Audiovisual">
-<meta property="og:description" content="Doppel, producción de contenidos audiovisuales">
+<meta property="og:title" content="Home | Doppel">
+<meta property="og:description" content="Doppel, productora audiovisual">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://www.doppel.cl">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#0a0a0b;
-  --bg-2:#111114;
-  --fg:#f4f3ef;
-  --muted:#8a8a92;
-  --accent:#ff4d2e;
-  --line:rgba(255,255,255,.08);
-  --max:1240px;
+  --bg:#ffffff;
+  --bg-alt:#f9f9f9;
+  --fg:#161616;
+  --fg-soft:#575757;
+  --muted:#a0a0a0;
+  --accent:#f1726b;
+  --line:#ebebeb;
+  --max:1200px;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{
-  background:var(--bg);
-  color:var(--fg);
-  font-family:'Archivo',sans-serif;
+  background:var(--bg);color:var(--fg);
+  font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;
   -webkit-font-smoothing:antialiased;
-  overflow-x:hidden;
+  font-weight:300;line-height:1.5;
 }
 a{color:inherit;text-decoration:none}
 img{max-width:100%;display:block}
-.wrap{max-width:var(--max);margin:0 auto;padding:0 32px}
+.wrap{max-width:var(--max);margin:0 auto;padding:0 28px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 
-/* grain overlay */
-body::after{
-  content:"";position:fixed;inset:0;pointer-events:none;z-index:9999;
-  opacity:.035;mix-blend-mode:overlay;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-/* ---------- NAV ---------- */
+/* Header */
 header{
-  position:fixed;top:0;left:0;right:0;z-index:1000;
-  backdrop-filter:blur(12px);
-  background:rgba(10,10,11,.6);
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:rgba(255,255,255,.96);
   border-bottom:1px solid transparent;
-  transition:border-color .3s, background .3s;
+  transition:.3s;
 }
-header.scrolled{border-bottom-color:var(--line);background:rgba(10,10,11,.85)}
-.nav{display:flex;align-items:center;justify-content:space-between;height:78px}
-.brand{font-family:'Anton',sans-serif;font-size:30px;letter-spacing:1px;line-height:1}
-.brand span{color:var(--accent)}
+header.scrolled{border-bottom-color:var(--line);box-shadow:0 1px 12px rgba(0,0,0,.04)}
+.nav{display:flex;align-items:center;justify-content:space-between;height:80px}
+.brand{display:inline-flex;align-items:center;gap:.6rem}
+.brand img{height:38px;width:auto;display:block}
 .nav-links{display:flex;gap:38px;align-items:center}
 .nav-links a{
-  font-size:13px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;
-  color:var(--muted);transition:color .2s;position:relative;
+  font-size:13px;font-weight:500;letter-spacing:1px;
+  text-transform:uppercase;color:var(--fg);transition:color .2s;
+  position:relative;padding:6px 0;
 }
-.nav-links a::after{
-  content:"";position:absolute;left:0;bottom:-6px;width:0;height:2px;
-  background:var(--accent);transition:width .3s;
-}
-.nav-links a:hover{color:var(--fg)}
-.nav-links a:hover::after{width:100%}
-.nav-cta{
-  border:1px solid var(--line);padding:11px 22px;border-radius:50px;
-  color:var(--fg)!important;transition:.25s;
-}
-.nav-cta:hover{background:var(--accent);border-color:var(--accent)}
-.nav-cta::after{display:none!important}
-.burger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:0}
-.burger span{width:26px;height:2px;background:var(--fg);transition:.3s}
+.nav-links a:hover{color:var(--accent)}
+.nav-links a.active{color:var(--accent)}
+.burger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:0;padding:8px}
+.burger span{width:24px;height:2px;background:var(--fg);transition:.3s}
 
-/* ---------- HERO ---------- */
-.hero{
-  min-height:100vh;display:flex;align-items:center;position:relative;
-  padding:120px 0 80px;overflow:hidden;
-}
-.hero-bg{
-  position:absolute;inset:0;z-index:0;
-  background:
-    radial-gradient(900px 500px at 75% 20%, rgba(255,77,46,.16), transparent 60%),
-    radial-gradient(700px 600px at 10% 90%, rgba(80,90,255,.10), transparent 60%);
-}
-.hero .wrap{position:relative;z-index:2}
-.eyebrow{
-  font-family:'Space Mono',monospace;font-size:13px;letter-spacing:3px;
-  text-transform:uppercase;color:var(--accent);margin-bottom:28px;
-  opacity:0;animation:rise .8s .1s forwards;
-}
-.hero h1{
-  font-family:'Anton',sans-serif;font-weight:400;line-height:.92;
-  font-size:clamp(52px,9vw,140px);letter-spacing:-1px;text-transform:uppercase;
-}
-.hero h1 .l{display:block;opacity:0;transform:translateY(40px);animation:rise .9s forwards}
-.hero h1 .l:nth-child(1){animation-delay:.15s}
-.hero h1 .l:nth-child(2){animation-delay:.28s}
-.hero h1 .l .o{color:var(--accent)}
-.hero p{
-  max-width:540px;margin-top:34px;font-size:19px;line-height:1.6;color:var(--muted);
-  opacity:0;animation:rise .9s .5s forwards;
-}
-.hero-actions{display:flex;gap:16px;margin-top:44px;opacity:0;animation:rise .9s .65s forwards;flex-wrap:wrap}
+/* Buttons */
 .btn{
-  display:inline-flex;align-items:center;gap:10px;padding:16px 32px;border-radius:50px;
-  font-weight:600;font-size:15px;letter-spacing:.5px;transition:.25s;cursor:pointer;border:1px solid transparent;
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:14px 36px;font-size:13px;font-weight:500;letter-spacing:1.5px;
+  text-transform:uppercase;cursor:pointer;transition:.25s;
+  border:1px solid transparent;background:none;font-family:inherit;
 }
 .btn-primary{background:var(--accent);color:#fff}
-.btn-primary:hover{transform:translateY(-2px);box-shadow:0 14px 40px rgba(255,77,46,.35)}
-.btn-ghost{border-color:var(--line);color:var(--fg)}
-.btn-ghost:hover{border-color:var(--fg)}
-.scroll-hint{
-  position:absolute;bottom:34px;left:50%;transform:translateX(-50%);z-index:2;
-  font-family:'Space Mono',monospace;font-size:11px;letter-spacing:2px;color:var(--muted);
-  display:flex;flex-direction:column;align-items:center;gap:10px;
-}
-.scroll-hint .bar{width:1px;height:46px;background:linear-gradient(var(--accent),transparent);animation:pulse 2s infinite}
+.btn-primary:hover{background:#161616}
+.btn-outline{border-color:var(--fg);color:var(--fg)}
+.btn-outline:hover{background:var(--fg);color:#fff}
 
-/* ---------- SECTION SHELL ---------- */
-section{padding:120px 0;position:relative}
-.sec-head{margin-bottom:64px}
-.sec-tag{
-  font-family:'Space Mono',monospace;font-size:13px;letter-spacing:3px;
-  text-transform:uppercase;color:var(--accent);display:block;margin-bottom:16px;
+/* Hero */
+.hero{
+  padding:160px 0 100px;text-align:center;background:#fff;
 }
-.sec-title{
-  font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;
-  font-size:clamp(34px,5vw,68px);line-height:1;letter-spacing:-.5px;
+.hero h1{
+  font-family:'Raleway','Helvetica Neue',Helvetica,Arial,sans-serif;
+  font-weight:300;font-size:clamp(40px,6vw,72px);
+  letter-spacing:8px;text-transform:uppercase;line-height:1.15;
+  margin-bottom:18px;
 }
-.sec-sub{color:var(--muted);font-size:18px;margin-top:18px;max-width:560px}
+.hero h1 strong{font-weight:600;color:var(--accent)}
+.hero .lede{
+  max-width:640px;margin:0 auto 40px;font-size:17px;
+  color:var(--fg-soft);line-height:1.7;
+}
+.hero-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
 
-/* ---------- REEL ---------- */
-#reel{background:var(--bg-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+/* Reel */
+#reel{padding:30px 0 100px}
 .reel-frame{
-  position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--line);
-  aspect-ratio:16/9;background:#000;
+  position:relative;max-width:1100px;margin:0 auto;
+  aspect-ratio:16/9;background:#000;overflow:hidden;
 }
 .reel-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-.reel-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:18px}
+.reel-meta{text-align:center;margin-top:50px}
+.reel-meta .kicker{
+  font-size:11px;letter-spacing:4px;text-transform:uppercase;
+  color:var(--accent);font-weight:600;margin-bottom:14px;
+}
+.reel-meta h2{
+  font-family:'Raleway',sans-serif;font-weight:300;
+  font-size:clamp(26px,3vw,38px);letter-spacing:5px;
+  text-transform:uppercase;
+}
+.reel-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:60px;
+}
 .reel-card{
-  position:relative;border-radius:10px;overflow:hidden;aspect-ratio:16/9;
-  border:1px solid var(--line);cursor:pointer;background:#000;
+  position:relative;aspect-ratio:16/9;overflow:hidden;background:#000;cursor:pointer;
 }
-.reel-card img{width:100%;height:100%;object-fit:cover;transition:.5s;opacity:.78}
-.reel-card:hover img{transform:scale(1.06);opacity:1}
-.reel-card .label{
-  position:absolute;left:0;right:0;bottom:0;padding:18px;
-  background:linear-gradient(transparent,rgba(0,0,0,.85));
-  font-weight:600;font-size:15px;
-}
+.reel-card img{width:100%;height:100%;object-fit:cover;transition:.4s;opacity:.92}
+.reel-card:hover img{opacity:1;transform:scale(1.03)}
 .reel-card .play{
   position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-  width:54px;height:54px;border-radius:50%;background:rgba(255,77,46,.92);
+  width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.92);
   display:flex;align-items:center;justify-content:center;transition:.25s;
 }
-.reel-card:hover .play{transform:translate(-50%,-50%) scale(1.12)}
-.reel-card .play::after{content:"";border-left:16px solid #fff;border-top:10px solid transparent;border-bottom:10px solid transparent;margin-left:4px}
-
-/* ---------- SERVICIOS ---------- */
-.serv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
-.serv{
-  border:1px solid var(--line);border-radius:14px;overflow:hidden;
-  background:var(--bg-2);transition:.35s;position:relative;
+.reel-card:hover .play{background:var(--accent)}
+.reel-card .play::after{
+  content:"";border-left:18px solid var(--fg);
+  border-top:11px solid transparent;border-bottom:11px solid transparent;
+  margin-left:5px;transition:.25s;
 }
-.serv:hover{transform:translateY(-6px);border-color:rgba(255,77,46,.4)}
-.serv-img{height:200px;overflow:hidden;position:relative}
-.serv-img img{width:100%;height:100%;object-fit:cover;filter:grayscale(.3);transition:.5s}
-.serv:hover .serv-img img{filter:grayscale(0);transform:scale(1.05)}
-.serv-num{
-  position:absolute;top:16px;left:16px;font-family:'Space Mono',monospace;
-  font-size:13px;color:var(--accent);background:rgba(0,0,0,.55);padding:4px 10px;border-radius:30px;
+.reel-card:hover .play::after{border-left-color:#fff}
+.reel-card .label{
+  position:absolute;left:0;right:0;bottom:0;padding:14px 18px;
+  background:linear-gradient(transparent,rgba(0,0,0,.78));
+  color:#fff;font-size:13px;letter-spacing:1px;text-transform:uppercase;font-weight:500;
 }
-.serv-body{padding:28px 26px 34px}
-.serv-body h3{font-family:'Archivo';font-weight:700;font-size:21px;letter-spacing:.5px;margin-bottom:10px}
-.serv-body p{color:var(--muted);font-size:15px;line-height:1.6}
 
-/* ---------- CLIENTES ---------- */
-#clientes{background:var(--bg-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-.cli-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+/* Sections shared */
+section{padding:110px 0;position:relative}
+.sec-head{text-align:center;margin-bottom:70px}
+.sec-head .kicker{
+  font-size:11px;letter-spacing:4px;text-transform:uppercase;
+  color:var(--accent);font-weight:600;margin-bottom:18px;
+}
+.sec-head h2{
+  font-family:'Raleway',sans-serif;font-weight:300;
+  font-size:clamp(28px,4vw,46px);letter-spacing:6px;
+  text-transform:uppercase;line-height:1.2;margin-bottom:18px;
+}
+.sec-head p{color:var(--fg-soft);font-size:16px;max-width:560px;margin:0 auto}
+
+/* Servicios */
+#servicios{background:var(--bg-alt)}
+.serv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:40px}
+.serv{text-align:center;padding:30px 20px}
+.serv-ic{
+  width:90px;height:90px;border-radius:50%;
+  background:#fff;border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 28px;color:var(--accent);transition:.3s;
+}
+.serv:hover .serv-ic{background:var(--accent);color:#fff;border-color:var(--accent)}
+.serv-ic svg{width:38px;height:38px}
+.serv h3{
+  font-family:'Raleway',sans-serif;font-weight:500;
+  font-size:16px;letter-spacing:3px;text-transform:uppercase;
+  margin-bottom:14px;
+}
+.serv p{color:var(--fg-soft);font-size:14px;line-height:1.7}
+
+/* Clientes */
+.cli-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  border-top:1px solid var(--line);border-left:1px solid var(--line);
+}
 .cli{
-  background:var(--bg);padding:42px 34px;transition:.3s;min-height:200px;
-  display:flex;flex-direction:column;justify-content:flex-start;
+  padding:46px 36px;border-right:1px solid var(--line);
+  border-bottom:1px solid var(--line);transition:.3s;
 }
-.cli:hover{background:#16161a}
-.cli h3{font-family:'Anton',sans-serif;font-weight:400;font-size:26px;letter-spacing:1px;margin-bottom:14px}
-.cli h3 b{color:var(--accent);font-weight:400}
-.cli p{color:var(--muted);font-size:14px;line-height:1.6}
-
-/* ---------- CONTACTO ---------- */
-.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start}
-.contact-info .line{display:flex;gap:16px;margin-bottom:26px;align-items:flex-start}
-.contact-info .ic{color:var(--accent);font-size:20px;margin-top:2px}
-.contact-info .line div b{display:block;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:5px;font-weight:600}
-.contact-info .line div span{font-size:17px}
-.contact-cta{
-  background:var(--bg-2);border:1px solid var(--line);border-radius:16px;
-  padding:48px 40px;display:flex;flex-direction:column;align-items:flex-start;
-  gap:6px;position:relative;overflow:hidden;
+.cli:hover{background:var(--bg-alt)}
+.cli h3{
+  font-family:'Raleway',sans-serif;font-weight:600;
+  font-size:18px;letter-spacing:3px;text-transform:uppercase;
+  color:var(--accent);margin-bottom:16px;
 }
-.contact-cta::before{
-  content:"";position:absolute;inset:0;pointer-events:none;
-  background:radial-gradient(420px 220px at 80% 0%,rgba(255,77,46,.12),transparent 70%);
+.cli p{color:var(--fg-soft);font-size:14px;line-height:1.75}
+
+/* Contacto */
+#contacto{background:var(--bg-alt)}
+.contact-grid{
+  display:grid;grid-template-columns:1fr 1.1fr;gap:80px;align-items:start;
 }
-.contact-cta>*{position:relative;z-index:1}
-.contact-cta .wa-ic{color:var(--accent);margin-bottom:14px;display:inline-flex}
-.contact-cta h3{font-family:'Archivo';font-weight:700;font-size:24px;letter-spacing:.3px}
-.contact-cta p{color:var(--muted);font-size:16px;line-height:1.6;margin-bottom:14px}
-.contact-cta .btn-primary{border:0}
+.contact-info .line{
+  display:flex;gap:18px;margin-bottom:32px;align-items:flex-start;
+}
+.contact-info .ic{
+  width:42px;height:42px;border-radius:50%;background:var(--accent);
+  color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.contact-info .ic svg{width:18px;height:18px}
+.contact-info .line div b{
+  display:block;font-size:11px;letter-spacing:2px;text-transform:uppercase;
+  color:var(--muted);margin-bottom:6px;font-weight:600;
+}
+.contact-info .line div span,
+.contact-info .line div a{
+  font-size:15px;color:var(--fg);line-height:1.6;
+}
+.contact-info .line div a:hover{color:var(--accent)}
 
-/* ---------- FOOTER ---------- */
-footer{padding:60px 0 40px;border-top:1px solid var(--line)}
-.foot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:24px}
-.foot .brand{font-size:26px}
-.foot-soc{display:flex;gap:18px}
-.foot-soc a{color:var(--muted);font-size:13px;letter-spacing:1px;text-transform:uppercase;transition:.2s}
-.foot-soc a:hover{color:var(--accent)}
-.foot-copy{font-family:'Space Mono',monospace;font-size:12px;color:var(--muted);margin-top:30px}
+.form{display:grid;gap:18px}
+.form .row{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.form input,.form textarea{
+  width:100%;padding:14px 16px;border:1px solid var(--line);
+  background:#fff;font-family:inherit;font-size:14px;color:var(--fg);
+  transition:border-color .2s;
+}
+.form input:focus,.form textarea:focus{outline:none;border-color:var(--accent)}
+.form textarea{min-height:130px;resize:vertical}
+.form .btn{margin-top:8px;justify-self:start}
 
-/* ---------- ANIM ---------- */
-@keyframes rise{to{opacity:1;transform:translateY(0)}}
-@keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
-.reveal{opacity:0;transform:translateY(40px);transition:.8s cubic-bezier(.16,1,.3,1)}
+/* Footer */
+footer{
+  background:#fff;border-top:1px solid var(--line);
+  padding:50px 0 30px;text-align:center;
+}
+.foot-soc{display:flex;gap:24px;justify-content:center;margin-bottom:24px}
+.foot-soc a{
+  width:38px;height:38px;border-radius:50%;border:1px solid var(--line);
+  display:inline-flex;align-items:center;justify-content:center;
+  color:var(--fg);transition:.25s;
+}
+.foot-soc a:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.foot-soc svg{width:16px;height:16px}
+.foot-copy{font-size:12px;color:var(--muted);letter-spacing:1px}
+
+/* Reveal */
+.reveal{opacity:0;transform:translateY(30px);transition:.8s cubic-bezier(.16,1,.3,1)}
 .reveal.in{opacity:1;transform:none}
 
-/* ---------- RESPONSIVE ---------- */
 @media(max-width:900px){
-  .reel-grid,.serv-grid,.cli-grid{grid-template-columns:1fr}
-  .contact-grid{grid-template-columns:1fr;gap:40px}
+  .reel-grid,.serv-grid{grid-template-columns:1fr}
+  .cli-grid{grid-template-columns:1fr}
+  .contact-grid{grid-template-columns:1fr;gap:50px}
+  .form .row{grid-template-columns:1fr}
   .nav-links{
-    position:fixed;top:78px;right:0;width:min(80vw,320px);height:calc(100vh - 78px);
-    background:var(--bg-2);flex-direction:column;align-items:flex-start;gap:0;
-    padding:30px;transform:translateX(100%);transition:.35s;border-left:1px solid var(--line);
+    position:fixed;top:80px;right:0;width:min(80vw,300px);
+    height:calc(100vh - 80px);background:#fff;flex-direction:column;
+    align-items:flex-start;gap:0;padding:30px;transform:translateX(100%);
+    transition:.35s;border-left:1px solid var(--line);
   }
   .nav-links.open{transform:translateX(0)}
-  .nav-links a{padding:16px 0;width:100%;border-bottom:1px solid var(--line);font-size:15px}
+  .nav-links a{padding:18px 0;width:100%;border-bottom:1px solid var(--line);font-size:14px}
   .burger{display:flex}
+  section{padding:80px 0}
+  .hero{padding:130px 0 70px}
 }
 @media(max-width:560px){
-  .wrap{padding:0 22px}
+  .wrap{padding:0 20px}
+  .hero h1{letter-spacing:4px}
 }
 </style>
 </head>
@@ -247,50 +260,45 @@ footer{padding:60px 0 40px;border-top:1px solid var(--line)}
 
 <header id="hdr">
   <div class="wrap nav">
-    <a href="index.html" class="brand">DOPP<span>E</span>L</a>
+    <a href="index.html" class="brand"><img src="assets/logo.png" alt="Doppel"><span class="sr-only">Doppel</span></a>
     <nav class="nav-links" id="menu">
+      <a href="#top" class="active">Home</a>
       <a href="#reel">Reel</a>
       <a href="#servicios">Servicios</a>
       <a href="#clientes">Clientes</a>
       <a href="podfactory.html">Pod Factory</a>
-      <a href="#contacto" class="nav-cta">Contacto</a>
+      <a href="#contacto">Contacto</a>
     </nav>
-    <button class="burger" id="burger" aria-label="Menú">
-      <span></span><span></span><span></span>
-    </button>
+    <button class="burger" id="burger" aria-label="Menú"><span></span><span></span><span></span></button>
   </div>
 </header>
 
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-bg"></div>
+<section class="hero" id="top">
   <div class="wrap">
-    <p class="eyebrow">Productora Audiovisual · Santiago, Chile</p>
-    <h1>
-      <span class="l">Contamos</span>
-      <span class="l">hist<span class="o">o</span>rias</span>
-    </h1>
-    <p>Ejecutamos cada proyecto desde la creación de la idea hasta el producto terminado. Desarrollo creativo, producción y postproducción bajo un mismo techo.</p>
+    <h1>Contamos <strong>Historias</strong></h1>
+    <p class="lede">Productora audiovisual en Santiago, Chile. Ejecutamos cada proyecto desde la creación de la idea hasta el producto terminado.</p>
     <div class="hero-actions">
-      <a href="#reel" class="btn btn-primary">Ver showreel</a>
-      <a href="#contacto" class="btn btn-ghost">Hablemos</a>
+      <a href="#reel" class="btn btn-primary">Ver Reel</a>
+      <a href="#contacto" class="btn btn-outline">Contacto</a>
     </div>
   </div>
-  <div class="scroll-hint"><span>SCROLL</span><span class="bar"></span></div>
 </section>
 
-<!-- REEL -->
 <section id="reel">
   <div class="wrap">
-    <div class="sec-head reveal">
-      <span class="sec-tag">// 01 — Showreel</span>
-      <h2 class="sec-title">Nuestro trabajo<br>en movimiento</h2>
-    </div>
-    <!-- ⚠️ REEMPLAZAR: pega el ID de tu video de Vimeo/YouTube aquí -->
     <div class="reel-frame reveal">
       <iframe src="https://player.vimeo.com/video/76979871?title=0&byline=0&portrait=0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
     </div>
+    <div class="reel-meta reveal">
+      <div class="kicker">All Videos</div>
+      <h2>Nuestro trabajo</h2>
+    </div>
     <div class="reel-grid">
+      <div class="reel-card reveal">
+        <img src="https://static.wixstatic.com/media/11fc9d_411a0374b8844ed8bdc1db11c5d10bb2~mv2.jpg" alt="Doppel Showreel">
+        <span class="play"></span>
+        <div class="label">Doppel Showreel</div>
+      </div>
       <div class="reel-card reveal">
         <img src="https://static.wixstatic.com/media/f08615_20c2b0fd396548568b3008a019cb6acd~mv2.jpg" alt="Ford Performance">
         <span class="play"></span>
@@ -301,125 +309,125 @@ footer{padding:60px 0 40px;border-top:1px solid var(--line)}
         <span class="play"></span>
         <div class="label">Té Club · Envase Sustentable</div>
       </div>
-      <div class="reel-card reveal">
-        <img src="https://static.wixstatic.com/media/11fc9d_411a0374b8844ed8bdc1db11c5d10bb2~mv2.jpg" alt="Más proyectos">
-        <span class="play"></span>
-        <div class="label">Doppel Showreel</div>
-      </div>
     </div>
   </div>
 </section>
 
-<!-- SERVICIOS -->
 <section id="servicios">
   <div class="wrap">
     <div class="sec-head reveal">
-      <span class="sec-tag">// 02 — Servicios</span>
-      <h2 class="sec-title">Servicios<br>audiovisuales</h2>
-      <p class="sec-sub">Ejecución desde la creación de la idea hasta el producto terminado.</p>
+      <div class="kicker">// 01</div>
+      <h2>Servicios Audiovisuales</h2>
+      <p>Ejecución desde la creación de la idea hasta el producto terminado</p>
     </div>
     <div class="serv-grid">
       <article class="serv reveal">
-        <div class="serv-img">
-          <span class="serv-num">01</span>
-          <img src="https://static.wixstatic.com/media/11fc9d_411a0374b8844ed8bdc1db11c5d10bb2~mv2.jpg" alt="Desarrollo creativo">
+        <div class="serv-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/><circle cx="12" cy="12" r="3"/></svg>
         </div>
-        <div class="serv-body">
-          <h3>Desarrollo Creativo</h3>
-          <p>Desarrollo creativo de ideas innovadoras que conectan con tu audiencia.</p>
-        </div>
+        <h3>Desarrollo Creativo</h3>
+        <p>Desarrollo creativo de ideas innovadoras</p>
       </article>
       <article class="serv reveal">
-        <div class="serv-img">
-          <span class="serv-num">02</span>
-          <img src="https://static.wixstatic.com/media/11fc9d_3cc105ebac054bd385c5167c8c76f6c5~mv2.png" alt="Producción">
+        <div class="serv-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="m22 8-6 4 6 4z"/></svg>
         </div>
-        <div class="serv-body">
-          <h3>Producción</h3>
-          <p>Planificación y ejecución integral del proyecto, de principio a fin.</p>
-        </div>
+        <h3>Producción</h3>
+        <p>Planificación y ejecución del proyecto</p>
       </article>
       <article class="serv reveal">
-        <div class="serv-img">
-          <span class="serv-num">03</span>
-          <img src="https://static.wixstatic.com/media/11fc9d_d5ef9d83f1b84621a1fee5134155f2a6~mv2.jpg" alt="Postproducción">
+        <div class="serv-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg>
         </div>
-        <div class="serv-body">
-          <h3>Postproducción</h3>
-          <p>Edición de material audiovisual, color, 2D y 3D con acabado profesional.</p>
-        </div>
+        <h3>Postproducción</h3>
+        <p>Edición de material audiovisual, color, 2D y 3D</p>
       </article>
     </div>
   </div>
 </section>
 
-<!-- CLIENTES -->
 <section id="clientes">
   <div class="wrap">
     <div class="sec-head reveal">
-      <span class="sec-tag">// 03 — Clientes</span>
-      <h2 class="sec-title">Marcas que<br>confían en Doppel</h2>
+      <div class="kicker">// 02</div>
+      <h2>Clientes Doppel</h2>
+      <p>Marcas y empresas que han confiado en nuestros servicios</p>
     </div>
     <div class="cli-grid">
-      <div class="cli reveal"><h3>WALM<b>A</b>RT</h3><p>Diversos proyectos audiovisuales: comerciales, videos institucionales y de contenido interno.</p></div>
-      <div class="cli reveal"><h3>FORD <b>C</b>HILE</h3><p>Videos oficiales de lanzamientos en Chile y Perú: All New F-150 Raptor, Explorer ST y Ford Ranger.</p></div>
-      <div class="cli reveal"><h3>ENT<b>E</b>L</h3><p>Producciones audiovisuales para la distribución de nuevas tecnologías y mejoras en sus servicios.</p></div>
-      <div class="cli reveal"><h3>EN<b>E</b>L</h3><p>Comerciales para TV, contenido interno y videos corporativos con fines educacionales.</p></div>
-      <div class="cli reveal"><h3>DER<b>C</b>O</h3><p>Documental oficial sobre la historia de la compañía y diversos videos para comunicación interna.</p></div>
-      <div class="cli reveal"><h3>LAT<b>A</b>M</h3><p>Contenido sobre innovaciones en metodologías de trabajo y videos oficiales de cierre anual.</p></div>
+      <div class="cli reveal"><h3>Walmart</h3><p>Diversos proyectos audiovisuales en los que destacan comerciales, videos institucionales y de contenido interno.</p></div>
+      <div class="cli reveal"><h3>Ford Chile</h3><p>Videos oficiales de sus nuevos lanzamientos en Chile y Perú para productos como la All New F-150 Raptor, Explorer ST y Ford Ranger.</p></div>
+      <div class="cli reveal"><h3>Entel</h3><p>Producciones audiovisuales para distribución de nuevas tecnologías empleadas para sus clientes y mejoras en sus servicios.</p></div>
+      <div class="cli reveal"><h3>Enel</h3><p>Comerciales para TV, contenido para uso interno y videos corporativos con fines educacionales.</p></div>
+      <div class="cli reveal"><h3>Derco</h3><p>Documental oficial sobre la historia de la compañía, desde sus inicios hasta su posterior distribución por toda Suramérica, también destacando variados videos para comunicación interna.</p></div>
+      <div class="cli reveal"><h3>Latam</h3><p>Contenido sobre sus innovaciones en las metodologías de trabajo dentro y fuera de la empresa, así como videos oficiales para sus empleados con motivo de Cierre Anual.</p></div>
     </div>
   </div>
 </section>
 
-<!-- CONTACTO -->
 <section id="contacto">
   <div class="wrap">
     <div class="sec-head reveal">
-      <span class="sec-tag">// 04 — Contacto</span>
-      <h2 class="sec-title">¡Hablemos!</h2>
+      <div class="kicker">// 03</div>
+      <h2>¡Hablemos!</h2>
     </div>
     <div class="contact-grid">
       <div class="contact-info reveal">
-        <div class="line"><span class="ic">◉</span><div><b>Dirección</b><span>Eduardo Marquina 3937, Of. 608<br>Vitacura, Santiago, Chile</span></div></div>
-        <div class="line"><span class="ic">✉</span><div><b>Email</b><span><a href="mailto:hey@doppel.cl">hey@doppel.cl</a></span></div></div>
-        <div class="line"><span class="ic">☎</span><div><b>Teléfono</b><span><a href="tel:+56988083000">+56 9 8808 3000</a></span></div></div>
-        <div class="line"><span class="ic">⬡</span><div><b>Instagram</b><span><a href="https://www.instagram.com/doppelcl/" target="_blank" rel="noopener">@doppelcl</a></span></div></div>
+        <div class="line">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+          <div><b>Dirección</b><span>Eduardo Marquina 3937, Oficina 608<br>Vitacura, Santiago, Chile</span></div>
+        </div>
+        <div class="line">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></span>
+          <div><b>Email</b><a href="mailto:hey@doppel.cl">hey@doppel.cl</a></div>
+        </div>
+        <div class="line">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
+          <div><b>Teléfono</b><a href="tel:+56988083000">+56 9 8808 3000</a></div>
+        </div>
+        <div class="line">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg></span>
+          <div><b>Instagram</b><a href="https://www.instagram.com/doppelcl/" target="_blank" rel="noopener">@doppelcl</a></div>
+        </div>
       </div>
-      <div class="contact-cta reveal">
-        <span class="wa-ic" aria-hidden="true">
-          <svg viewBox="0 0 32 32" width="40" height="40" fill="currentColor"><path d="M16.04 3C9.42 3 4.04 8.38 4.04 15c0 2.12.56 4.18 1.62 6L4 29l8.2-1.62A11.9 11.9 0 0 0 16.04 27c6.62 0 12-5.38 12-12S22.66 3 16.04 3Zm0 21.96c-1.78 0-3.52-.48-5.04-1.38l-.36-.22-4.86.96.98-4.74-.24-.38a9.94 9.94 0 0 1-1.52-5.24c0-5.5 4.48-9.96 9.98-9.96 5.5 0 9.96 4.46 9.96 9.96 0 5.5-4.46 9.94-9.96 9.94Zm5.48-7.46c-.3-.16-1.78-.88-2.06-.98-.28-.1-.48-.16-.68.16-.2.3-.78.98-.96 1.18-.18.2-.36.22-.66.08-.3-.16-1.26-.46-2.4-1.48-.88-.78-1.48-1.76-1.66-2.06-.18-.3-.02-.46.14-.62.14-.14.3-.36.46-.54.16-.18.2-.3.3-.5.1-.2.06-.38-.02-.54-.08-.16-.68-1.64-.94-2.24-.24-.58-.5-.5-.68-.52h-.58c-.2 0-.52.08-.8.38-.28.3-1.06 1.04-1.06 2.52s1.08 2.92 1.24 3.12c.16.2 2.14 3.26 5.18 4.58.72.3 1.28.48 1.72.62.72.22 1.38.2 1.9.12.58-.08 1.78-.72 2.04-1.42.26-.7.26-1.3.18-1.42-.08-.12-.28-.2-.58-.34Z"/></svg>
-        </span>
-        <h3>Conversemos por WhatsApp</h3>
-        <p>Cuéntanos sobre tu proyecto y te respondemos a la brevedad.</p>
-        <a href="https://wa.me/56927970014" target="_blank" rel="noopener" class="btn btn-primary">Escríbenos por WhatsApp</a>
-      </div>
+      <form class="form reveal" action="mailto:hey@doppel.cl" method="post" enctype="text/plain">
+        <div class="row">
+          <input type="text" name="nombre" placeholder="Nombre" required>
+          <input type="email" name="correo" placeholder="Correo" required>
+        </div>
+        <div class="row">
+          <input type="tel" name="telefono" placeholder="Teléfono">
+          <input type="text" name="asunto" placeholder="Asunto">
+        </div>
+        <textarea name="mensaje" placeholder="Mensaje" required></textarea>
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
     </div>
   </div>
 </section>
 
 <footer>
   <div class="wrap">
-    <div class="foot">
-      <a href="index.html" class="brand">DOPP<span>E</span>L</a>
-      <div class="foot-soc">
-        <a href="https://www.instagram.com/doppelcl/" target="_blank" rel="noopener">Instagram</a>
-        <a href="podfactory.html">Pod Factory</a>
-        <a href="mailto:hey@doppel.cl">Email</a>
-      </div>
+    <div class="foot-soc">
+      <a href="https://www.instagram.com/doppelcl/" target="_blank" rel="noopener" aria-label="Instagram">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
+      </a>
+      <a href="https://wa.me/56927970014" target="_blank" rel="noopener" aria-label="WhatsApp">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.83 9.83 0 0 0 12.04 2zm0 18.13a8.2 8.2 0 0 1-4.18-1.14l-.3-.18-3.11.82.83-3.04-.2-.31a8.18 8.18 0 0 1-1.26-4.37c0-4.54 3.7-8.23 8.23-8.23 2.2 0 4.27.86 5.82 2.41a8.18 8.18 0 0 1 2.41 5.83c0 4.54-3.7 8.21-8.24 8.21zm4.52-6.16c-.25-.12-1.46-.72-1.69-.8-.23-.08-.39-.12-.55.12-.16.25-.64.8-.78.97-.14.16-.29.18-.54.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.38-1.72-.14-.25-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.14.16-.25.25-.41.08-.16.04-.31-.02-.43-.06-.12-.55-1.33-.76-1.82-.2-.48-.4-.41-.55-.42h-.47c-.16 0-.43.06-.65.31-.22.25-.85.83-.85 2.02 0 1.19.87 2.34.99 2.5.12.16 1.71 2.61 4.15 3.66.58.25 1.03.4 1.39.51.58.19 1.11.16 1.53.1.47-.07 1.46-.6 1.66-1.17.2-.58.2-1.07.14-1.17-.06-.1-.22-.16-.47-.28z"/></svg>
+      </a>
+      <a href="mailto:hey@doppel.cl" aria-label="Email">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>
+      </a>
     </div>
     <p class="foot-copy">© 2026 Doppel · Productora Audiovisual · Santiago, Chile</p>
   </div>
 </footer>
 
 <script>
-// nav scroll state
 const hdr=document.getElementById('hdr');
 addEventListener('scroll',()=>hdr.classList.toggle('scrolled',scrollY>20));
-// burger
 const burger=document.getElementById('burger'),menu=document.getElementById('menu');
 burger.addEventListener('click',()=>menu.classList.toggle('open'));
 menu.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>menu.classList.remove('open')));
-// reveal on scroll
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.12});
 document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 </script>
