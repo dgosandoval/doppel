@@ -1,5 +1,5 @@
 function App() {
-  return <PodFactoryLanding />;
+  return <FunnelLanding />;
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App />);
