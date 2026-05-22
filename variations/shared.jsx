@@ -41,6 +41,14 @@ const PODCASTS = [
   { title: 'Cocina en Vivo',     host: 'Paz Donoso',    ep: 'EP · 23' },
 ];
 
+// Hero carousel images — URLs or paths to carousel photos
+const CAROUSEL_IMAGES = [
+  { src: 'assets/carousel-1.jpg', label: 'Producción Audiovisual' },
+  { src: 'assets/carousel-2.jpg', label: 'Brand Films' },
+  { src: 'assets/carousel-3.jpg', label: 'Documentales' },
+  { src: 'assets/carousel-4.jpg', label: 'Podcasts' },
+];
+
 // ── Small primitives ──────────────────────────────────────────
 // Video placeholder — diagonal hatching + play glyph. Looks intentional,
 // reads as "video here" without faking a screengrab.
@@ -107,6 +115,107 @@ function DoppelMark({ size = 20, color = 'currentColor', font = "'Archivo', sans
   );
 }
 
+// Image carousel — swipe/click to navigate through hero images
+function ImageCarousel({ images = CAROUSEL_IMAGES, autoplay = false, autoplayDelay = 5000 }) {
+  const [index, setIndex] = React.useState(0);
+  React.useEffect(() => {
+    if (!autoplay) return;
+    const timer = setInterval(() => {
+      setIndex(i => (i + 1) % images.length);
+    }, autoplayDelay);
+    return () => clearInterval(timer);
+  }, [autoplay, autoplayDelay, images.length]);
+  
+  const prev = () => setIndex(i => (i - 1 + images.length) % images.length);
+  const next = () => setIndex(i => (i + 1) % images.length);
+  
+  return (
+    <div style={{
+      position: 'relative', aspectRatio: '4/5', background: '#1a1a1a',
+      overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
+    }}>
+      {/* Current image */}
+      {images[index]?.src ? (
+        <img
+          src={images[index].src}
+          alt={images[index].label}
+          style={{
+            width: '100%', height: '100%', objectFit: 'cover', display: 'block',
+          }}
+        />
+      ) : (
+        <div style={{
+          position: 'absolute', inset: 0,
+          backgroundImage: 'repeating-linear-gradient(135deg, transparent 0 14px, #fff0d 14px 15px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <div style={{ textAlign: 'center', color: '#fff8' }}>
+            <div style={{ fontSize: 14, fontFamily: 'Space Mono, monospace' }}>
+              {images[index]?.label || 'Imagen no disponible'}
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Navigation arrows */}
+      <button
+        onClick={prev}
+        style={{
+          position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)',
+          background: '#fff2', border: 'none', color: '#fff', width: 40, height: 40,
+          borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center',
+          justifyContent: 'center', fontSize: 20, zIndex: 2, transition: 'background 0.2s',
+        }}
+        onMouseEnter={e => e.target.style.background = '#fff4'}
+        onMouseLeave={e => e.target.style.background = '#fff2'}
+      >
+        ‹
+      </button>
+      <button
+        onClick={next}
+        style={{
+          position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)',
+          background: '#fff2', border: 'none', color: '#fff', width: 40, height: 40,
+          borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center',
+          justifyContent: 'center', fontSize: 20, zIndex: 2, transition: 'background 0.2s',
+        }}
+        onMouseEnter={e => e.target.style.background = '#fff4'}
+        onMouseLeave={e => e.target.style.background = '#fff2'}
+      >
+        ›
+      </button>
+      
+      {/* Indicators */}
+      <div style={{
+        position: 'absolute', bottom: 14, left: '50%', transform: 'translateX(-50%)',
+        display: 'flex', gap: 6, zIndex: 2,
+      }}>
+        {images.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setIndex(i)}
+            style={{
+              width: 8, height: 8, borderRadius: '50%', border: 'none', cursor: 'pointer',
+              background: i === index ? '#fff' : '#fff6', transition: 'background 0.2s',
+            }}
+          />
+        ))}
+      </div>
+      
+      {/* Label */}
+      {images[index]?.label && (
+        <div style={{
+          position: 'absolute', top: 12, left: 12, fontSize: 10,
+          letterSpacing: '0.12em', fontWeight: 600, color: '#fffa',
+          fontFamily: 'Space Mono, monospace',
+        }}>
+          DOPPEL · {images[index].label.toUpperCase()}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // A tiny "browser chrome" header so each artboard reads as a website
 // without pulling the full browser-window starter (too chunky for our grid).
 function SiteChrome({ url = 'doppel.cl', bg = '#e8e6e1', fg = '#3b3d49' }) {
@@ -132,6 +241,6 @@ function SiteChrome({ url = 'doppel.cl', bg = '#e8e6e1', fg = '#3b3d49' }) {
 }
 
 Object.assign(window, {
-  BRAND, CLIENTS, PROJECTS, PODCASTS,
-  VideoTile, PodBars, PodMic, DoppelMark, SiteChrome,
+  BRAND, CLIENTS, PROJECTS, PODCASTS, CAROUSEL_IMAGES,
+  VideoTile, PodBars, PodMic, DoppelMark, SiteChrome, ImageCarousel,
 });

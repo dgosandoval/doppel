@@ -142,21 +142,8 @@ function FunnelLanding() {
             </div>
           </div>
 
-          {/* Powerful representative image — placeholder */}
-          <div style={{
-            aspectRatio: '4/5', background: '#1a1a1a', position: 'relative', overflow: 'hidden',
-          }}>
-            <VideoTile bg="#1a1a1a" fg={FL.paper} aspect="4/5" corner="DOPPEL · IMAGEN PRINCIPAL" />
-            {/* Subtle hint at the bottom */}
-            <div style={{
-              position: 'absolute', bottom: 14, left: 14, right: 14,
-              fontFamily: FL.mono, fontSize: 10, letterSpacing: '0.1em', color: FL.paper + 'aa',
-              display: 'flex', justifyContent: 'space-between',
-            }}>
-              <span>[ REEMPLAZAR CON IMAGEN/REEL DESTACADO ]</span>
-              <span>16/9 — 4/5 — 9/16</span>
-            </div>
-          </div>
+          {/* Powerful representative image — now a carousel */}
+          <ImageCarousel images={CAROUSEL_IMAGES} autoplay={true} autoplayDelay={6000} />
         </div>
 
         {/* Trust stats */}
