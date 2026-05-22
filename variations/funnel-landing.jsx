@@ -112,10 +112,10 @@ function FunnelLanding() {
         </div>
 
         {/* Two-column hero: copy left, image right */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1.35fr 1fr', gap: 48, alignItems: 'start' }}>
+        <div className="hero-grid" style={{ display: 'grid', gridTemplateColumns: '1.35fr 1fr', gap: 48, alignItems: 'start' }}>
           <div>
             <h1 style={{
-              fontFamily: FL.display, fontWeight: 300, fontSize: 108, lineHeight: 0.94,
+              fontFamily: FL.display, fontWeight: 300, fontSize: 'clamp(28px,7vw,108px)', lineHeight: 0.94,
               letterSpacing: '-0.04em', margin: 0, color: FL.paper,
             }}>
               Tu idea<br />
