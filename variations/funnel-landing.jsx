@@ -74,7 +74,7 @@ function WAButton({ context, label = 'Conversemos', size = 'md', variant = 'crea
 
 function FunnelLanding() {
   return (
-    <div style={{ background: FL.bg, color: FL.paper, fontFamily: FL.sans, minHeight: '100%' }}>
+    <div style={{ background: FL.bg, color: FL.paper, fontFamily: FL.sans, minHeight: '100vh' }}>
       <SiteChrome url="doppel.cl" bg="#1a1a1a" fg={FL.paper} />
 
       {/* ── STICKY HEADER ── */}
