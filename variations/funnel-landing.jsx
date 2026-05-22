@@ -160,7 +160,7 @@ function FunnelLanding() {
         </div>
 
         {/* Trust stats */}
-        <div style={{
+        <div className="stats-grid" style={{
           display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0,
           marginTop: 70, paddingTop: 28, borderTop: `1px solid ${FL.paper}20`,
         }}>
@@ -188,7 +188,7 @@ function FunnelLanding() {
         <div style={{ fontSize: 10, fontFamily: FL.mono, letterSpacing: '0.2em', color: FL.muted, marginBottom: 22 }}>
           MARCAS QUE NOS HAN ELEGIDO
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: 24, alignItems: 'center' }}>
+        <div className="clients-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: 24, alignItems: 'center' }}>
           {CLIENTS.map(c => (
             <div key={c} style={{
               fontFamily: FL.display, fontWeight: 300, fontSize: 20, letterSpacing: '-0.02em',
@@ -217,7 +217,7 @@ function FunnelLanding() {
           Pensamos antes <span style={{ fontStyle: 'italic', color: FL.accent }}>de filmar.</span>
         </h2>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: 0, borderTop: `1px solid ${FL.paper}25` }}>
+        <div className="reasons-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: 0, borderTop: `1px solid ${FL.paper}25` }}>
           {[
             ['01', 'Concepto', 'Conversamos contigo y proponemos la idea que mueve el proyecto.'],
             ['02', 'Guion & arte', 'Escribimos, dirigimos arte, planificamos producción.'],
@@ -238,7 +238,7 @@ function FunnelLanding() {
         </div>
 
         {/* Where it materializes */}
-        <div style={{
+        <div className="where-grid" style={{
           marginTop: 48, padding: '36px 0 0', borderTop: `1px solid ${FL.paper}20`,
           display: 'grid', gridTemplateColumns: '0.7fr 1fr 1fr', gap: 24,
         }}>
@@ -268,7 +268,7 @@ function FunnelLanding() {
       </section>
 
       {/* ── MID-FUNNEL CTA ── */}
-      <section style={{
+      <section className="mid-cta" style={{
         padding: '40px 40px', background: FL.paper, color: FL.ink,
         display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 32,
       }}>
@@ -286,7 +286,7 @@ function FunnelLanding() {
           </h2>
           <a href="#" style={{ fontSize: 12, fontFamily: FL.mono, color: FL.muted, letterSpacing: '0.1em' }}>VER TODOS →</a>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+        <div className="work-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
           {PROJECTS.slice(0, 4).map((p, i) => (
             <div key={i}>
               <VideoTile bg={['#2a2218', '#1b2330', '#28201f', '#1f2821'][i]} fg={FL.paper} />
@@ -334,7 +334,7 @@ function FunnelLanding() {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 60, alignItems: 'start' }}>
+        <div className="pod-grid" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 60, alignItems: 'start' }}>
           <div>
             <h2 style={{ fontFamily: FL.sans, fontWeight: 800, fontSize: 76, lineHeight: 0.94, letterSpacing: '-0.035em', margin: 0 }}>
               ¿Quieres lanzar<br />tu podcast?
@@ -350,7 +350,7 @@ function FunnelLanding() {
           </div>
 
           {/* Mini features grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+          <div className="mini-features-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             {[
               ['4 cámaras 4K', '#1F3FA3'],
               ['+300 episodios producidos', '#D92E2E'],
@@ -377,7 +377,7 @@ function FunnelLanding() {
         }}>
           Cuatro razones <span style={{ fontStyle: 'italic', color: FL.accent }}>concretas.</span>
         </h2>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
+        <div className="why-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
           {[
             ['Pensamos, no sólo filmamos', 'Creamos el concepto o lo afilamos contigo. Antes de prender cámaras hay una idea sólida y un punto de vista.'],
             ['Equipo propio y estudio físico', 'Cámaras, sonido, dirección, edición y Pod Factory — nuestro estudio de podcast en Vitacura. Todo bajo un mismo techo.'],
@@ -400,7 +400,7 @@ function FunnelLanding() {
         <div style={{ fontSize: 10, fontFamily: FL.mono, letterSpacing: '0.2em', color: FL.muted, marginBottom: 32 }}>
           LO QUE DICEN
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
+        <div className="testimonial-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
           {[
             ['Doppel entendió la marca antes que nosotros mismos. La pieza final superó el brief.', 'M. González', 'Brand Manager · Walmart Chile'],
             ['El studio de podcast es de otro nivel. Llegamos, grabamos, salimos con el episodio listo.', 'F. Vera', 'Conductora · Rutas Paralelas'],
@@ -467,7 +467,7 @@ function FunnelLanding() {
       </section>
 
       {/* ── FOOTER ── */}
-      <footer style={{ padding: '40px 40px 28px', background: FL.bg }}>
+      <footer className="footer-grid" style={{ padding: '40px 40px 28px', background: FL.bg }}>
         <div style={{
           display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end',
           paddingBottom: 24, borderBottom: `1px solid ${FL.paper}20`,
@@ -494,7 +494,7 @@ function FunnelLanding() {
       </footer>
 
       {/* ── STICKY FLOATING WHATSAPP BUTTON ── */}
-      <div style={{
+      <div className="whatsapp-float" style={{
         position: 'absolute', bottom: 24, right: 24, zIndex: 20,
       }}>
         <a
