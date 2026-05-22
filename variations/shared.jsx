@@ -43,10 +43,10 @@ const PODCASTS = [
 
 // Hero carousel images — URLs or paths to carousel photos
 const CAROUSEL_IMAGES = [
-  { src: 'assets/carousel-1.jpg', label: 'Producción Audiovisual' },
-  { src: 'assets/carousel-2.jpg', label: 'Brand Films' },
-  { src: 'assets/carousel-3.jpg', label: 'Documentales' },
-  { src: 'assets/carousel-4.jpg', label: 'Podcasts' },
+  { src: 'assets/FORD RAPTOR.jpg', label: 'Ford Performance' },
+  { src: 'assets/ENTEL.jpg', label: 'Redes del Futuro' },
+  { src: 'assets/TÉ CLUB.jpg', label: 'Sostenibilidad' },
+  { src: 'assets/FORD CHILE.jpg', label: 'Lanzamientos' },
 ];
 
 // ── Small primitives ──────────────────────────────────────────
