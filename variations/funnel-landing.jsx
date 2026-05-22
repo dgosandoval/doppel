@@ -34,7 +34,7 @@ function WhatsAppIcon({ size = 16, color = '#fff' }) {
   );
 }
 
-function WAButton({ context, label = 'Conversemos', size = 'md', variant = 'cream', style = {} }) {
+function WAButton({ context, label = 'Hablemos', size = 'md', variant = 'cream', style = {} }) {
   const sizes = {
     sm: { pad: '10px 18px', fs: 12, ic: 13 },
     md: { pad: '14px 22px', fs: 13, ic: 14 },
@@ -59,7 +59,7 @@ function WAButton({ context, label = 'Conversemos', size = 'md', variant = 'crea
         padding: sizes.pad, fontSize: sizes.fs, fontWeight: 600,
         letterSpacing: '0.02em', cursor: 'pointer', fontFamily: FL.sans,
         textDecoration: 'none', display: 'inline-flex', alignItems: 'center',
-        gap: 12, lineHeight: 1, ...style,
+        gap: 12, lineHeight: 1, borderRadius: 999, ...style,
       }}
     >
       {label}
@@ -92,30 +92,31 @@ function FunnelLanding() {
           }}>AGENCIA<br />CREATIVA</span>
         </div>
         <nav style={{ display: 'flex', gap: 26, fontSize: 13, color: FL.paper + 'cc' }}>
-          {['Cómo trabajamos', 'Trabajos', 'Pod Factory', 'Por qué Doppel'].map(l => (
-            <a key={l} href={`#${l.replace(/\s/g, '-').toLowerCase()}`} style={{ color: 'inherit', textDecoration: 'none' }}>{l}</a>
+          {[
+            ['Nosotros', '#cómo-trabajamos'],
+            ['Portafolio', '#trabajos'],
+            ['Pod Factory', '#pod-factory'],
+            ['Por qué Doppel', '#por-qué-doppel'],
+          ].map(([l, h]) => (
+            <a key={l} href={h} style={{ color: 'inherit', textDecoration: 'none' }}>{l}</a>
           ))}
         </nav>
-        <WAButton context="quiero conversar sobre un proyecto." label="Conversemos" size="sm" />
+        <WAButton context="quiero conversar sobre un proyecto." label="Hablemos" size="sm" />
       </header>
 
       {/* ── HERO ── */}
       <section style={{ padding: '70px 40px 50px', position: 'relative' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 28 }}>
           <div style={{ fontSize: 11, fontFamily: FL.mono, color: FL.muted, letterSpacing: '0.1em' }}>
-            ( AGENCIA CREATIVA 360° · DESDE 2014 )
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, fontFamily: FL.mono, color: FL.muted }}>
-            <span style={{ width: 7, height: 7, borderRadius: '50%', background: FL.whatsapp }} />
-            RESPONDEMOS EN MENOS DE 1 HORA
+            ( AGENCIA CREATIVA 360° · DESDE 2012 )
           </div>
         </div>
 
         {/* Two-column hero: copy left, image right */}
-        <div className="hero-grid" style={{ display: 'grid', gridTemplateColumns: '1.35fr 1fr', gap: 48, alignItems: 'start' }}>
+        <div className="hero-grid" style={{ display: 'grid', gridTemplateColumns: '0.8fr 2fr', gap: 40, alignItems: 'center' }}>
           <div>
             <h1 style={{
-              fontFamily: FL.display, fontWeight: 300, fontSize: 'clamp(28px,7vw,108px)', lineHeight: 0.94,
+              fontFamily: FL.display, fontWeight: 300, fontSize: 'clamp(28px,4.5vw,72px)', lineHeight: 0.96,
               letterSpacing: '-0.04em', margin: 0, color: FL.paper,
             }}>
               Tu idea<br />
@@ -132,7 +133,7 @@ function FunnelLanding() {
 
             {/* Primary CTA cluster */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginTop: 32, flexWrap: 'wrap' }}>
-              <WAButton context="vengo desde la web, conversemos." label="Conversemos" size="lg" />
+              <WAButton context="vengo desde la web, hablemos." label="Hablemos" size="lg" />
               <a href="#trabajos" style={{
                 fontSize: 12, fontFamily: FL.mono, color: FL.paper, letterSpacing: '0.1em',
                 textDecoration: 'none', borderBottom: `1px solid ${FL.paper}40`, paddingBottom: 4,
@@ -148,16 +149,15 @@ function FunnelLanding() {
 
         {/* Trust stats */}
         <div className="stats-grid" style={{
-          display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0,
+          display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 0,
           marginTop: 70, paddingTop: 28, borderTop: `1px solid ${FL.paper}20`,
         }}>
           {[
-            ['12', 'años haciendo esto'],
-            ['+180', 'proyectos producidos'],
+            ['15', 'años de experiencia'],
+            ['+500', 'proyectos producidos'],
             ['+40', 'marcas que confían'],
-            ['<1h', 'tiempo de respuesta'],
           ].map(([n, l], i) => (
-            <div key={i} style={{ paddingRight: 24, borderRight: i < 3 ? `1px solid ${FL.paper}15` : 'none', paddingLeft: i > 0 ? 24 : 0 }}>
+            <div key={i} style={{ paddingRight: 24, borderRight: i < 2 ? `1px solid ${FL.paper}15` : 'none', paddingLeft: i > 0 ? 24 : 0 }}>
               <div style={{ fontFamily: FL.display, fontSize: 52, fontWeight: 300, letterSpacing: '-0.03em', lineHeight: 1 }}>{n}</div>
               <div style={{ fontSize: 11, color: FL.muted, marginTop: 6, fontFamily: FL.mono, letterSpacing: '0.06em' }}>{l.toUpperCase()}</div>
             </div>
@@ -168,6 +168,17 @@ function FunnelLanding() {
       {/* ── REEL ── */}
       <section id="trabajos" style={{ padding: '20px 40px 60px' }}>
         <VideoTile bg="#1a1a1a" fg={FL.paper} aspect="21/9" corner="REEL 2025 · 01:48" style={{ width: '100%' }} />
+      </section>
+
+      {/* ── MID-FUNNEL CTA ── */}
+      <section className="mid-cta" style={{
+        padding: '40px 40px', background: FL.paper, color: FL.ink,
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 32,
+      }}>
+        <div style={{ fontFamily: FL.display, fontSize: 40, fontWeight: 300, letterSpacing: '-0.025em', lineHeight: 1.05, maxWidth: 700 }}>
+          ¿Quieres pensar algo juntos? <span style={{ fontStyle: 'italic', color: FL.accent }}>Hagámoslo.</span>
+        </div>
+        <WAButton context="quiero pensar un proyecto con ustedes." label="Hablemos" size="lg" />
       </section>
 
       {/* ── CLIENT STRIP ── */}
@@ -252,17 +263,6 @@ function FunnelLanding() {
             </div>
           </div>
         </div>
-      </section>
-
-      {/* ── MID-FUNNEL CTA ── */}
-      <section className="mid-cta" style={{
-        padding: '40px 40px', background: FL.paper, color: FL.ink,
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 32,
-      }}>
-        <div style={{ fontFamily: FL.display, fontSize: 40, fontWeight: 300, letterSpacing: '-0.025em', lineHeight: 1.05, maxWidth: 700 }}>
-          ¿Quieres pensar algo juntos? <span style={{ fontStyle: 'italic', color: FL.accent }}>Hagámoslo.</span>
-        </div>
-        <WAButton context="quiero pensar un proyecto con ustedes." label="Hablemos" size="lg" />
       </section>
 
       {/* ── WORK GRID ── */}
@@ -368,7 +368,7 @@ function FunnelLanding() {
           {[
             ['Pensamos, no sólo filmamos', 'Creamos el concepto o lo afilamos contigo. Antes de prender cámaras hay una idea sólida y un punto de vista.'],
             ['Equipo propio y estudio físico', 'Cámaras, sonido, dirección, edición y Pod Factory — nuestro estudio de podcast en Vitacura. Todo bajo un mismo techo.'],
-            ['12 años de track record', '+180 proyectos para Walmart, Chevrolet, Ford, LATAM, Entel, Enel y más. Sabemos cómo entregar a tiempo.'],
+            ['15 años de track record', '+500 proyectos para Walmart, Ford, LATAM, Entel, Enel, Coca-Cola Andina y más. Sabemos cómo entregar a tiempo.'],
             ['Respondemos rápido', 'Menos de 1 hora desde tu mensaje en horario hábil. Sin formularios eternos ni cadenas de correos.'],
           ].map(([t, d], i) => (
             <div key={i} style={{ padding: '24px 0', borderTop: `1px solid ${FL.paper}20`, display: 'flex', gap: 20 }}>

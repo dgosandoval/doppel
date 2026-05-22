@@ -21,7 +21,7 @@ const BRAND = {
 };
 
 // Real client logos from the current site (as short wordmarks for placeholders)
-const CLIENTS = ['WALMART', 'CHEVROLET', 'FORD', 'PETROBRAS', 'ENTEL', 'ENEL', 'DERCO', 'LATAM'];
+const CLIENTS = ['WALMART', 'FORD', 'ENTEL', 'ENEL', 'DERCO', 'LATAM', 'COCA-COLA ANDINA'];
 
 // Project titles used across variations — invented but plausible for a Chilean
 // audiovisual production house. Keep them short and punchy.
@@ -47,6 +47,8 @@ const CAROUSEL_IMAGES = [
   { src: 'assets/entel.jpg', label: 'Redes del Futuro' },
   { src: 'assets/te-club.jpg', label: 'Sostenibilidad' },
   { src: 'assets/ford-chile.jpg', label: 'Lanzamientos' },
+  { src: 'assets/te-quiero-verde.jpg', label: 'Te Quiero Verde' },
+  { src: 'assets/walmart.jpg', label: 'Walmart Talento Digital' },
 ];
 
 // ── Small primitives ──────────────────────────────────────────
@@ -131,7 +133,7 @@ function ImageCarousel({ images = CAROUSEL_IMAGES, autoplay = false, autoplayDel
   
   return (
     <div style={{
-      position: 'relative', aspectRatio: '4/5', background: '#1a1a1a',
+      position: 'relative', aspectRatio: '16/9', background: '#1a1a1a',
       overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
     }}>
       {/* Current image */}
@@ -188,14 +190,15 @@ function ImageCarousel({ images = CAROUSEL_IMAGES, autoplay = false, autoplayDel
       {/* Indicators */}
       <div style={{
         position: 'absolute', bottom: 14, left: '50%', transform: 'translateX(-50%)',
-        display: 'flex', gap: 6, zIndex: 2,
+        display: 'flex', gap: 6, zIndex: 2, alignItems: 'center',
       }}>
         {images.map((_, i) => (
           <button
             key={i}
             onClick={() => setIndex(i)}
             style={{
-              width: 8, height: 8, borderRadius: '50%', border: 'none', cursor: 'pointer',
+              width: 8, height: 8, minWidth: 8, padding: 0, flexShrink: 0,
+              borderRadius: '50%', border: 'none', cursor: 'pointer', boxSizing: 'border-box',
               background: i === index ? '#fff' : '#fff6', transition: 'background 0.2s',
             }}
           />
