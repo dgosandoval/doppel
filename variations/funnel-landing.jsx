@@ -167,7 +167,15 @@ function FunnelLanding() {
 
       {/* ── REEL ── */}
       <section id="trabajos" style={{ padding: '20px 40px 60px' }}>
-        <VideoTile bg="#1a1a1a" fg={FL.paper} aspect="21/9" corner="REEL 2025 · 01:48" style={{ width: '100%' }} />
+        <div style={{ position: 'relative', aspectRatio: '16/9', width: '100%', background: '#000', overflow: 'hidden' }}>
+          <iframe
+            src="https://player.vimeo.com/video/589999111?title=0&byline=0&portrait=0&dnt=1"
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }}
+            allow="autoplay; fullscreen; picture-in-picture"
+            allowFullScreen
+            title="Doppel Reel"
+          />
+        </div>
       </section>
 
       {/* ── MID-FUNNEL CTA ── */}
