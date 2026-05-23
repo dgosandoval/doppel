@@ -389,7 +389,7 @@ function V3Home() {
           marginTop: 20, display: 'flex', justifyContent: 'space-between',
           fontSize: 11, fontFamily: V3.mono, color: V3.bg + '88', letterSpacing: '0.08em',
         }}>
-          <span>© 2014 — 2026 · DOPPEL MEDIA SPA · POD FACTORY ES UNA LÍNEA DE DOPPEL MEDIA</span>
+          <span>© 2011 — 2026 · DOPPEL MEDIA · POD FACTORY ES UNA LÍNEA DE DOPPEL MEDIA</span>
           <span>MADE WITH COFFEE IN SCL ·· v.12</span>
         </div>
       </footer>

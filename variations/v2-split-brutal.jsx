@@ -314,7 +314,7 @@ function V2Home() {
       <V2Rays height={12} gap={3} />
 
       <footer style={{ padding: '20px 36px', background: V2.ink, color: V2.bg, fontSize: 11, fontFamily: V2.mono, letterSpacing: '0.08em', display: 'flex', justifyContent: 'space-between' }}>
-        <span>© DOPPEL MEDIA SPA — 2014/2026 · POD FACTORY ES UNA LÍNEA DE DOPPEL MEDIA</span>
+        <span>© DOPPEL MEDIA — 2011/2026 · POD FACTORY ES UNA LÍNEA DE DOPPEL MEDIA</span>
         <span>IG · VIMEO · SPOTIFY · LINKEDIN</span>
       </footer>
     </div>

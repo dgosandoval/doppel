@@ -10,6 +10,8 @@
 <style>
   html, body, #root { margin: 0; padding: 0; height: 100%; background: #f0eee9; font-family: 'Archivo', sans-serif; }
   * { box-sizing: border-box; }
+  /* Floating WhatsApp button: hidden on desktop, shown only on mobile (see media query below) */
+  .whatsapp-float { display: none !important; }
   /* Responsive fixes for small screens (iPhone) */
   @media (max-width: 720px) {
     html, body, #root { overflow-x: hidden; min-width: 100vw; }
@@ -37,7 +39,7 @@
     p { max-width: 100% !important; }
     .footer-grid { display: flex !important; flex-direction: column !important; gap: 16px !important; }
     .footer-grid > div { width: 100% !important; text-align: left !important; }
-    .whatsapp-float { position: fixed !important; right: 16px !important; bottom: 16px !important; }
+    .whatsapp-float { display: block !important; position: fixed !important; right: 16px !important; bottom: 16px !important; }
   }
 </style>
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>

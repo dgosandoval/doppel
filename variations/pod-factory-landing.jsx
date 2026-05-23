@@ -368,7 +368,7 @@ function PodFactoryLanding() {
           ))}
         </div>
         <div style={{ marginTop: 16, display: 'flex', justifyContent: 'space-between', fontSize: 10, fontFamily: PF.mono, letterSpacing: '0.08em', color: PF.bg + '88' }}>
-          <span>© DOPPEL SPA · 2014—2026 · STUDIO + MEDIA</span>
+          <span>© DOPPEL · 2011—2026 · STUDIO + MEDIA</span>
           <span>IG · YOUTUBE · SPOTIFY · TIKTOK</span>
         </div>
       </footer>

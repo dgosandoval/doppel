@@ -361,7 +361,7 @@ function V1Home() {
           paddingTop: 24, borderTop: `1px solid ${V1.paper}20`,
           fontSize: 11, fontFamily: V1.mono, color: V1.muted, letterSpacing: '0.08em',
         }}>
-          <span>© DOPPEL SPA · 2014—2026 · DOPPEL MEDIA + DOPPEL STUDIO</span>
+          <span>© DOPPEL · 2011—2026 · DOPPEL MEDIA + DOPPEL STUDIO</span>
           <span>IG · VIMEO · LINKEDIN · SPOTIFY</span>
         </div>
       </footer>

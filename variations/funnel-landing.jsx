@@ -75,8 +75,6 @@ function WAButton({ context, label = 'Hablemos', size = 'md', variant = 'cream',
 function FunnelLanding() {
   return (
     <div style={{ background: FL.bg, color: FL.paper, fontFamily: FL.sans, minHeight: '100vh' }}>
-      <SiteChrome url="doppel.cl" bg="#1a1a1a" fg={FL.paper} />
-
       {/* ── STICKY HEADER ── */}
       <header style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -318,7 +316,7 @@ function FunnelLanding() {
             }}>
               <div style={{ color: FL.ink + '99' }}>POD FACTORY</div>
               <div style={{ color: FL.ink, fontWeight: 600 }}>BY DOPPEL</div>
-              <div style={{ marginTop: 6, color: FL.ink + '99' }}>EST. 2019 · VITACURA, SCL</div>
+              <div style={{ marginTop: 6, color: FL.ink + '99' }}>EST. 2024 · EDUARDO MARQUINA 3937, VITACURA, SCL</div>
             </div>
           </div>
           <div style={{
@@ -476,14 +474,15 @@ function FunnelLanding() {
           <div style={{ textAlign: 'right', fontFamily: FL.mono, fontSize: 12, color: FL.muted, lineHeight: 1.8 }}>
             HOLA@DOPPEL.CL<br />
             +56 9 2797 0014<br />
-            AV. VITACURA, SANTIAGO
+            EDUARDO MARQUINA 3937, VITACURA<br />
+            SANTIAGO, CHILE
           </div>
         </div>
         <div style={{
           display: 'flex', justifyContent: 'space-between', marginTop: 22,
           fontSize: 11, fontFamily: FL.mono, color: FL.muted, letterSpacing: '0.08em',
         }}>
-          <span>© DOPPEL SPA · 2014—2026</span>
+          <span>© DOPPEL · 2011—2026</span>
           <span>IG · VIMEO · LINKEDIN · SPOTIFY</span>
         </div>
       </footer>
