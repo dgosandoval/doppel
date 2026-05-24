@@ -349,7 +349,7 @@ function FunnelLanding() {
       <section style={{ padding: '70px 40px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 28 }}>
           <h2 style={{ fontFamily: FL.display, fontWeight: 300, fontSize: 56, letterSpacing: '-0.03em', margin: 0 }}>
-            Trabajos <span style={{ fontStyle: 'italic', color: FL.muted }}>recientes</span>
+            Proyectos <span style={{ fontStyle: 'italic', color: FL.muted }}>destacados</span>
           </h2>
           <a href="#" style={{ fontSize: 12, fontFamily: FL.mono, color: FL.muted, letterSpacing: '0.1em' }}>VER TODOS →</a>
         </div>
