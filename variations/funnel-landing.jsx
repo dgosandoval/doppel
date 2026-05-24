@@ -70,6 +70,46 @@ function WAButton({ context, label = 'Hablemos', size = 'md', variant = 'cream',
   );
 }
 
+// ── Client logo (real image if provided, polished wordmark fallback) ──
+
+function ClientLogo({ client }) {
+  const [hover, setHover] = React.useState(false);
+  const scale = client.scale || 1;
+  if (client.src) {
+    const hoverScale = hover ? 1.04 : 1;
+    return (
+      <img
+        src={client.src}
+        alt={client.name}
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
+        style={{
+          maxHeight: 40, maxWidth: '100%', objectFit: 'contain',
+          filter: hover ? 'none' : 'grayscale(100%) contrast(1.05)',
+          opacity: hover ? 1 : 0.75,
+          transition: 'opacity 0.25s ease, filter 0.3s ease, transform 0.25s ease',
+          transform: `scale(${scale * hoverScale})`,
+          transformOrigin: 'center',
+        }}
+      />
+    );
+  }
+  return (
+    <span
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        fontFamily: FL.display, fontWeight: 400, fontSize: 22,
+        letterSpacing: '-0.02em', fontStyle: 'italic',
+        color: FL.ink, opacity: hover ? 1 : 0.6,
+        whiteSpace: 'nowrap', transition: 'opacity 0.25s ease',
+      }}
+    >
+      {client.name}
+    </span>
+  );
+}
+
 // ── Landing ────────────────────────────────────────────────────
 
 function FunnelLanding() {
@@ -188,18 +228,52 @@ function FunnelLanding() {
       </section>
 
       {/* ── CLIENT STRIP ── */}
-      <section style={{ padding: '20px 40px 50px', borderTop: `1px solid ${FL.paper}15`, borderBottom: `1px solid ${FL.paper}15` }}>
-        <div style={{ fontSize: 10, fontFamily: FL.mono, letterSpacing: '0.2em', color: FL.muted, marginBottom: 22 }}>
-          MARCAS QUE NOS HAN ELEGIDO
+      <section style={{ padding: '40px 40px 48px', background: FL.paper, color: FL.ink }}>
+        <div style={{
+          display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
+          marginBottom: 28,
+        }}>
+          <div style={{ fontSize: 10, fontFamily: FL.mono, letterSpacing: '0.2em', color: FL.ink + 'aa' }}>
+            MARCAS QUE NOS HAN ELEGIDO
+          </div>
+          <div style={{ fontSize: 10, fontFamily: FL.mono, letterSpacing: '0.2em', color: FL.ink + '66' }}>
+            {String(CLIENT_LOGOS.length).padStart(2, '0')} / SELECCIÓN
+          </div>
         </div>
-        <div className="clients-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: 24, alignItems: 'center' }}>
-          {CLIENTS.map(c => (
-            <div key={c} style={{
-              fontFamily: FL.display, fontWeight: 300, fontSize: 20, letterSpacing: '-0.02em',
-              color: FL.muted, textAlign: 'center',
-            }}>{c}</div>
-          ))}
-        </div>
+        {(() => {
+          const numRows = 3;
+          const per = Math.ceil(CLIENT_LOGOS.length / numRows);
+          const rows = Array.from({ length: numRows }, (_, r) =>
+            CLIENT_LOGOS.slice(r * per, (r + 1) * per)
+          ).filter(r => r.length > 0);
+          return (
+            <div className="clients-grid" style={{ display: 'flex', flexDirection: 'column' }}>
+              {rows.map((row, ri) => (
+                <div
+                  key={ri}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    borderTop: ri > 0 ? `1px solid ${FL.ink}12` : 'none',
+                  }}
+                >
+                  {row.map((c, i) => (
+                    <div
+                      key={c.name}
+                      style={{
+                        flex: 1, maxWidth: 150,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        height: 80, padding: '0 14px',
+                        borderRight: i < row.length - 1 ? `1px solid ${FL.ink}10` : 'none',
+                      }}
+                    >
+                      <ClientLogo client={c} />
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          );
+        })()}
       </section>
 
       {/* ── HOW WE WORK (360°) ── */}

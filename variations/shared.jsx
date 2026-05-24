@@ -23,6 +23,31 @@ const BRAND = {
 // Real client logos from the current site (as short wordmarks for placeholders)
 const CLIENTS = ['WALMART', 'FORD', 'ENTEL', 'ENEL', 'DERCO', 'LATAM', 'COCA-COLA ANDINA'];
 
+// Client roster. `src` is optional — drop SVG/PNG into assets/clients/ and
+// reference it here to replace the typographic wordmark with the real logo.
+const CLIENT_LOGOS = [
+  { name: 'LATAM',             src: 'assets/clients/latam.svg' },
+  { name: 'Coca-Cola Andina',  src: 'assets/clients/coca-cola-andina.png' },
+  { name: 'Walmart',           src: 'assets/clients/walmart.svg' },
+  { name: 'Ford',              src: 'assets/clients/ford.svg' },
+  { name: 'Entel',             src: 'assets/clients/entel.svg' },
+  { name: 'Enel',              src: 'assets/clients/enel.svg' },
+  { name: 'Inchcape',          src: 'assets/clients/inchcape.svg' },
+  { name: 'Volta',             src: 'assets/clients/volta.png' },
+  { name: 'Lindner',           src: 'assets/clients/lindner.svg', scale: 3 },
+  { name: 'Enaex',             src: 'assets/clients/enaex.svg' },
+  { name: 'Mapfre',            src: 'assets/clients/mapfre.svg' },
+  { name: 'SQM',               src: 'assets/clients/sqm.png' },
+  { name: 'Puma',              src: 'assets/clients/puma.svg' },
+  { name: 'Beiersdorf',        src: 'assets/clients/beiersdorf.svg' },
+  { name: 'WSP',               src: 'assets/clients/wsp.png' },
+  { name: 'Ladera Sur',        src: 'assets/clients/ladera-sur.svg' },
+  { name: 'Ripley',            src: 'assets/clients/ripley.svg' },
+  { name: 'Transbank',         src: 'assets/clients/transbank.png' },
+  { name: 'Sofofa',            src: 'assets/clients/sofofa.svg' },
+  { name: 'Colun',             src: 'assets/clients/colun.png' },
+];
+
 // Project titles used across variations — invented but plausible for a Chilean
 // audiovisual production house. Keep them short and punchy.
 const PROJECTS = [
@@ -244,6 +269,6 @@ function SiteChrome({ url = 'doppel.cl', bg = '#e8e6e1', fg = '#3b3d49' }) {
 }
 
 Object.assign(window, {
-  BRAND, CLIENTS, PROJECTS, PODCASTS, CAROUSEL_IMAGES,
+  BRAND, CLIENTS, CLIENT_LOGOS, PROJECTS, PODCASTS, CAROUSEL_IMAGES,
   VideoTile, PodBars, PodMic, DoppelMark, SiteChrome, ImageCarousel,
 });
