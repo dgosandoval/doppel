@@ -70,6 +70,41 @@ function WAButton({ context, label = 'Hablemos', size = 'md', variant = 'cream',
   );
 }
 
+// ── Reveal: generic fade-up wrapper triggered by IntersectionObserver ──
+
+function Reveal({ children, delay = 0, distance = 22, duration = 750, threshold = 0.2, style = {}, as: Tag = 'div' }) {
+  const [visible, setVisible] = React.useState(false);
+  const ref = React.useRef(null);
+  React.useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisible(true);
+          obs.disconnect();
+        }
+      },
+      { threshold, rootMargin: '-60px 0px -60px 0px' }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [threshold]);
+  return (
+    <Tag
+      ref={ref}
+      style={{
+        ...style,
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'translateY(0)' : `translateY(${distance}px)`,
+        transition: `opacity ${duration}ms ease ${delay}ms, transform ${duration}ms ease ${delay}ms`,
+      }}
+    >
+      {children}
+    </Tag>
+  );
+}
+
 // ── Animated stat: counts up + fades in once it enters viewport ─────
 
 function AnimatedStat({ value, label, delay = 0, isLast = false }) {
@@ -140,6 +175,101 @@ function AnimatedStat({ value, label, delay = 0, isLast = false }) {
         {label.toUpperCase()}
       </div>
     </div>
+  );
+}
+
+// ── Client strip section with staggered fade-up entrance ─────────
+
+function ClientStrip() {
+  const [triggered, setTriggered] = React.useState(false);
+  const sectionRef = React.useRef(null);
+
+  React.useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setTriggered(true);
+          obs.disconnect();
+        }
+      },
+      { threshold: 0.35, rootMargin: '-80px 0px -80px 0px' }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  const numRows = 3;
+  const per = Math.ceil(CLIENT_LOGOS.length / numRows);
+  const rows = Array.from({ length: numRows }, (_, r) =>
+    CLIENT_LOGOS.slice(r * per, (r + 1) * per)
+  ).filter(r => r.length > 0);
+
+  // Header fades in first, then logos stagger after
+  const headerDelay = 0;
+  const logoBaseDelay = 300;
+  const logoStep = 110;
+
+  return (
+    <section
+      ref={sectionRef}
+      style={{
+        padding: '48px 40px 56px',
+        background: '#ffffff',
+        color: FL.ink,
+        borderTop: `1px solid ${FL.ink}10`,
+      }}
+    >
+      <div
+        style={{
+          display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
+          marginBottom: 28,
+          opacity: triggered ? 1 : 0,
+          transform: triggered ? 'translateY(0)' : 'translateY(8px)',
+          transition: `opacity 0.6s ease ${headerDelay}ms, transform 0.6s ease ${headerDelay}ms`,
+        }}
+      >
+        <div style={{ fontSize: 10, fontFamily: FL.mono, letterSpacing: '0.2em', color: FL.ink + 'aa' }}>
+          MARCAS QUE NOS HAN ELEGIDO
+        </div>
+        <div style={{ fontSize: 10, fontFamily: FL.mono, letterSpacing: '0.2em', color: FL.ink + '66' }}>
+          {String(CLIENT_LOGOS.length).padStart(2, '0')} / SELECCIÓN
+        </div>
+      </div>
+      <div className="clients-grid" style={{ display: 'flex', flexDirection: 'column' }}>
+        {rows.map((row, ri) => (
+          <div
+            key={ri}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              borderTop: ri > 0 ? `1px solid ${FL.ink}12` : 'none',
+            }}
+          >
+            {row.map((c, i) => {
+              const globalIdx = ri * per + i;
+              const delay = logoBaseDelay + globalIdx * logoStep;
+              return (
+                <div
+                  key={c.name}
+                  style={{
+                    flex: 1, maxWidth: 150,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    height: 80, padding: '0 14px',
+                    borderRight: i < row.length - 1 ? `1px solid ${FL.ink}10` : 'none',
+                    opacity: triggered ? 1 : 0,
+                    transform: triggered ? 'translateY(0)' : 'translateY(18px)',
+                    transition: `opacity 0.7s ease ${delay}ms, transform 0.7s ease ${delay}ms`,
+                  }}
+                >
+                  <ClientLogo client={c} />
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -277,7 +407,7 @@ function FunnelLanding() {
       <section id="trabajos" style={{ padding: '20px 40px 60px' }}>
         <div style={{ position: 'relative', aspectRatio: '16/9', width: '100%', background: '#000', overflow: 'hidden' }}>
           <iframe
-            src="https://player.vimeo.com/video/589999111?title=0&byline=0&portrait=0&dnt=1"
+            src="https://player.vimeo.com/video/589999111?title=0&byline=0&portrait=0&dnt=1&autoplay=1&muted=1&loop=1&playsinline=1"
             style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }}
             allow="autoplay; fullscreen; picture-in-picture"
             allowFullScreen
@@ -291,62 +421,16 @@ function FunnelLanding() {
         padding: '40px 40px', background: FL.paper, color: FL.ink,
         display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 32,
       }}>
-        <div style={{ fontFamily: FL.display, fontSize: 40, letterSpacing: '-0.025em', lineHeight: 1.1, maxWidth: 720 }}>
-          <div style={{ fontWeight: 300, color: FL.ink + 'aa' }}>Comunicación efectiva.</div>
-          <div style={{ fontWeight: 600, color: FL.ink }}>Mensajes que llegan.</div>
-          <div style={{ fontWeight: 300, fontStyle: 'italic', color: FL.accent }}>Ideas que perduran.</div>
-        </div>
-        <WAButton context="quiero pensar un proyecto con ustedes." label="Hablemos" size="lg" />
+        <Reveal style={{ fontFamily: FL.display, fontSize: 40, letterSpacing: '-0.025em', lineHeight: 1.1, maxWidth: 720 }}>
+          <Reveal delay={0}   style={{ fontWeight: 300, color: FL.ink + 'aa' }}>Comunicación efectiva.</Reveal>
+          <Reveal delay={150} style={{ fontWeight: 600, color: FL.ink }}>Mensajes que llegan.</Reveal>
+          <Reveal delay={300} style={{ fontWeight: 300, fontStyle: 'italic', color: FL.accent }}>Ideas que perduran.</Reveal>
+        </Reveal>
+        <Reveal delay={500}><WAButton context="quiero pensar un proyecto con ustedes." label="Hablemos" size="lg" /></Reveal>
       </section>
 
       {/* ── CLIENT STRIP ── */}
-      <section style={{ padding: '48px 40px 56px', background: '#ffffff', color: FL.ink, borderTop: `1px solid ${FL.ink}10` }}>
-        <div style={{
-          display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
-          marginBottom: 28,
-        }}>
-          <div style={{ fontSize: 10, fontFamily: FL.mono, letterSpacing: '0.2em', color: FL.ink + 'aa' }}>
-            MARCAS QUE NOS HAN ELEGIDO
-          </div>
-          <div style={{ fontSize: 10, fontFamily: FL.mono, letterSpacing: '0.2em', color: FL.ink + '66' }}>
-            {String(CLIENT_LOGOS.length).padStart(2, '0')} / SELECCIÓN
-          </div>
-        </div>
-        {(() => {
-          const numRows = 3;
-          const per = Math.ceil(CLIENT_LOGOS.length / numRows);
-          const rows = Array.from({ length: numRows }, (_, r) =>
-            CLIENT_LOGOS.slice(r * per, (r + 1) * per)
-          ).filter(r => r.length > 0);
-          return (
-            <div className="clients-grid" style={{ display: 'flex', flexDirection: 'column' }}>
-              {rows.map((row, ri) => (
-                <div
-                  key={ri}
-                  style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    borderTop: ri > 0 ? `1px solid ${FL.ink}12` : 'none',
-                  }}
-                >
-                  {row.map((c, i) => (
-                    <div
-                      key={c.name}
-                      style={{
-                        flex: 1, maxWidth: 150,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        height: 80, padding: '0 14px',
-                        borderRight: i < row.length - 1 ? `1px solid ${FL.ink}10` : 'none',
-                      }}
-                    >
-                      <ClientLogo client={c} />
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </div>
-          );
-        })()}
-      </section>
+      <ClientStrip />
 
       {/* ── HOW WE WORK (360°) ── */}
       <section id="cómo-trabajamos" style={{ padding: '80px 40px 60px' }}>
@@ -360,12 +444,12 @@ function FunnelLanding() {
             ( de la idea a la entrega )
           </div>
         </div>
-        <h2 style={{
+        <Reveal as="h2" style={{
           fontFamily: FL.display, fontWeight: 300, fontSize: 64,
           letterSpacing: '-0.03em', margin: '0 0 40px', maxWidth: 900, lineHeight: 1.02,
         }}>
           Pensamos antes <span style={{ fontStyle: 'italic', color: FL.accent }}>de filmar.</span>
-        </h2>
+        </Reveal>
 
         <div className="reasons-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: 0, borderTop: `1px solid ${FL.paper}25` }}>
           {[
@@ -375,7 +459,7 @@ function FunnelLanding() {
             ['04', 'Post', 'Edición, color, sonido, masterizado.'],
             ['05', 'Distribución', 'Te dejamos listo para publicar en cualquier canal.'],
           ].map(([n, t, d], i) => (
-            <div key={n} style={{
+            <Reveal key={n} delay={i * 120} style={{
               padding: '24px 16px 24px 0',
               borderRight: i < 4 ? `1px solid ${FL.paper}15` : 'none',
               paddingLeft: i > 0 ? 16 : 0,
@@ -383,7 +467,7 @@ function FunnelLanding() {
               <div style={{ fontFamily: FL.mono, fontSize: 11, color: FL.accent, marginBottom: 16 }}>{n}</div>
               <div style={{ fontFamily: FL.display, fontSize: 22, fontWeight: 400, marginBottom: 8, lineHeight: 1.1 }}>{t}</div>
               <div style={{ fontSize: 12, color: FL.muted, lineHeight: 1.5 }}>{d}</div>
-            </div>
+            </Reveal>
           ))}
         </div>
 
@@ -392,42 +476,42 @@ function FunnelLanding() {
           marginTop: 48, padding: '36px 0 0', borderTop: `1px solid ${FL.paper}20`,
           display: 'grid', gridTemplateColumns: '0.7fr 1fr 1fr', gap: 24,
         }}>
-          <div style={{ paddingRight: 24 }}>
+          <Reveal style={{ paddingRight: 24 }}>
             <div style={{ fontSize: 10, fontFamily: FL.mono, letterSpacing: '0.2em', color: FL.muted, marginBottom: 14 }}>
               DÓNDE ATERRIZA
             </div>
             <h3 style={{ fontFamily: FL.display, fontWeight: 300, fontSize: 36, lineHeight: 1.05, letterSpacing: '-0.025em', margin: 0 }}>
               Dos casas para <span style={{ fontStyle: 'italic', color: FL.accent }}>materializar</span> la idea.
             </h3>
-          </div>
-          <div style={{ paddingLeft: 24, borderLeft: `1px solid ${FL.paper}20` }}>
+          </Reveal>
+          <Reveal delay={160} style={{ paddingLeft: 24, borderLeft: `1px solid ${FL.paper}20` }}>
             <div style={{ fontSize: 10, fontFamily: FL.mono, letterSpacing: '0.2em', color: FL.accent, marginBottom: 10 }}>░ MEDIA</div>
             <div style={{ fontFamily: FL.display, fontSize: 26, fontWeight: 400, lineHeight: 1.1, marginBottom: 8 }}>Producción audiovisual</div>
             <div style={{ fontSize: 13, color: FL.muted, lineHeight: 1.5 }}>
               Brand films, comerciales, documentales y contenido propio.
             </div>
-          </div>
-          <div style={{ paddingLeft: 24, borderLeft: `1px solid ${FL.paper}20` }}>
+          </Reveal>
+          <Reveal delay={280} style={{ paddingLeft: 24, borderLeft: `1px solid ${FL.paper}20` }}>
             <div style={{ fontSize: 10, fontFamily: FL.mono, letterSpacing: '0.2em', color: FL.podAccent, marginBottom: 10 }}>░ POD FACTORY · BY DOPPEL</div>
             <div style={{ fontFamily: FL.display, fontSize: 26, fontWeight: 400, lineHeight: 1.1, marginBottom: 8 }}>Premium Podcast Studio</div>
             <div style={{ fontSize: 13, color: FL.muted, lineHeight: 1.5 }}>
               Estudio premium en Vitacura + estudio móvil. Multicámara 4K.
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
 
       {/* ── WORK GRID ── */}
       <section style={{ padding: '70px 40px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 28 }}>
+        <Reveal style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 28 }}>
           <h2 style={{ fontFamily: FL.display, fontWeight: 300, fontSize: 56, letterSpacing: '-0.03em', margin: 0 }}>
             Proyectos <span style={{ fontStyle: 'italic', color: FL.muted }}>destacados</span>
           </h2>
           <a href="#" style={{ fontSize: 12, fontFamily: FL.mono, color: FL.muted, letterSpacing: '0.1em' }}>VER TODOS →</a>
-        </div>
+        </Reveal>
         <div className="work-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
           {PROJECTS.slice(0, 4).map((p, i) => (
-            <div key={i}>
+            <Reveal key={i} delay={150 + i * 130}>
               <VideoTile bg={['#2a2218', '#1b2330', '#28201f', '#1f2821'][i]} fg={FL.paper} />
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 14 }}>
                 <div>
@@ -438,7 +522,7 @@ function FunnelLanding() {
                 </div>
                 <div style={{ fontSize: 11, color: FL.muted, fontFamily: FL.mono }}>{p.year}</div>
               </div>
-            </div>
+            </Reveal>
           ))}
         </div>
       </section>
@@ -446,7 +530,7 @@ function FunnelLanding() {
       {/* ── POD FACTORY (STUDIO) SECTION ── */}
       <section id="pod-factory" style={{ background: FL.paper, color: FL.ink, padding: '70px 40px' }}>
         {/* Pod Factory header lockup */}
-        <div style={{
+        <Reveal style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           gap: 24, marginBottom: 40, flexWrap: 'wrap',
         }}>
@@ -471,10 +555,10 @@ function FunnelLanding() {
           }}>
             Premium Podcast Studio
           </div>
-        </div>
+        </Reveal>
 
         <div className="pod-grid" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 60, alignItems: 'start' }}>
-          <div>
+          <Reveal delay={150}>
             <h2 style={{ fontFamily: FL.sans, fontWeight: 800, fontSize: 76, lineHeight: 0.94, letterSpacing: '-0.035em', margin: 0 }}>
               ¿Quieres lanzar<br />tu podcast?
             </h2>
@@ -486,7 +570,7 @@ function FunnelLanding() {
             <div style={{ display: 'flex', gap: 12, marginTop: 28, alignItems: 'center' }}>
               <WAButton context="quiero reservar Pod Factory para mi podcast." label="Reservar estudio" size="lg" variant="ink" />
             </div>
-          </div>
+          </Reveal>
 
           {/* Mini features grid */}
           <div className="mini-features-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
@@ -496,10 +580,10 @@ function FunnelLanding() {
               ['24h entrega masterizada', '#EF6A1F'],
               ['Estudio móvil + locación', '#F4B81C'],
             ].map(([t, c], i) => (
-              <div key={i} style={{ border: `1.5px solid ${FL.ink}`, background: FL.paper, padding: 18, minHeight: 120, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              <Reveal key={i} delay={300 + i * 110} style={{ border: `1.5px solid ${FL.ink}`, background: FL.paper, padding: 18, minHeight: 120, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 <div style={{ height: 6, background: c, width: 40 }} />
                 <div style={{ fontFamily: FL.sans, fontWeight: 700, fontSize: 18, letterSpacing: '-0.015em' }}>{t}</div>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -507,15 +591,15 @@ function FunnelLanding() {
 
       {/* ── WHY DOPPEL ── */}
       <section id="por-qué-doppel" style={{ padding: '80px 40px' }}>
-        <div style={{ fontSize: 10, fontFamily: FL.mono, letterSpacing: '0.2em', color: FL.muted, marginBottom: 14 }}>
+        <Reveal style={{ fontSize: 10, fontFamily: FL.mono, letterSpacing: '0.2em', color: FL.muted, marginBottom: 14 }}>
           POR QUÉ DOPPEL
-        </div>
-        <h2 style={{
+        </Reveal>
+        <Reveal as="h2" delay={100} style={{
           fontFamily: FL.display, fontWeight: 300, fontSize: 56, letterSpacing: '-0.03em',
           margin: '0 0 40px', maxWidth: 900, lineHeight: 1.02,
         }}>
           Cuatro razones <span style={{ fontStyle: 'italic', color: FL.accent }}>concretas.</span>
-        </h2>
+        </Reveal>
         <div className="why-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
           {[
             ['Pensamos, no sólo filmamos', 'Creamos el concepto o lo afilamos contigo. Antes de prender cámaras hay una idea sólida y un punto de vista.'],
@@ -523,44 +607,44 @@ function FunnelLanding() {
             ['15 años de track record', '+500 proyectos para Walmart, Ford, LATAM, Entel, Enel, Coca-Cola Andina y más. Sabemos cómo entregar a tiempo.'],
             ['Respondemos rápido', 'Menos de 1 hora desde tu mensaje en horario hábil. Sin formularios eternos ni cadenas de correos.'],
           ].map(([t, d], i) => (
-            <div key={i} style={{ padding: '24px 0', borderTop: `1px solid ${FL.paper}20`, display: 'flex', gap: 20 }}>
+            <Reveal key={i} delay={250 + i * 140} style={{ padding: '24px 0', borderTop: `1px solid ${FL.paper}20`, display: 'flex', gap: 20 }}>
               <div style={{ fontFamily: FL.mono, fontSize: 14, color: FL.accent, minWidth: 30 }}>0{i + 1}</div>
               <div>
                 <div style={{ fontFamily: FL.display, fontSize: 30, fontWeight: 400, lineHeight: 1.1, letterSpacing: '-0.02em' }}>{t}</div>
                 <div style={{ fontSize: 14, color: FL.muted, lineHeight: 1.5, marginTop: 8, maxWidth: 480 }}>{d}</div>
               </div>
-            </div>
+            </Reveal>
           ))}
         </div>
       </section>
 
       {/* ── TESTIMONIALS ── */}
       <section style={{ padding: '40px 40px 70px', borderTop: `1px solid ${FL.paper}15` }}>
-        <div style={{ fontSize: 10, fontFamily: FL.mono, letterSpacing: '0.2em', color: FL.muted, marginBottom: 32 }}>
+        <Reveal style={{ fontSize: 10, fontFamily: FL.mono, letterSpacing: '0.2em', color: FL.muted, marginBottom: 32 }}>
           LO QUE DICEN
-        </div>
+        </Reveal>
         <div className="testimonial-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
           {[
             ['Doppel entendió la marca antes que nosotros mismos. La pieza final superó el brief.', 'M. González', 'Brand Manager · Walmart Chile'],
             ['El studio de podcast es de otro nivel. Llegamos, grabamos, salimos con el episodio listo.', 'F. Vera', 'Conductora · Rutas Paralelas'],
           ].map(([q, n, r], i) => (
-            <div key={i} style={{ padding: '24px 28px', border: `1px solid ${FL.paper}20` }}>
+            <Reveal key={i} delay={150 + i * 180} style={{ padding: '24px 28px', border: `1px solid ${FL.paper}20` }}>
               <div style={{ fontFamily: FL.display, fontSize: 24, fontStyle: 'italic', fontWeight: 300, lineHeight: 1.3, letterSpacing: '-0.01em', color: FL.paper }}>
                 "{q}"
               </div>
               <div style={{ marginTop: 18, fontSize: 12, fontFamily: FL.mono, color: FL.muted, letterSpacing: '0.06em' }}>
                 <b style={{ color: FL.paper }}>{n}</b> · {r}
               </div>
-            </div>
+            </Reveal>
           ))}
         </div>
       </section>
 
       {/* ── FAQ ── */}
       <section style={{ padding: '40px 40px 70px' }}>
-        <div style={{ fontSize: 10, fontFamily: FL.mono, letterSpacing: '0.2em', color: FL.muted, marginBottom: 32 }}>
+        <Reveal style={{ fontSize: 10, fontFamily: FL.mono, letterSpacing: '0.2em', color: FL.muted, marginBottom: 32 }}>
           PREGUNTAS FRECUENTES
-        </div>
+        </Reveal>
         <div style={{ borderTop: `1px solid ${FL.paper}20` }}>
           {[
             ['¿Atienden proyectos chicos o solo grandes marcas?', 'Atendemos ambos. El equipo se arma según el alcance — desde un capítulo de podcast hasta una campaña full para una marca grande.'],
@@ -568,7 +652,7 @@ function FunnelLanding() {
             ['¿Trabajan fuera de Santiago?', 'Sí. Producimos en todo Chile y tenemos estudio móvil para grabar podcasts en cualquier locación.'],
             ['¿Cómo cobran?', 'Cotizamos por proyecto con todo incluido. Pod Factory tiene tarifa por hora. Cuéntanos y te respondemos rápido.'],
           ].map(([q, a], i) => (
-            <details key={i} style={{ borderBottom: `1px solid ${FL.paper}20`, padding: '18px 0' }}>
+            <Reveal as="details" key={i} delay={150 + i * 100} style={{ borderBottom: `1px solid ${FL.paper}20`, padding: '18px 0' }}>
               <summary style={{
                 fontFamily: FL.display, fontSize: 22, fontWeight: 400, letterSpacing: '-0.02em',
                 cursor: 'pointer', listStyle: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -579,30 +663,30 @@ function FunnelLanding() {
               <p style={{ fontSize: 14, color: FL.muted, lineHeight: 1.55, marginTop: 12, marginBottom: 4, maxWidth: 720 }}>
                 {a}
               </p>
-            </details>
+            </Reveal>
           ))}
         </div>
       </section>
 
       {/* ── FINAL CTA ── */}
       <section style={{ padding: '90px 40px', background: FL.accent, color: FL.ink }}>
-        <div style={{ fontSize: 11, fontFamily: FL.mono, letterSpacing: '0.2em', marginBottom: 18 }}>
+        <Reveal style={{ fontSize: 11, fontFamily: FL.mono, letterSpacing: '0.2em', marginBottom: 18 }}>
           ⏁ CONVERSEMOS
-        </div>
-        <h2 style={{
+        </Reveal>
+        <Reveal as="h2" delay={120} style={{
           fontFamily: FL.display, fontWeight: 300, fontSize: 112, lineHeight: 0.88,
           letterSpacing: '-0.04em', margin: 0, color: FL.ink,
         }}>
           Pensemos<br />
           <span style={{ fontStyle: 'italic', fontWeight: 400 }}>algo bueno.</span>
-        </h2>
-        <p style={{ fontSize: 19, lineHeight: 1.4, maxWidth: 580, marginTop: 28, color: FL.ink }}>
+        </Reveal>
+        <Reveal as="p" delay={280} style={{ fontSize: 19, lineHeight: 1.4, maxWidth: 580, marginTop: 28, color: FL.ink }}>
           Respondemos en menos de 1 hora en horario hábil. Sin formularios, sin esperas:
           un humano del equipo que va a producir tu proyecto.
-        </p>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginTop: 40 }}>
+        </Reveal>
+        <Reveal delay={440} style={{ display: 'flex', alignItems: 'center', gap: 20, marginTop: 40 }}>
           <WAButton context="vengo desde la web, conversemos." label="Hablemos" size="xl" variant="ink" />
-        </div>
+        </Reveal>
       </section>
 
       {/* ── FOOTER ── */}
