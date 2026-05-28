@@ -70,6 +70,41 @@ function WAButton({ context, label = 'Hablemos', size = 'md', variant = 'cream',
   );
 }
 
+// ── Lazy Vimeo reel: only loads/plays when section enters viewport ──
+
+function LazyVimeoReel({ id = '589999111', title = 'Doppel Reel' }) {
+  const [active, setActive] = React.useState(false);
+  const ref = React.useRef(null);
+  React.useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setActive(true);
+          obs.disconnect();
+        }
+      },
+      { threshold: 0.4 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  return (
+    <div ref={ref} style={{ position: 'relative', aspectRatio: '16/9', width: '100%', background: '#000', overflow: 'hidden' }}>
+      {active && (
+        <iframe
+          src={`https://player.vimeo.com/video/${id}?title=0&byline=0&portrait=0&dnt=1&autoplay=1&muted=1&loop=1&playsinline=1`}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }}
+          allow="autoplay; fullscreen; picture-in-picture"
+          allowFullScreen
+          title={title}
+        />
+      )}
+    </div>
+  );
+}
+
 // ── Reveal: generic fade-up wrapper triggered by IntersectionObserver ──
 
 function Reveal({ children, delay = 0, distance = 22, duration = 750, threshold = 0.2, style = {}, as: Tag = 'div' }) {
@@ -405,15 +440,7 @@ function FunnelLanding() {
 
       {/* ── REEL ── */}
       <section id="trabajos" style={{ padding: '20px 40px 60px' }}>
-        <div style={{ position: 'relative', aspectRatio: '16/9', width: '100%', background: '#000', overflow: 'hidden' }}>
-          <iframe
-            src="https://player.vimeo.com/video/589999111?title=0&byline=0&portrait=0&dnt=1&autoplay=1&muted=1&loop=1&playsinline=1"
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }}
-            allow="autoplay; fullscreen; picture-in-picture"
-            allowFullScreen
-            title="Doppel Reel"
-          />
-        </div>
+        <LazyVimeoReel id="589999111" title="Doppel Reel" />
       </section>
 
       {/* ── MID-FUNNEL CTA ── */}
