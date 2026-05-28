@@ -378,7 +378,7 @@ function FunnelLanding() {
         </nav>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <a
-            href="pod_factory/"
+            href="https://podfactory.cl/"
             style={{
               background: FL.podAccent, color: FL.ink, padding: '10px 16px',
               fontSize: 12, fontWeight: 700, fontFamily: FL.sans, letterSpacing: '0.04em',
@@ -616,7 +616,7 @@ function FunnelLanding() {
             </p>
             <div style={{ display: 'flex', gap: 16, marginTop: 28, alignItems: 'center', flexWrap: 'wrap' }}>
               <WAButton context="quiero reservar Pod Factory para mi podcast." label="Reservar estudio" size="lg" variant="ink" />
-              <a href="pod_factory/" style={{
+              <a href="https://podfactory.cl/" style={{
                 fontSize: 13, fontFamily: FL.mono, color: FL.ink, letterSpacing: '0.08em',
                 textDecoration: 'none', borderBottom: `1px solid ${FL.ink}`, paddingBottom: 4,
                 fontWeight: 600,
