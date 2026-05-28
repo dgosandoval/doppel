@@ -371,13 +371,25 @@ function FunnelLanding() {
           {[
             ['Nosotros', '#cómo-trabajamos'],
             ['Portafolio', '#trabajos'],
-            ['Pod Factory', 'pod_factory/'],
             ['Por qué Doppel', '#por-qué-doppel'],
           ].map(([l, h]) => (
             <a key={l} href={h} style={{ color: 'inherit', textDecoration: 'none' }}>{l}</a>
           ))}
         </nav>
-        <WAButton context="quiero conversar sobre un proyecto." label="Hablemos" size="sm" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <a
+            href="pod_factory/"
+            style={{
+              background: FL.podAccent, color: FL.ink, padding: '10px 16px',
+              fontSize: 12, fontWeight: 700, fontFamily: FL.sans, letterSpacing: '0.04em',
+              textDecoration: 'none', borderRadius: 999, display: 'inline-flex',
+              alignItems: 'center', gap: 6, lineHeight: 1,
+            }}
+          >
+            Pod Factory <span style={{ fontSize: 11, opacity: 0.8 }}>↗</span>
+          </a>
+          <WAButton context="quiero conversar sobre un proyecto." label="Hablemos" size="sm" />
+        </div>
       </header>
 
       {/* ── HERO ── */}
