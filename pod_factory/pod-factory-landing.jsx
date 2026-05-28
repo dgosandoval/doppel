@@ -19,8 +19,16 @@ function waLink(context) {
   return `https://wa.me/${WA_PHONE}?text=${msg}`;
 }
 
+function WhatsAppIcon({ size = 16, color = '#fff' }) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} fill={color} style={{ display: 'block', flexShrink: 0 }}>
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+    </svg>
+  );
+}
+
 // Generic fade-up wrapper triggered by IntersectionObserver
-function Reveal({ children, delay = 0, distance = 22, duration = 750, threshold = 0.2, style = {}, as: Tag = 'div' }) {
+function Reveal({ children, delay = 0, distance = 22, duration = 750, threshold = 0.2, style = {}, className, as: Tag = 'div' }) {
   const [visible, setVisible] = React.useState(false);
   const ref = React.useRef(null);
   React.useEffect(() => {
@@ -41,6 +49,7 @@ function Reveal({ children, delay = 0, distance = 22, duration = 750, threshold 
   return (
     <Tag
       ref={ref}
+      className={className}
       style={{
         ...style,
         opacity: visible ? 1 : 0,
@@ -69,7 +78,7 @@ function PodFactoryLanding() {
       <SiteChrome url="doppel.cl/pod-factory" bg="#ecdfc3" fg={PF.ink} />
 
       {/* Parent brand bar — signals Pod Factory is part of Doppel ecosystem */}
-      <div style={{
+      <div className="pf-brandbar" style={{
         background: PF.ink, color: PF.bg, padding: '10px 32px',
         fontSize: 12, fontFamily: PF.mono, letterSpacing: '0.1em',
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -88,11 +97,11 @@ function PodFactoryLanding() {
       </div>
 
       {/* Header with Doppel logo + Pod Factory marker */}
-      <header style={{
+      <header className="pf-header" style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '22px 32px', borderBottom: `1.5px solid ${PF.ink}`,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+        <div className="pf-brand" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <a href="/" style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
             <img src="assets/doppel-logo.png" alt="Doppel" style={{ height: 22, display: 'block', opacity: 0.6 }} />
           </a>
@@ -101,6 +110,7 @@ function PodFactoryLanding() {
             display: 'flex', alignItems: 'center', gap: 12,
           }}>
             <img
+              className="pf-logo-img"
               src="assets/podfactory-logo.png"
               alt="Pod Factory"
               style={{ height: 48, display: 'block' }}
@@ -125,17 +135,19 @@ function PodFactoryLanding() {
           href={waLink('quiero reservar Pod Factory para mi podcast.')}
           target="_blank" rel="noopener"
           style={{
-            background: PF.red, color: PF.bg, padding: '12px 22px',
+            background: PF.red, color: PF.bg, padding: '12px 20px',
             fontSize: 12, fontWeight: 700, letterSpacing: '0.1em',
-            fontFamily: PF.display, textDecoration: 'none', display: 'inline-block',
+            fontFamily: PF.display, textDecoration: 'none',
+            display: 'inline-flex', alignItems: 'center', gap: 10, lineHeight: 1,
           }}
         >
-          RESERVAR →
+          RESERVAR
+          <WhatsAppIcon size={14} color={PF.bg} />
         </a>
       </header>
 
       {/* Hero */}
-      <section id="espacio" style={{ padding: '60px 80px 40px', display: 'grid', gridTemplateColumns: '1fr auto', gap: 28, alignItems: 'center', maxWidth: 1100, margin: '0 auto' }}>
+      <section id="espacio" className="pf-hero" style={{ padding: '60px 80px 40px', display: 'grid', gridTemplateColumns: '1fr auto', gap: 28, alignItems: 'center', maxWidth: 1100, margin: '0 auto' }}>
         <Reveal>
           <div style={{ fontSize: 11, fontFamily: PF.mono, letterSpacing: '0.18em', marginBottom: 18 }}>
             ▸ ESTUDIO DE PODCAST &amp; VODCAST · DESDE 2024
@@ -153,16 +165,20 @@ function PodFactoryLanding() {
             masterización incluida, y un equipo que produce, edita y distribuye.
             Llegas, te sientas, grabas. Nosotros hacemos el resto.
           </p>
-          <div style={{ display: 'flex', gap: 12, marginTop: 28, alignItems: 'center', flexWrap: 'wrap' }}>
+          <div className="pf-hero-cta" style={{ display: 'flex', gap: 12, marginTop: 28, alignItems: 'center', flexWrap: 'wrap' }}>
             <a
               href={waLink('quiero reservar Pod Factory.')}
               target="_blank" rel="noopener"
               style={{
-                background: PF.ink, color: PF.bg, padding: '16px 26px',
+                background: PF.ink, color: PF.bg, padding: '16px 24px',
                 fontSize: 13, fontWeight: 700, letterSpacing: '0.1em', fontFamily: PF.display,
-                textDecoration: 'none', display: 'inline-block',
+                textDecoration: 'none',
+                display: 'inline-flex', alignItems: 'center', gap: 12, lineHeight: 1,
               }}
-            >RESERVAR ESTUDIO →</a>
+            >
+              RESERVAR ESTUDIO
+              <WhatsAppIcon size={16} color={PF.bg} />
+            </a>
             <a href="#tarifas" style={{
               background: 'transparent', color: PF.ink, border: `1.5px solid ${PF.ink}`,
               padding: '16px 26px', fontSize: 13, fontWeight: 700, letterSpacing: '0.1em',
@@ -175,7 +191,7 @@ function PodFactoryLanding() {
         </Reveal>
 
         {/* Studio preview tile — looping reel */}
-        <Reveal delay={250} style={{ position: 'relative', width: 320 }}>
+        <Reveal delay={250} className="pf-reel" style={{ position: 'relative', width: 320 }}>
           <div style={{
             aspectRatio: '9/16', background: PF.ink, position: 'relative', overflow: 'hidden',
           }}>
@@ -205,7 +221,7 @@ function PodFactoryLanding() {
       </section>
 
       {/* Quick facts strip */}
-      <section style={{
+      <section className="pf-stats" style={{
         display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)',
         borderTop: `2px solid ${PF.ink}`, borderBottom: `2px solid ${PF.ink}`,
       }}>
@@ -237,7 +253,7 @@ function PodFactoryLanding() {
           <div style={{ fontFamily: PF.mono, fontSize: 11 }}>TODO INCLUIDO</div>
         </Reveal>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+        <div className="pf-services" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
           {[
             ['Grabación multicámara', 'Cuatro Blackmagic Pocket (2×6K + 2×4K) con switcher ATEM Extreme ISO en vivo. Entregamos bruto + master editado.', PF.blue],
             ['Audio broadcast', 'Micrófonos RØDE PodMic con procesamiento en tiempo real. Master de sonido en Fairlight (DaVinci Resolve).', PF.red],
@@ -271,7 +287,7 @@ function PodFactoryLanding() {
             VER TODAS →
           </a>
         </Reveal>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
+        <div className="pf-productions" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
           {PODCASTS.map((p, i) => {
             const bg = [PF.red, PF.blue, PF.orange, PF.yellow][i];
             const fg = i === 3 ? PF.ink : PF.bg;
@@ -341,7 +357,7 @@ function PodFactoryLanding() {
           <div style={{ fontFamily: PF.mono, fontSize: 12 }}>SEMANA DEL 23 AL 29 DE MAR</div>
         </Reveal>
 
-        <Reveal delay={150} style={{ border: `1.5px solid ${PF.ink}` }}>
+        <Reveal delay={150} className="pf-calendar-wrap" style={{ border: `1.5px solid ${PF.ink}` }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', background: PF.ink, color: PF.bg }}>
             {['LUN 23', 'MAR 24', 'MIÉ 25', 'JUE 26', 'VIE 27', 'SÁB 28', 'DOM 29'].map((d, i) => (
               <div key={d} style={{
@@ -413,7 +429,7 @@ function PodFactoryLanding() {
           </div>
         </Reveal>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
+        <div className="pf-techspecs" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
           {[
             ['CÁMARAS',  '4 × Blackmagic Pocket',           '2 × 6K + 2 × 4K. Switcher ATEM Extreme ISO con grabación independiente por cámara.',          PF.blue],
             ['AUDIO',    'RØDE PodMic',                     'Cuatro micrófonos broadcast con preamps Blackmagic. Master en Fairlight (DaVinci Resolve).', PF.red],
@@ -437,7 +453,7 @@ function PodFactoryLanding() {
       {/* Footer */}
       <footer id="contacto" style={{ background: PF.ink, color: PF.bg, padding: '40px 32px 24px' }}>
         <Reveal><PFRays height={8} gap={2} /></Reveal>
-        <Reveal delay={150} style={{
+        <Reveal delay={150} className="pf-footer-grid" style={{
           display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr 1fr', gap: 24,
           marginTop: 30, paddingBottom: 24, borderBottom: `1px solid ${PF.bg}25`,
         }}>
