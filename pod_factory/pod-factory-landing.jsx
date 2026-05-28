@@ -265,18 +265,50 @@ function PodFactoryLanding() {
           {PODCASTS.map((p, i) => {
             const bg = [PF.red, PF.blue, PF.orange, PF.yellow][i];
             const fg = i === 3 ? PF.ink : PF.bg;
+            const Tag = p.url ? 'a' : 'div';
+            const linkProps = p.url ? { href: p.url, target: '_blank', rel: 'noopener' } : {};
+            const baseStyle = {
+              padding: 18, aspectRatio: '1/1', position: 'relative',
+              overflow: 'hidden', textDecoration: 'none', display: 'block',
+              color: p.image ? PF.bg : fg,
+              background: p.image ? PF.ink : bg,
+            };
             return (
-              <Reveal key={i} delay={200 + i * 110} style={{ background: bg, color: fg, padding: 18, aspectRatio: '1/1', position: 'relative' }}>
-                <div style={{ fontFamily: PF.mono, fontSize: 10, letterSpacing: '0.15em', opacity: 0.8 }}>{p.ep}</div>
-                <div style={{ fontFamily: PF.display, fontWeight: 800, fontSize: 24, letterSpacing: '-0.02em', lineHeight: 1, marginTop: 8 }}>
-                  {p.title}
-                </div>
-                <div style={{ fontSize: 11, fontFamily: PF.mono, marginTop: 8, opacity: 0.85 }}>
-                  CON {p.host.toUpperCase()}
-                </div>
-                <div style={{ position: 'absolute', bottom: 14, right: 14, width: 28, height: 28, borderRadius: '50%', border: `1.5px solid ${fg}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <svg viewBox="0 0 20 20" width="10" height="10"><path d="M7 5 L15 10 L7 15 Z" fill={fg} /></svg>
-                </div>
+              <Reveal key={i} delay={200 + i * 110}>
+                <Tag {...linkProps} style={baseStyle}>
+                  {p.image && (
+                    <React.Fragment>
+                      <img
+                        src={p.image}
+                        alt={p.title}
+                        style={{
+                          position: 'absolute', inset: 0, width: '100%', height: '100%',
+                          objectFit: 'cover', opacity: 0.55,
+                        }}
+                      />
+                      <div style={{
+                        position: 'absolute', inset: 0,
+                        background: `linear-gradient(180deg, ${PF.ink}00 0%, ${PF.ink}99 70%, ${PF.ink}f0 100%)`,
+                      }} />
+                    </React.Fragment>
+                  )}
+                  <div style={{ position: 'relative', zIndex: 1 }}>
+                    <div style={{ fontFamily: PF.mono, fontSize: 10, letterSpacing: '0.15em', opacity: 0.8 }}>{p.ep}</div>
+                    <div style={{ fontFamily: PF.display, fontWeight: 800, fontSize: 22, letterSpacing: '-0.02em', lineHeight: 1.05, marginTop: 8 }}>
+                      {p.title}
+                    </div>
+                    <div style={{ fontSize: 11, fontFamily: PF.mono, marginTop: 8, opacity: 0.85, lineHeight: 1.4 }}>
+                      CON {p.host.toUpperCase()}
+                    </div>
+                  </div>
+                  <div style={{
+                    position: 'absolute', bottom: 14, right: 14, width: 28, height: 28, borderRadius: '50%',
+                    border: `1.5px solid ${p.image ? PF.bg : fg}`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1,
+                  }}>
+                    <svg viewBox="0 0 20 20" width="10" height="10"><path d="M7 5 L15 10 L7 15 Z" fill={p.image ? PF.bg : fg} /></svg>
+                  </div>
+                </Tag>
               </Reveal>
             );
           })}

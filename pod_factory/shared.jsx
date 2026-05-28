@@ -35,10 +35,34 @@ const PROJECTS = [
 ];
 
 const PODCASTS = [
-  { title: 'Rutas Paralelas',   host: 'Camila Rojas',   ep: 'EP · 42' },
-  { title: 'Negocios de Barrio', host: 'Matías Vera',   ep: 'EP · 17' },
-  { title: 'La Hora Azul',       host: 'Fran & Joaquín', ep: 'EP · 08' },
-  { title: 'Cocina en Vivo',     host: 'Paz Donoso',    ep: 'EP · 23' },
+  {
+    title: 'Las Variables Ocultas',
+    host: 'Carlos Granés, Leandro Santoro, Leonardo Padura y más',
+    ep: 'TEMPORADA EN CURSO',
+    image: 'assets/variables-ocultas.jpg',
+    url: 'https://www.youtube.com/playlist?list=PLQ9nCoLmM3liuDRuJ_pPuBrfmGgoFDhMc',
+  },
+  {
+    title: 'Soy + que mamá',
+    host: 'Conversaciones sobre maternidad, trabajo y autonomía',
+    ep: '8 EPISODIOS',
+    image: 'assets/soy-mas-que-mama.jpg',
+    url: 'https://www.youtube.com/playlist?list=PLL0Ps-gP3Wr9QrgUw5Y-HQ7n2pNVG05Ph',
+  },
+  {
+    title: 'Café con médicos',
+    host: 'Especialistas médicos en conversación abierta',
+    ep: '13 EPISODIOS',
+    image: 'assets/cafe-con-medicos.jpg',
+    url: 'https://www.youtube.com/playlist?list=PLxgS8GoZg4r4FxZ3nsF5LC4hDSfno6b3F',
+  },
+  {
+    title: 'No Te Prospongas',
+    host: 'Hablemos de próstata: simple, claro y sin estrés',
+    ep: 'CAMPAÑA · 3 EPISODIOS',
+    image: 'assets/no-te-prospongas.jpg',
+    url: 'https://www.youtube.com/playlist?list=PLnKLEvv5-P_4-Pn7G5we4vVaS907bIYcx',
+  },
 ];
 
 // ── Small primitives ──────────────────────────────────────────
