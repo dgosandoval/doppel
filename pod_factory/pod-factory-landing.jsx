@@ -261,7 +261,7 @@ function PodFactoryLanding() {
             ['Dirección & producción', 'Un productor dedicado, guía de entrevista, y edición de primer corte.', PF.orange],
             ['Streaming opcional', 'Transmisión en vivo a YouTube, Spotify Video o tu plataforma.', PF.yellow],
             ['Estudio móvil', 'Llevamos el estudio donde estés. Ideal para entrevistas fuera de Santiago.', PF.blue],
-            ['Distribución', 'Subimos por ti a Spotify, Apple Podcasts, YouTube, Amazon. Desde el EP 1.', PF.red],
+            ['Distribución (con Edición Pro)', 'Subimos por ti a Spotify, Apple Podcasts, YouTube, Amazon. Incluido al elegir Edición Pro.', PF.red],
           ].map(([t, d, c], i) => (
             <Reveal key={i} delay={150 + i * 100} style={{ border: `1.5px solid ${PF.ink}`, background: PF.bg }}>
               <div style={{ height: 6, background: c }} />
@@ -349,65 +349,216 @@ function PodFactoryLanding() {
         </div>
       </section>
 
-      {/* Booking calendar snapshot */}
+      {/* Pricing table */}
       <section id="tarifas" style={{ padding: '60px 32px' }}>
-        <Reveal style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 20 }}>
+        <Reveal style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8, flexWrap: 'wrap', gap: 12 }}>
           <h2 style={{ fontFamily: PF.display, fontWeight: 800, fontSize: 48, letterSpacing: '-0.035em', margin: 0 }}>
-            Reserva tu hora
+            Tarifas <span style={{ fontFamily: PF.serif, fontStyle: 'italic', fontWeight: 400, color: PF.red }}>y servicios</span>
           </h2>
-          <div style={{ fontFamily: PF.mono, fontSize: 12 }}>SEMANA DEL 23 AL 29 DE MAR</div>
+          <div style={{ fontFamily: PF.mono, fontSize: 11, color: PF.ink + 'aa', letterSpacing: '0.1em' }}>
+            PRECIOS POR HORA · NO INCLUYEN IVA
+          </div>
+        </Reveal>
+        <Reveal delay={100} style={{ marginBottom: 28 }}>
+          <p style={{ fontSize: 14, lineHeight: 1.5, maxWidth: 620, color: PF.ink + 'cc' }}>
+            Cada sesión incluye 60 minutos efectivos de grabación + 20 minutos de setup. Reserva con $30.000 de adelanto.
+          </p>
         </Reveal>
 
-        <Reveal delay={150} className="pf-calendar-wrap" style={{ border: `1.5px solid ${PF.ink}` }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', background: PF.ink, color: PF.bg }}>
-            {['LUN 23', 'MAR 24', 'MIÉ 25', 'JUE 26', 'VIE 27', 'SÁB 28', 'DOM 29'].map((d, i) => (
-              <div key={d} style={{
-                padding: '10px 12px', fontFamily: PF.mono, fontSize: 11, letterSpacing: '0.08em',
-                borderRight: i < 6 ? `1px solid ${PF.bg}20` : 'none',
-              }}>{d}</div>
+        {/* Base prices by group size */}
+        <Reveal delay={200} style={{ marginBottom: 16 }}>
+          <div style={{ fontFamily: PF.mono, fontSize: 10, letterSpacing: '0.18em', color: PF.ink + '99', marginBottom: 12, fontWeight: 700 }}>
+            ① TARIFA BASE · GRABACIÓN + EDICIÓN BÁSICA
+          </div>
+          <div className="pf-pricing-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+            {[
+              { size: '1-2 personas', price: 149990, color: PF.blue },
+              { size: '3-4 personas', price: 199990, color: PF.red },
+            ].map((b, i) => (
+              <div key={i} style={{ border: `1.5px solid ${PF.ink}`, background: PF.bg, padding: '22px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+                <div>
+                  <div style={{ width: 40, height: 6, background: b.color, marginBottom: 12 }} />
+                  <div style={{ fontFamily: PF.display, fontWeight: 800, fontSize: 22, letterSpacing: '-0.02em' }}>
+                    {b.size}
+                  </div>
+                  <div style={{ fontSize: 12, color: PF.ink + 'aa', marginTop: 4 }}>
+                    Grabación + Edición Básica
+                  </div>
+                </div>
+                <div style={{ fontFamily: PF.mono, fontWeight: 700, fontSize: 24, whiteSpace: 'nowrap' }}>
+                  ${b.price.toLocaleString('es-CL')}
+                </div>
+              </div>
             ))}
           </div>
-          {['10:00', '12:00', '14:00', '16:00', '18:00'].map((h, row) => (
-            <div key={h} style={{ display: 'grid', gridTemplateColumns: '80px repeat(7, 1fr)', borderTop: row > 0 ? `1px solid ${PF.ink}25` : 'none' }}>
-              <div style={{ padding: '14px 12px', fontFamily: PF.mono, fontSize: 11, borderRight: `1px solid ${PF.ink}25`, background: PF.bg }}>
-                {h}
-              </div>
-              {[0,1,2,3,4,5,6].map(col => {
-                const states = [
-                  ['','','','','bk','',''],
-                  ['','bk','','','','',''],
-                  ['','','hold','','bk','',''],
-                  ['bk','','','bk','','',''],
-                  ['','','','','','hold',''],
-                ];
-                const s = states[row][col];
-                const bg = s === 'bk' ? PF.red : s === 'hold' ? PF.blue : 'transparent';
-                const color = s ? PF.bg : PF.ink;
-                return (
-                  <div key={col} style={{
-                    padding: '14px 10px', fontSize: 11, fontFamily: PF.mono,
-                    background: bg, color, borderRight: col < 6 ? `1px solid ${PF.ink}25` : 'none',
-                    cursor: s ? 'default' : 'pointer',
-                  }}>
-                    {s === 'bk' ? 'RESERVADO' : s === 'hold' ? 'TENTATIVO' : '—'}
-                  </div>
-                );
-              })}
-            </div>
-          ))}
         </Reveal>
 
-        <Reveal delay={300} style={{ display: 'flex', gap: 18, marginTop: 14, fontSize: 11, fontFamily: PF.mono }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ width: 10, height: 10, background: 'transparent', border: `1px solid ${PF.ink}` }} /> DISPONIBLE
-          </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ width: 10, height: 10, background: PF.red }} /> RESERVADO
-          </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ width: 10, height: 10, background: PF.blue }} /> TENTATIVO
-          </span>
+        {/* Add-ons */}
+        <Reveal delay={350}>
+          <div style={{ fontFamily: PF.mono, fontSize: 10, letterSpacing: '0.18em', color: PF.ink + '99', marginBottom: 12, fontWeight: 700 }}>
+            ② ADICIONALES OPCIONALES · SUMA A LA TARIFA BASE
+          </div>
+          <div style={{ border: `1.5px solid ${PF.ink}`, background: PF.bg }}>
+            {[
+              {
+                name: 'Edición Pro',
+                desc: 'Teaser de mejores momentos al inicio + reel vertical para RRSS. Incluye distribución a Spotify, Apple Podcasts, YouTube y Amazon.',
+                delta: 99990,
+                color: PF.orange,
+              },
+              {
+                name: '3 Reels adicionales',
+                desc: 'Tres reels verticales de 60s editados, listos para redes',
+                delta: 99990,
+                color: PF.yellow,
+              },
+            ].map((a, i) => (
+              <div key={i} style={{
+                padding: '20px 24px',
+                borderTop: i > 0 ? `1px solid ${PF.ink}20` : 'none',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                  <div style={{ width: 6, height: 44, background: a.color, flexShrink: 0 }} />
+                  <div>
+                    <div style={{ fontFamily: PF.display, fontWeight: 700, fontSize: 19, letterSpacing: '-0.015em' }}>
+                      {a.name}
+                    </div>
+                    <div style={{ fontSize: 13, color: PF.ink + 'aa', marginTop: 3, lineHeight: 1.4 }}>
+                      {a.desc}
+                    </div>
+                  </div>
+                </div>
+                <div style={{ fontFamily: PF.mono, fontWeight: 700, fontSize: 18, whiteSpace: 'nowrap', color: PF.ink }}>
+                  +${a.delta.toLocaleString('es-CL')}
+                </div>
+              </div>
+            ))}
+          </div>
         </Reveal>
+
+        {/* Webinar special tier */}
+        <Reveal delay={500} style={{
+          marginTop: 14, padding: '20px 24px', background: PF.yellow,
+          border: `1.5px solid ${PF.ink}`,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap',
+        }}>
+          <div>
+            <div style={{ fontFamily: PF.mono, fontSize: 10, letterSpacing: '0.18em', marginBottom: 6, fontWeight: 700 }}>
+              📡 WEBINAR · STREAMING
+            </div>
+            <div style={{ fontFamily: PF.display, fontWeight: 800, fontSize: 22, letterSpacing: '-0.02em' }}>
+              Streaming en vivo a la plataforma de tu elección
+            </div>
+            <div style={{ fontSize: 13, color: PF.ink + 'aa', marginTop: 4 }}>
+              Setup broadcast multicámara con transmisión directa a YouTube, LinkedIn, Zoom o tu plataforma.
+            </div>
+          </div>
+          <div style={{ fontFamily: PF.mono, fontWeight: 700, fontSize: 22, whiteSpace: 'nowrap' }}>
+            $149.990
+          </div>
+        </Reveal>
+
+        {/* What's included in base */}
+        <Reveal delay={650} style={{
+          marginTop: 28, padding: '20px 24px', background: PF.ink, color: PF.bg,
+        }}>
+          <div style={{ fontFamily: PF.mono, fontSize: 10, letterSpacing: '0.18em', color: PF.yellow, marginBottom: 10, fontWeight: 700 }}>
+            ✂️ EDICIÓN BÁSICA INCLUYE
+          </div>
+          <div style={{ fontSize: 13, lineHeight: 1.55, color: PF.bg + 'cc', maxWidth: 760 }}>
+            Logo al inicio y final, música de intro/outro, sobreimpresos con nombre y cargo,
+            corrección de color y sonido. Entrega de archivo de video + audio listo para publicar.
+          </div>
+        </Reveal>
+
+        <Reveal delay={800} style={{ display: 'flex', gap: 12, marginTop: 24, alignItems: 'center', flexWrap: 'wrap' }}>
+          <a
+            href={waLink('quiero reservar Pod Factory, cuéntame sobre disponibilidad.')}
+            target="_blank" rel="noopener"
+            style={{
+              background: PF.ink, color: PF.bg, padding: '16px 24px',
+              fontSize: 13, fontWeight: 700, letterSpacing: '0.1em', fontFamily: PF.display,
+              textDecoration: 'none', borderRadius: 999,
+              display: 'inline-flex', alignItems: 'center', gap: 12, lineHeight: 1,
+            }}
+          >
+            RESERVAR
+            <WhatsAppIcon size={16} color={PF.bg} />
+          </a>
+          <a
+            href="https://podfactory.site.agendapro.com/cl/sucursal/446357"
+            target="_blank" rel="noopener"
+            style={{
+              background: 'transparent', color: PF.ink, border: `1.5px solid ${PF.ink}`,
+              padding: '16px 24px', fontSize: 13, fontWeight: 700, letterSpacing: '0.1em',
+              fontFamily: PF.display, textDecoration: 'none', display: 'inline-block',
+              borderRadius: 999,
+            }}
+          >VER DISPONIBILIDAD ↗</a>
+        </Reveal>
+      </section>
+
+      {/* Location — embedded Google Maps */}
+      <section id="ubicacion" style={{ padding: '60px 32px', borderTop: `1.5px solid ${PF.ink}` }}>
+        <Reveal style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
+          <h2 style={{ fontFamily: PF.display, fontWeight: 800, fontSize: 48, letterSpacing: '-0.035em', margin: 0 }}>
+            Dónde <span style={{ fontFamily: PF.serif, fontStyle: 'italic', fontWeight: 400, color: PF.blue }}>estamos</span>
+          </h2>
+          <div style={{ fontFamily: PF.mono, fontSize: 11, letterSpacing: '0.1em', color: PF.ink + 'aa' }}>
+            VITACURA · SANTIAGO
+          </div>
+        </Reveal>
+
+        <div className="pf-location-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 24, alignItems: 'stretch' }}>
+          <Reveal delay={150} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 18, padding: '24px 26px', border: `1.5px solid ${PF.ink}`, background: PF.bg }}>
+            <div>
+              <div style={{ fontFamily: PF.mono, fontSize: 10, letterSpacing: '0.18em', marginBottom: 10, color: PF.ink + 'aa', fontWeight: 700 }}>
+                📍 DIRECCIÓN
+              </div>
+              <div style={{ fontFamily: PF.display, fontWeight: 800, fontSize: 26, letterSpacing: '-0.025em', lineHeight: 1.1 }}>
+                Eduardo Marquina 3937
+              </div>
+              <div style={{ fontFamily: PF.display, fontWeight: 400, fontSize: 18, marginTop: 4, color: PF.ink + 'cc' }}>
+                Vitacura · Santiago, Chile
+              </div>
+            </div>
+            <div style={{ fontSize: 13, lineHeight: 1.55, color: PF.ink + 'cc' }}>
+              A pasos de Av. Vitacura. Estacionamiento disponible en la calle. Llegada fácil en auto, Uber o transporte público.
+            </div>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              <a
+                href="https://www.google.com/maps/dir/?api=1&destination=Pod+Factory+Premium+Podcast+Studio&destination_place_id=ChIJX7coTmnPYpYRahuOLfgXst0"
+                target="_blank" rel="noopener"
+                style={{
+                  background: PF.ink, color: PF.bg, padding: '12px 18px',
+                  fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', fontFamily: PF.display,
+                  textDecoration: 'none', borderRadius: 999, display: 'inline-flex', alignItems: 'center', gap: 8, lineHeight: 1,
+                }}
+              >CÓMO LLEGAR ↗</a>
+              <a
+                href="https://maps.google.com/?cid=15974244234725613418"
+                target="_blank" rel="noopener"
+                style={{
+                  background: 'transparent', color: PF.ink, border: `1.5px solid ${PF.ink}`,
+                  padding: '12px 18px', fontSize: 12, fontWeight: 700, letterSpacing: '0.1em',
+                  fontFamily: PF.display, textDecoration: 'none', display: 'inline-block', borderRadius: 999,
+                }}
+              >ABRIR EN MAPS</a>
+            </div>
+          </Reveal>
+
+          <Reveal delay={250} style={{ position: 'relative', minHeight: 320, border: `1.5px solid ${PF.ink}`, overflow: 'hidden' }}>
+            <iframe
+              title="Pod Factory · Eduardo Marquina 3937, Vitacura"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3330.899404141137!2d-70.59428838915612!3d-33.399788573298764!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9662cf694e28b75f%3A0xddb217f82d8e1b6a!2sPod%20Factory%2C%20Premium%20Podcast%20Studio!5e0!3m2!1ses!2scl!4v1780004708510!5m2!1ses!2scl"
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0, display: 'block', filter: 'grayscale(0.2) contrast(1.05)' }}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              allowFullScreen
+            />
+          </Reveal>
+        </div>
       </section>
 
       {/* Technical specs — what's inside the studio */}
