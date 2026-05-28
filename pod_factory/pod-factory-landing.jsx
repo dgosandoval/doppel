@@ -132,20 +132,20 @@ function PodFactoryLanding() {
       </header>
 
       {/* Hero */}
-      <section id="espacio" style={{ padding: '50px 32px 30px', display: 'grid', gridTemplateColumns: '1.3fr 1fr', gap: 40 }}>
+      <section id="espacio" style={{ padding: '60px 80px 40px', display: 'grid', gridTemplateColumns: '1fr auto', gap: 28, alignItems: 'center', maxWidth: 1100, margin: '0 auto' }}>
         <Reveal>
           <div style={{ fontSize: 11, fontFamily: PF.mono, letterSpacing: '0.18em', marginBottom: 18 }}>
             ▸ ESTUDIO DE PODCAST &amp; VODCAST · DESDE 2024
           </div>
           <h1 style={{
-            fontFamily: PF.display, fontWeight: 900, fontSize: 126, lineHeight: 0.85,
-            letterSpacing: '-0.045em', margin: 0,
+            fontFamily: PF.display, fontWeight: 900, fontSize: 88, lineHeight: 0.9,
+            letterSpacing: '-0.04em', margin: 0,
           }}>
             Tu <span style={{ color: PF.red }}>podcast</span><br />
             en <span style={{ fontFamily: PF.serif, fontStyle: 'italic', fontWeight: 400 }}>cuatro</span> cámaras,<br />
             <span style={{ color: PF.blue }}>sin excusas.</span>
           </h1>
-          <p style={{ fontSize: 17, lineHeight: 1.5, maxWidth: 540, marginTop: 28 }}>
+          <p style={{ fontSize: 16, lineHeight: 1.5, maxWidth: 540, marginTop: 22 }}>
             Cabina premium en Vitacura con setup multicámara listo para vodcast,
             masterización incluida, y un equipo que produce, edita y distribuye.
             Llegas, te sientas, grabas. Nosotros hacemos el resto.
@@ -166,17 +166,24 @@ function PodFactoryLanding() {
               fontFamily: PF.display, textDecoration: 'none', display: 'inline-block',
             }}>VER TARIFAS</a>
             <div style={{ fontSize: 11, fontFamily: PF.mono, color: PF.ink + 'aa', marginLeft: 8 }}>
-              Desde<br /><b style={{ color: PF.ink, fontSize: 14 }}>$85.000 / hora</b>
+              Desde<br /><b style={{ color: PF.ink, fontSize: 14 }}>$149.990 + IVA / hora</b>
             </div>
           </div>
         </Reveal>
 
-        {/* Studio preview tile */}
-        <Reveal delay={250} style={{ position: 'relative' }}>
+        {/* Studio preview tile — looping reel */}
+        <Reveal delay={250} style={{ position: 'relative', width: 320 }}>
           <div style={{
-            aspectRatio: '3/4', background: PF.ink, position: 'relative', overflow: 'hidden',
+            aspectRatio: '9/16', background: PF.ink, position: 'relative', overflow: 'hidden',
           }}>
-            <VideoTile bg={PF.ink} fg={PF.bg} aspect="3/4" corner="ESTUDIO · 360°" />
+            <video
+              src="assets/reel-portada.mp4"
+              autoPlay muted loop playsInline
+              style={{
+                position: 'absolute', inset: 0, width: '100%', height: '100%',
+                objectFit: 'cover', display: 'block',
+              }}
+            />
             <div style={{
               position: 'absolute', bottom: 14, left: 14, right: 14,
               background: PF.yellow, padding: '10px 14px',
