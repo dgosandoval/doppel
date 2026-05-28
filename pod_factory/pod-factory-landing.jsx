@@ -122,13 +122,19 @@ function PodFactoryLanding() {
         </div>
         <nav style={{ display: 'flex', gap: 26, fontSize: 13, fontWeight: 500 }}>
           {[
-            ['El espacio',   '#espacio'],
-            ['Servicios',    '#servicios'],
-            ['Producciones', '#producciones'],
-            ['Tarifas',      '#tarifas'],
-            ['Contacto',     '#contacto'],
-          ].map(([l, h]) => (
-            <a key={l} href={h} style={{ color: PF.ink, textDecoration: 'none' }}>{l}</a>
+            ['El espacio',   '#espacio',     false],
+            ['Servicios',    '#servicios',   false],
+            ['Producciones', '#producciones', false],
+            ['Tarifas',      '#tarifas',     false],
+            ['Ubicación',    '#ubicacion',   false],
+            ['Contacto',     waLink('quiero conversar con Pod Factory.'), true],
+          ].map(([l, h, ext]) => (
+            <a
+              key={l}
+              href={h}
+              {...(ext ? { target: '_blank', rel: 'noopener' } : {})}
+              style={{ color: PF.ink, textDecoration: 'none' }}
+            >{l}</a>
           ))}
         </nav>
         <a
