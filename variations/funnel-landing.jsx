@@ -371,7 +371,7 @@ function FunnelLanding() {
           {[
             ['Nosotros', '#cómo-trabajamos'],
             ['Portafolio', '#trabajos'],
-            ['Pod Factory', '#pod-factory'],
+            ['Pod Factory', 'pod_factory/'],
             ['Por qué Doppel', '#por-qué-doppel'],
           ].map(([l, h]) => (
             <a key={l} href={h} style={{ color: 'inherit', textDecoration: 'none' }}>{l}</a>
@@ -602,8 +602,15 @@ function FunnelLanding() {
               ubicado en Vitacura. Multicámara 4K, masterización incluida y un equipo
               que te acompaña desde la idea al capítulo 100.
             </p>
-            <div style={{ display: 'flex', gap: 12, marginTop: 28, alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: 16, marginTop: 28, alignItems: 'center', flexWrap: 'wrap' }}>
               <WAButton context="quiero reservar Pod Factory para mi podcast." label="Reservar estudio" size="lg" variant="ink" />
+              <a href="pod_factory/" style={{
+                fontSize: 13, fontFamily: FL.mono, color: FL.ink, letterSpacing: '0.08em',
+                textDecoration: 'none', borderBottom: `1px solid ${FL.ink}`, paddingBottom: 4,
+                fontWeight: 600,
+              }}>
+                CONOCER POD FACTORY →
+              </a>
             </div>
           </Reveal>
 
