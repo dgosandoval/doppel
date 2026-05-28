@@ -70,6 +70,79 @@ function WAButton({ context, label = 'Hablemos', size = 'md', variant = 'cream',
   );
 }
 
+// ── Animated stat: counts up + fades in once it enters viewport ─────
+
+function AnimatedStat({ value, label, delay = 0, isLast = false }) {
+  const [count, setCount] = React.useState(0);
+  const [visible, setVisible] = React.useState(false);
+  const ref = React.useRef(null);
+
+  const match = String(value).match(/^([+\-]?)(\d+)$/);
+  const prefix = match ? match[1] : '';
+  const target = match ? parseInt(match[2], 10) : 0;
+
+  React.useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisible(true);
+          obs.disconnect();
+        }
+      },
+      { threshold: 0.4 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  React.useEffect(() => {
+    if (!visible) return;
+    const duration = 1400;
+    let raf;
+    let startTs = null;
+    const tick = (now) => {
+      if (startTs === null) startTs = now + delay;
+      const elapsed = Math.max(0, now - startTs);
+      const t = Math.min(1, elapsed / duration);
+      const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic
+      setCount(Math.round(eased * target));
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [visible, target, delay]);
+
+  return (
+    <div
+      ref={ref}
+      style={{
+        paddingRight: 24,
+        borderRight: !isLast ? `1px solid ${FL.paper}15` : 'none',
+        paddingLeft: delay > 0 ? 24 : 0,
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'translateY(0)' : 'translateY(16px)',
+        transition: `opacity 0.7s ease ${delay}ms, transform 0.7s ease ${delay}ms`,
+      }}
+    >
+      <div style={{
+        fontFamily: FL.display, fontSize: 52, fontWeight: 300,
+        letterSpacing: '-0.03em', lineHeight: 1,
+        fontVariantNumeric: 'tabular-nums',
+      }}>
+        {prefix}{count}
+      </div>
+      <div style={{
+        fontSize: 11, color: FL.muted, marginTop: 6,
+        fontFamily: FL.mono, letterSpacing: '0.06em',
+      }}>
+        {label.toUpperCase()}
+      </div>
+    </div>
+  );
+}
+
 // ── Client logo (real image if provided, polished wordmark fallback) ──
 
 function ClientLogo({ client }) {
@@ -194,11 +267,8 @@ function FunnelLanding() {
             ['15', 'años de experiencia'],
             ['+500', 'proyectos producidos'],
             ['+40', 'marcas que confían'],
-          ].map(([n, l], i) => (
-            <div key={i} style={{ paddingRight: 24, borderRight: i < 2 ? `1px solid ${FL.paper}15` : 'none', paddingLeft: i > 0 ? 24 : 0 }}>
-              <div style={{ fontFamily: FL.display, fontSize: 52, fontWeight: 300, letterSpacing: '-0.03em', lineHeight: 1 }}>{n}</div>
-              <div style={{ fontSize: 11, color: FL.muted, marginTop: 6, fontFamily: FL.mono, letterSpacing: '0.06em' }}>{l.toUpperCase()}</div>
-            </div>
+          ].map(([n, l], i, arr) => (
+            <AnimatedStat key={i} value={n} label={l} delay={i * 180} isLast={i === arr.length - 1} />
           ))}
         </div>
       </section>
@@ -221,14 +291,16 @@ function FunnelLanding() {
         padding: '40px 40px', background: FL.paper, color: FL.ink,
         display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 32,
       }}>
-        <div style={{ fontFamily: FL.display, fontSize: 40, fontWeight: 300, letterSpacing: '-0.025em', lineHeight: 1.05, maxWidth: 700 }}>
-          ¿Quieres pensar algo juntos? <span style={{ fontStyle: 'italic', color: FL.accent }}>Hagámoslo.</span>
+        <div style={{ fontFamily: FL.display, fontSize: 40, letterSpacing: '-0.025em', lineHeight: 1.1, maxWidth: 720 }}>
+          <div style={{ fontWeight: 300, color: FL.ink + 'aa' }}>Comunicación efectiva.</div>
+          <div style={{ fontWeight: 600, color: FL.ink }}>Mensajes que llegan.</div>
+          <div style={{ fontWeight: 300, fontStyle: 'italic', color: FL.accent }}>Ideas que perduran.</div>
         </div>
         <WAButton context="quiero pensar un proyecto con ustedes." label="Hablemos" size="lg" />
       </section>
 
       {/* ── CLIENT STRIP ── */}
-      <section style={{ padding: '40px 40px 48px', background: FL.paper, color: FL.ink }}>
+      <section style={{ padding: '48px 40px 56px', background: '#ffffff', color: FL.ink, borderTop: `1px solid ${FL.ink}10` }}>
         <div style={{
           display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
           marginBottom: 28,

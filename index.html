@@ -32,6 +32,11 @@
     .hero-grid, .pod-grid, .why-grid, .where-grid, .mini-features-grid, .reasons-grid, .testimonial-grid, .work-grid { gap: 20px !important; }
     /* Client strip on mobile: keep the 2-row flex layout but tighten cells */
     .clients-grid > div > div { height: 56px !important; padding: 0 8px !important; }
+    /* Stats: keep 3 columns compact, fix asymmetric padding/dividers */
+    .stats-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 0 !important; }
+    .stats-grid > div { padding: 0 8px !important; text-align: center; }
+    .stats-grid > div > div:first-child { font-size: clamp(28px, 8vw, 42px) !important; }
+    .stats-grid > div > div:last-child { font-size: 9px !important; line-height: 1.3 !important; }
     .hero-grid h1 { font-size: clamp(28px, 11vw, 48px) !important; line-height: 1.1 !important; }
     .mid-cta { flex-direction: column !important; align-items: stretch !important; }
     .mid-cta > * { width: 100% !important; }
@@ -51,8 +56,8 @@
 <body>
 <div id="root"></div>
 
-<script type="text/babel" src="variations/shared.jsx?v=19"></script>
-<script type="text/babel" src="variations/funnel-landing.jsx?v=19"></script>
-<script type="text/babel" src="app.jsx?v=19"></script>
+<script type="text/babel" src="variations/shared.jsx?v=24"></script>
+<script type="text/babel" src="variations/funnel-landing.jsx?v=24"></script>
+<script type="text/babel" src="app.jsx?v=24"></script>
 </body>
 </html>
