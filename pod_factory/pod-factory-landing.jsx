@@ -137,7 +137,7 @@ function PodFactoryLanding() {
           style={{
             background: PF.red, color: PF.bg, padding: '12px 20px',
             fontSize: 12, fontWeight: 700, letterSpacing: '0.1em',
-            fontFamily: PF.display, textDecoration: 'none',
+            fontFamily: PF.display, textDecoration: 'none', borderRadius: 999,
             display: 'inline-flex', alignItems: 'center', gap: 10, lineHeight: 1,
           }}
         >
@@ -153,15 +153,15 @@ function PodFactoryLanding() {
             ▸ ESTUDIO DE PODCAST &amp; VODCAST · DESDE 2024
           </div>
           <h1 style={{
-            fontFamily: PF.display, fontWeight: 900, fontSize: 88, lineHeight: 0.9,
+            fontFamily: PF.display, fontWeight: 900, fontSize: 76, lineHeight: 0.95,
             letterSpacing: '-0.04em', margin: 0,
           }}>
-            Tu <span style={{ color: PF.red }}>podcast</span><br />
-            en <span style={{ fontFamily: PF.serif, fontStyle: 'italic', fontWeight: 400 }}>cuatro</span> cámaras,<br />
-            <span style={{ color: PF.blue }}>sin excusas.</span>
+            Tu <span style={{ color: PF.red }}>podcast</span> con<br />
+            calidad <span style={{ color: PF.blue }}>profesional</span><br />
+            a la altura de <span style={{ fontFamily: PF.serif, fontStyle: 'italic', fontWeight: 400 }}>tu contenido.</span>
           </h1>
           <p style={{ fontSize: 16, lineHeight: 1.5, maxWidth: 540, marginTop: 22 }}>
-            Cabina premium en Vitacura con setup multicámara listo para vodcast,
+            Estudio premium en Vitacura con setup multicámara listo para vodcast,
             masterización incluida, y un equipo que produce, edita y distribuye.
             Llegas, te sientas, grabas. Nosotros hacemos el resto.
           </p>
@@ -172,7 +172,7 @@ function PodFactoryLanding() {
               style={{
                 background: PF.ink, color: PF.bg, padding: '16px 24px',
                 fontSize: 13, fontWeight: 700, letterSpacing: '0.1em', fontFamily: PF.display,
-                textDecoration: 'none',
+                textDecoration: 'none', borderRadius: 999,
                 display: 'inline-flex', alignItems: 'center', gap: 12, lineHeight: 1,
               }}
             >
@@ -183,6 +183,7 @@ function PodFactoryLanding() {
               background: 'transparent', color: PF.ink, border: `1.5px solid ${PF.ink}`,
               padding: '16px 26px', fontSize: 13, fontWeight: 700, letterSpacing: '0.1em',
               fontFamily: PF.display, textDecoration: 'none', display: 'inline-block',
+              borderRadius: 999,
             }}>VER TARIFAS</a>
             <div style={{ fontSize: 11, fontFamily: PF.mono, color: PF.ink + 'aa', marginLeft: 8 }}>
               Desde<br /><b style={{ color: PF.ink, fontSize: 14 }}>$149.990 + IVA / hora</b>
@@ -229,7 +230,7 @@ function PodFactoryLanding() {
           ['4', 'cámaras 6K/4K', PF.blue],
           ['+300', 'episodios producidos', PF.red],
           ['24h', 'entrega masterizada', PF.orange],
-          ['2', 'cabinas + móvil', PF.yellow],
+          ['2', 'estudios + móvil', PF.yellow],
         ].map(([n, l, c], i) => (
           <Reveal key={i} delay={i * 120} style={{
             padding: '30px 20px', borderRight: i < 3 ? `1.5px solid ${PF.ink}` : 'none',
@@ -259,7 +260,7 @@ function PodFactoryLanding() {
             ['Audio broadcast', 'Micrófonos RØDE PodMic con procesamiento en tiempo real. Master de sonido en Fairlight (DaVinci Resolve).', PF.red],
             ['Dirección & producción', 'Un productor dedicado, guía de entrevista, y edición de primer corte.', PF.orange],
             ['Streaming opcional', 'Transmisión en vivo a YouTube, Spotify Video o tu plataforma.', PF.yellow],
-            ['Cabina móvil', 'Llevamos el estudio donde estés. Ideal para entrevistas fuera de Santiago.', PF.blue],
+            ['Estudio móvil', 'Llevamos el estudio donde estés. Ideal para entrevistas fuera de Santiago.', PF.blue],
             ['Distribución', 'Subimos por ti a Spotify, Apple Podcasts, YouTube, Amazon. Desde el EP 1.', PF.red],
           ].map(([t, d, c], i) => (
             <Reveal key={i} delay={150 + i * 100} style={{ border: `1.5px solid ${PF.ink}`, background: PF.bg }}>
@@ -488,6 +489,23 @@ function PodFactoryLanding() {
           <span>IG · YOUTUBE · SPOTIFY · TIKTOK</span>
         </Reveal>
       </footer>
+
+      {/* Floating "Reservar" CTA — persistent across scroll */}
+      <a
+        href={waLink('quiero reservar Pod Factory.')}
+        target="_blank" rel="noopener"
+        style={{
+          position: 'fixed', bottom: 22, right: 22, zIndex: 100,
+          background: PF.red, color: PF.bg, borderRadius: 999,
+          padding: '14px 22px', fontFamily: PF.display, fontWeight: 700,
+          fontSize: 13, letterSpacing: '0.08em', textDecoration: 'none',
+          display: 'inline-flex', alignItems: 'center', gap: 10, lineHeight: 1,
+          boxShadow: '0 8px 28px rgba(0,0,0,0.25)',
+        }}
+      >
+        RESERVAR
+        <WhatsAppIcon size={16} color={PF.bg} />
+      </a>
     </div>
   );
 }
