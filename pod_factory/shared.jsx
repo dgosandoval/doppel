@@ -63,6 +63,34 @@ const PODCASTS = [
     image: 'assets/no-te-prospongas.jpg',
     url: 'https://www.youtube.com/playlist?list=PLnKLEvv5-P_4-Pn7G5we4vVaS907bIYcx',
   },
+  {
+    title: 'Inteligencia Animal',
+    host: 'VetChannel · Conversaciones sobre el mundo animal',
+    ep: '16 EPISODIOS',
+    image: 'assets/inteligencia-animal.jpg',
+    url: 'https://www.youtube.com/playlist?list=PLbOzErDRwxZUxmzRlY96Yf749Sd6pYBgQ',
+  },
+  {
+    title: 'Dr. Horse',
+    host: 'VetChannel · Salud y cuidado equino',
+    ep: '11 EPISODIOS',
+    image: 'assets/dr-horse.jpg',
+    url: 'https://www.youtube.com/playlist?list=PLbOzErDRwxZWPbjJxBhQp-_heJ32V6ejb',
+  },
+  {
+    title: 'Pod Cats & Dogs',
+    host: 'VetChannel · El podcast para tutores de mascotas',
+    ep: '8 EPISODIOS',
+    image: 'assets/pod-cats-dogs.jpg',
+    url: 'https://www.youtube.com/playlist?list=PLbOzErDRwxZV001PBZYBPns_3_rOC28zT',
+  },
+  {
+    title: 'Talleres Luciérnaga',
+    host: 'Contenido educativo y experiencias creativas',
+    ep: 'CANAL',
+    image: 'assets/talleres-luciernaga.jpg',
+    url: 'https://www.youtube.com/@TalleresLuciernaga',
+  },
 ];
 
 // ── Small primitives ──────────────────────────────────────────

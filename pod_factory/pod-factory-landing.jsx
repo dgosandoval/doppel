@@ -93,19 +93,22 @@ function PodFactoryLanding() {
         padding: '22px 32px', borderBottom: `1.5px solid ${PF.ink}`,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <img src="assets/doppel-logo.png" alt="Doppel" style={{ height: 24, display: 'block' }} />
+          <a href="/" style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
+            <img src="assets/doppel-logo.png" alt="Doppel" style={{ height: 22, display: 'block', opacity: 0.6 }} />
+          </a>
           <div style={{
             paddingLeft: 14, borderLeft: `1.5px solid ${PF.ink}30`,
-            display: 'flex', flexDirection: 'column', gap: 2,
+            display: 'flex', alignItems: 'center', gap: 12,
           }}>
-            <div style={{ fontFamily: PF.display, fontSize: 22, fontWeight: 800, letterSpacing: '-0.025em', lineHeight: 1 }}>
-              Pod Factory
-            </div>
-            <div style={{ fontFamily: PF.mono, fontSize: 9, fontWeight: 700, letterSpacing: '0.18em', color: PF.ink + '99' }}>
-              PODCAST · VODCAST · EST. 2024
+            <img
+              src="assets/podfactory-logo.png"
+              alt="Pod Factory"
+              style={{ height: 48, display: 'block' }}
+            />
+            <div style={{ fontFamily: PF.mono, fontSize: 9, fontWeight: 700, letterSpacing: '0.18em', color: PF.ink + '99', lineHeight: 1.4 }}>
+              PODCAST · VODCAST<br />EST. 2024
             </div>
           </div>
-          <PFRays height={5} gap={2} width={50} />
         </div>
         <nav style={{ display: 'flex', gap: 26, fontSize: 13, fontWeight: 500 }}>
           {[
@@ -274,46 +277,53 @@ function PodFactoryLanding() {
             const fg = i === 3 ? PF.ink : PF.bg;
             const Tag = p.url ? 'a' : 'div';
             const linkProps = p.url ? { href: p.url, target: '_blank', rel: 'noopener' } : {};
-            const baseStyle = {
-              padding: 18, aspectRatio: '1/1', position: 'relative',
-              overflow: 'hidden', textDecoration: 'none', display: 'block',
-              color: p.image ? PF.bg : fg,
-              background: p.image ? PF.ink : bg,
-            };
-            return (
-              <Reveal key={i} delay={200 + i * 110}>
-                <Tag {...linkProps} style={baseStyle}>
-                  {p.image && (
-                    <React.Fragment>
+            if (p.image) {
+              return (
+                <Reveal key={i} delay={200 + i * 110}>
+                  <Tag {...linkProps} style={{
+                    textDecoration: 'none', display: 'block', color: PF.bg,
+                  }}>
+                    <div style={{ position: 'relative', aspectRatio: '16/9', overflow: 'hidden', background: PF.ink }}>
                       <img
                         src={p.image}
                         alt={p.title}
-                        style={{
-                          position: 'absolute', inset: 0, width: '100%', height: '100%',
-                          objectFit: 'cover', opacity: 0.55,
-                        }}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                       />
-                      <div style={{
-                        position: 'absolute', inset: 0,
-                        background: `linear-gradient(180deg, ${PF.ink}00 0%, ${PF.ink}99 70%, ${PF.ink}f0 100%)`,
-                      }} />
-                    </React.Fragment>
-                  )}
-                  <div style={{ position: 'relative', zIndex: 1 }}>
-                    <div style={{ fontFamily: PF.mono, fontSize: 10, letterSpacing: '0.15em', opacity: 0.8 }}>{p.ep}</div>
-                    <div style={{ fontFamily: PF.display, fontWeight: 800, fontSize: 22, letterSpacing: '-0.02em', lineHeight: 1.05, marginTop: 8 }}>
-                      {p.title}
                     </div>
-                    <div style={{ fontSize: 11, fontFamily: PF.mono, marginTop: 8, opacity: 0.85, lineHeight: 1.4 }}>
-                      CON {p.host.toUpperCase()}
+                    <div style={{ marginTop: 12 }}>
+                      <div style={{ fontFamily: PF.mono, fontSize: 10, letterSpacing: '0.15em', opacity: 0.7 }}>{p.ep}</div>
+                      <div style={{ fontFamily: PF.display, fontWeight: 800, fontSize: 20, letterSpacing: '-0.02em', lineHeight: 1.05, marginTop: 6 }}>
+                        {p.title}
+                      </div>
+                      <div style={{ fontSize: 11, fontFamily: PF.mono, marginTop: 6, opacity: 0.7, lineHeight: 1.4 }}>
+                        CON {p.host.toUpperCase()}
+                      </div>
                     </div>
+                  </Tag>
+                </Reveal>
+              );
+            }
+            // Placeholder color card (no image)
+            return (
+              <Reveal key={i} delay={200 + i * 110}>
+                <Tag {...linkProps} style={{
+                  padding: 18, aspectRatio: '1/1', position: 'relative',
+                  overflow: 'hidden', textDecoration: 'none', display: 'block',
+                  background: bg, color: fg,
+                }}>
+                  <div style={{ fontFamily: PF.mono, fontSize: 10, letterSpacing: '0.15em', opacity: 0.8 }}>{p.ep}</div>
+                  <div style={{ fontFamily: PF.display, fontWeight: 800, fontSize: 22, letterSpacing: '-0.02em', lineHeight: 1.05, marginTop: 8 }}>
+                    {p.title}
+                  </div>
+                  <div style={{ fontSize: 11, fontFamily: PF.mono, marginTop: 8, opacity: 0.85, lineHeight: 1.4 }}>
+                    CON {p.host.toUpperCase()}
                   </div>
                   <div style={{
                     position: 'absolute', bottom: 14, right: 14, width: 28, height: 28, borderRadius: '50%',
-                    border: `1.5px solid ${p.image ? PF.bg : fg}`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1,
+                    border: `1.5px solid ${fg}`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
                   }}>
-                    <svg viewBox="0 0 20 20" width="10" height="10"><path d="M7 5 L15 10 L7 15 Z" fill={p.image ? PF.bg : fg} /></svg>
+                    <svg viewBox="0 0 20 20" width="10" height="10"><path d="M7 5 L15 10 L7 15 Z" fill={fg} /></svg>
                   </div>
                 </Tag>
               </Reveal>
@@ -432,17 +442,14 @@ function PodFactoryLanding() {
           marginTop: 30, paddingBottom: 24, borderBottom: `1px solid ${PF.bg}25`,
         }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
-              <img src="assets/doppel-logo.png" alt="Doppel" style={{ height: 22, display: 'block', filter: 'invert(94%) sepia(8%) saturate(120%) hue-rotate(347deg) brightness(98%) contrast(94%)' }} />
-              <span style={{
-                fontFamily: PF.display, fontWeight: 800, fontSize: 22, letterSpacing: '-0.025em',
-                paddingLeft: 10, borderLeft: `1.5px solid ${PF.bg}30`,
-              }}>
-                Pod Factory
-              </span>
-            </div>
-            <div style={{ fontSize: 12, fontFamily: PF.mono, letterSpacing: '0.1em', color: PF.yellow }}>
-              POR DOPPEL ↗
+            <img
+              src="assets/podfactory-logo.png"
+              alt="Pod Factory"
+              style={{ height: 80, display: 'block', marginBottom: 14 }}
+            />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 12, fontFamily: PF.mono, letterSpacing: '0.1em', color: PF.yellow }}>
+              <img src="assets/doppel-logo.png" alt="Doppel" style={{ height: 16, display: 'block', filter: 'invert(94%) sepia(8%) saturate(120%) hue-rotate(347deg) brightness(98%) contrast(94%)' }} />
+              <span>POR DOPPEL ↗</span>
             </div>
             <p style={{ fontSize: 12, lineHeight: 1.5, maxWidth: 320, marginTop: 12, color: PF.bg + 'aa' }}>
               Estudio premium de podcast y vodcast en Vitacura, Santiago.
