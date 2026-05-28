@@ -191,7 +191,7 @@ function PodFactoryLanding() {
               display: 'flex', justifyContent: 'space-between',
             }}>
               <span style={{ fontWeight: 700 }}>MULTICÁMARA</span>
-              <span>4 × 4K · SWITCHER EN VIVO</span>
+              <span>4 × BLACKMAGIC · 2×6K + 2×4K</span>
             </div>
           </div>
           {/* Ray decoration */}
@@ -207,7 +207,7 @@ function PodFactoryLanding() {
         borderTop: `2px solid ${PF.ink}`, borderBottom: `2px solid ${PF.ink}`,
       }}>
         {[
-          ['4', 'cámaras 4K', PF.blue],
+          ['4', 'cámaras 6K/4K', PF.blue],
           ['+300', 'episodios producidos', PF.red],
           ['24h', 'entrega masterizada', PF.orange],
           ['2', 'cabinas + móvil', PF.yellow],
@@ -236,8 +236,8 @@ function PodFactoryLanding() {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
           {[
-            ['Grabación multicámara 4K', 'Cuatro Sony FX3 con switcher en vivo. Entregamos bruto + master editado.', PF.blue],
-            ['Audio broadcast', 'Micrófonos Shure SM7B, consola RØDECaster Pro II. Masterizado incluido.', PF.red],
+            ['Grabación multicámara', 'Cuatro Blackmagic Pocket (2×6K + 2×4K) con switcher ATEM Extreme ISO en vivo. Entregamos bruto + master editado.', PF.blue],
+            ['Audio broadcast', 'Micrófonos RØDE PodMic con procesamiento en tiempo real. Master de sonido en Fairlight (DaVinci Resolve).', PF.red],
             ['Dirección & producción', 'Un productor dedicado, guía de entrevista, y edición de primer corte.', PF.orange],
             ['Streaming opcional', 'Transmisión en vivo a YouTube, Spotify Video o tu plataforma.', PF.yellow],
             ['Cabina móvil', 'Llevamos el estudio donde estés. Ideal para entrevistas fuera de Santiago.', PF.blue],
@@ -405,10 +405,10 @@ function PodFactoryLanding() {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
           {[
-            ['CÁMARAS',  '4 × Sony FX3',          'Multicámara 4K con switcher en vivo. Switching automático por voz disponible.',                PF.blue],
-            ['AUDIO',    'Shure SM7B · RØDECaster Pro II', 'Cuatro micrófonos broadcast. Procesamiento en tiempo real, sin post-edición de ruido.', PF.red],
-            ['LUCES',    'Aputure LED 600c · Nanlite',     'Iluminación de set TV regulable. Configuraciones preset para vodcast y entrevista.',     PF.orange],
-            ['POST',     'Master en 24h',                  'Edición de primer corte, color y audio masterizado. Entregamos listo para publicar.',     PF.ink],
+            ['CÁMARAS',  '4 × Blackmagic Pocket',           '2 × 6K + 2 × 4K. Switcher ATEM Extreme ISO con grabación independiente por cámara.',          PF.blue],
+            ['AUDIO',    'RØDE PodMic',                     'Cuatro micrófonos broadcast con preamps Blackmagic. Master en Fairlight (DaVinci Resolve).', PF.red],
+            ['LUCES',    'Godox',                           'Iluminación de set continua y regulable. Configuraciones preset para vodcast y entrevista.', PF.orange],
+            ['POST',     'DaVinci Resolve',                 'Edición, corrección de color y masterizado de sonido en Fairlight. Flujo 100% Blackmagic.',  PF.ink],
           ].map(([cat, gear, desc, c], i) => (
             <Reveal key={i} delay={200 + i * 130} style={{ background: PF.bg, padding: 22, border: `1.5px solid ${PF.ink}` }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
@@ -446,7 +446,7 @@ function PodFactoryLanding() {
             </div>
             <p style={{ fontSize: 12, lineHeight: 1.5, maxWidth: 320, marginTop: 12, color: PF.bg + 'aa' }}>
               Estudio premium de podcast y vodcast en Vitacura, Santiago.
-              Multicámara 4K, audio broadcast, masterización en 24h.
+              Multicámara Blackmagic 6K/4K, audio broadcast, masterización en Fairlight.
             </p>
           </div>
           {[
