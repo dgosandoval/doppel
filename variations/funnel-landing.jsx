@@ -511,13 +511,21 @@ function FunnelLanding() {
         </Reveal>
         <div className="work-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
           {PROJECTS.slice(0, 4).map((p, i) => (
-            <Reveal key={i} delay={150 + i * 130}>
-              <VideoTile bg={['#2a2218', '#1b2330', '#28201f', '#1f2821'][i]} fg={FL.paper} />
+            <Reveal key={p.vimeoId} delay={150 + i * 130}>
+              <div style={{ position: 'relative', aspectRatio: '16/9', width: '100%', background: '#000', overflow: 'hidden' }}>
+                <iframe
+                  src={`https://player.vimeo.com/video/${p.vimeoId}?title=0&byline=0&portrait=0&dnt=1`}
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }}
+                  allow="autoplay; fullscreen; picture-in-picture"
+                  allowFullScreen
+                  title={`${p.client} · ${p.title}`}
+                />
+              </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 14 }}>
                 <div>
-                  <div style={{ fontFamily: FL.display, fontSize: 22, fontWeight: 400 }}>{p.title}</div>
+                  <div style={{ fontFamily: FL.display, fontSize: 22, fontWeight: 400 }}>{p.client} · {p.title}</div>
                   <div style={{ fontSize: 11, color: FL.muted, fontFamily: FL.mono, letterSpacing: '0.08em', marginTop: 4 }}>
-                    {p.client.toUpperCase()} · {p.type.toUpperCase()}
+                    {p.type.toUpperCase()}
                   </div>
                 </div>
                 <div style={{ fontSize: 11, color: FL.muted, fontFamily: FL.mono }}>{p.year}</div>
@@ -605,7 +613,7 @@ function FunnelLanding() {
             ['Pensamos, no sólo filmamos', 'Creamos el concepto o lo afilamos contigo. Antes de prender cámaras hay una idea sólida y un punto de vista.'],
             ['Equipo propio y estudio físico', 'Cámaras, sonido, dirección, edición y Pod Factory — nuestro estudio de podcast en Vitacura. Todo bajo un mismo techo.'],
             ['15 años de track record', '+500 proyectos para Walmart, Ford, LATAM, Entel, Enel, Coca-Cola Andina y más. Sabemos cómo entregar a tiempo.'],
-            ['Respondemos rápido', 'Menos de 1 hora desde tu mensaje en horario hábil. Sin formularios eternos ni cadenas de correos.'],
+            ['Respondemos rápido', 'Sin formularios eternos ni cadenas de correos. Un humano del equipo te contesta directo.'],
           ].map(([t, d], i) => (
             <Reveal key={i} delay={250 + i * 140} style={{ padding: '24px 0', borderTop: `1px solid ${FL.paper}20`, display: 'flex', gap: 20 }}>
               <div style={{ fontFamily: FL.mono, fontSize: 14, color: FL.accent, minWidth: 30 }}>0{i + 1}</div>
@@ -681,7 +689,7 @@ function FunnelLanding() {
           <span style={{ fontStyle: 'italic', fontWeight: 400 }}>algo bueno.</span>
         </Reveal>
         <Reveal as="p" delay={280} style={{ fontSize: 19, lineHeight: 1.4, maxWidth: 580, marginTop: 28, color: FL.ink }}>
-          Respondemos en menos de 1 hora en horario hábil. Sin formularios, sin esperas:
+          Respondemos rápido en horario hábil. Sin formularios, sin esperas:
           un humano del equipo que va a producir tu proyecto.
         </Reveal>
         <Reveal delay={440} style={{ display: 'flex', alignItems: 'center', gap: 20, marginTop: 40 }}>

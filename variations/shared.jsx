@@ -48,15 +48,12 @@ const CLIENT_LOGOS = [
   { name: 'Colun',             src: 'assets/clients/colun.png' },
 ];
 
-// Project titles used across variations — invented but plausible for a Chilean
-// audiovisual production house. Keep them short and punchy.
+// Featured Doppel projects with Vimeo IDs (from vimeo.com/doppelcl)
 const PROJECTS = [
-  { title: 'Entel · Redes del Futuro',     type: 'Spot TV',        year: '2025', client: 'Entel' },
-  { title: 'Ford Ranger · Territorio',     type: 'Brand Film',     year: '2025', client: 'Ford' },
-  { title: 'LATAM · Rutas de América',     type: 'Documental',     year: '2024', client: 'LATAM' },
-  { title: 'Walmart · Nuestra Gente',      type: 'Campaña',        year: '2024', client: 'Walmart' },
-  { title: 'Derco · Arena y Polvo',        type: 'Comercial',      year: '2024', client: 'Derco' },
-  { title: 'Enel · Energía Viva',          type: 'Brand Film',     year: '2023', client: 'Enel' },
+  { vimeoId: '535038183', title: 'Performance · Raptor', type: 'Trailer',    year: '2021', client: 'Ford' },
+  { vimeoId: '533286487', title: 'Performance',          type: 'Brand Film', year: '2021', client: 'Ford' },
+  { vimeoId: '335514343', title: '70 años · Planta',     type: 'Brand Film', year: '2019', client: 'Colun' },
+  { vimeoId: '253486933', title: 'Deseo ilimitado',      type: 'Spot TV',    year: '2018', client: 'Entel' },
 ];
 
 const PODCASTS = [
