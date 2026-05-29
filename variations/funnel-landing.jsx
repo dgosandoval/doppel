@@ -452,7 +452,9 @@ function FunnelLanding() {
 
       {/* ── REEL ── */}
       <section id="trabajos" style={{ padding: '20px 40px 60px' }}>
-        <LazyVimeoReel id="589999111" title="Doppel Reel" />
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <LazyVimeoReel id="589999111" title="Doppel Reel" />
+        </div>
       </section>
 
       {/* ── MID-FUNNEL CTA ── */}
