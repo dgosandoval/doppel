@@ -548,7 +548,7 @@ function FunnelLanding() {
           <h2 style={{ fontFamily: FL.display, fontWeight: 300, fontSize: 56, letterSpacing: '-0.03em', margin: 0 }}>
             Proyectos <span style={{ fontStyle: 'italic', color: FL.muted }}>destacados</span>
           </h2>
-          <a href="#" style={{ fontSize: 12, fontFamily: FL.mono, color: FL.muted, letterSpacing: '0.1em' }}>VER TODOS →</a>
+          <a href={waLink('quiero ver más proyectos del portafolio.')} target="_blank" rel="noopener" style={{ fontSize: 12, fontFamily: FL.mono, color: FL.muted, letterSpacing: '0.1em', textDecoration: 'none' }}>VER TODOS →</a>
         </Reveal>
         <div className="work-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
           {PROJECTS.slice(0, 4).map((p, i) => (

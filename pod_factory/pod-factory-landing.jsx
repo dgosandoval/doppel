@@ -485,7 +485,7 @@ function PodFactoryLanding() {
             <WhatsAppIcon size={16} color={PF.bg} />
           </a>
           <a
-            href="https://podfactory.site.agendapro.com/cl/sucursal/446357"
+            href={waLink('Hola! Quiero ver la disponibilidad de Pod Factory.')}
             target="_blank" rel="noopener"
             style={{
               background: 'transparent', color: PF.ink, border: `1.5px solid ${PF.ink}`,
