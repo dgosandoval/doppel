@@ -1,8 +1,8 @@
-// Übersicht widget: Doppel + Pod Factory live GA4 stats
+// Übersicht widget: Doppel + Pod Factory live stats from Cloudflare Web Analytics.
 // Drop (or symlink) this folder into ~/Library/Application Support/Übersicht/widgets/
 // Setup steps + config.json schema: see fetch_stats.py header.
 
-export const command = "$HOME/.config/doppel-ga/venv/bin/python3 fetch_stats.py";
+export const command = "python3 fetch_stats.py";
 
 export const refreshFrequency = 30000; // 30s
 
@@ -26,7 +26,10 @@ export const className = `
     letter-spacing: 0.22em;
     opacity: 0.55;
     margin-bottom: 14px;
+    display: flex;
+    justify-content: space-between;
   }
+  .title .src { opacity: 0.5; }
   .row {
     display: flex;
     justify-content: space-between;
@@ -48,11 +51,11 @@ export const className = `
   .pulse {
     width: 6px;
     height: 6px;
-    background: #25D366;
+    background: #F38020;
     border-radius: 50%;
     display: inline-block;
     margin-right: 8px;
-    box-shadow: 0 0 8px #25D366;
+    box-shadow: 0 0 8px #F38020;
     animation: pulse 1.6s ease-in-out infinite;
   }
   @keyframes pulse {
@@ -96,19 +99,18 @@ export const render = ({ output, error }) => {
 
   return (
     <div>
-      <div className="title">Doppel · Pod Factory</div>
+      <div className="title">
+        <span>Doppel · Pod Factory</span>
+        <span className="src">CF</span>
+      </div>
 
       <div className="row">
-        <div className="label"><span className="pulse" />Activos ahora</div>
-        <div className="value">{fmt(data.realtime)}</div>
+        <div className="label"><span className="pulse" />Activos (30m)</div>
+        <div className="value">{fmt(data.active)}</div>
       </div>
       <div className="row">
-        <div className="label">Usuarios hoy</div>
-        <div className="value">{fmt(data.usersToday)}</div>
-      </div>
-      <div className="row">
-        <div className="label">Clicks WhatsApp</div>
-        <div className="value">{fmt(data.waClicks)}</div>
+        <div className="label">Pageviews hoy</div>
+        <div className="value">{fmt(data.today)}</div>
       </div>
 
       {siteKeys.length > 0 && (

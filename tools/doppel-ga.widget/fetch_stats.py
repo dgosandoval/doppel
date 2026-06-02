@@ -1,29 +1,45 @@
 #!/usr/bin/env python3
 """
-Fetch GA4 stats for the Doppel + Pod Factory property and print JSON to stdout.
+Fetch Cloudflare Web Analytics stats and print JSON to stdout.
 
 Config (config.json in this same folder):
   {
-    "property_id": "123456789",
-    "service_account_path": "/absolute/path/to/service-account.json"
+    "account_id": "80a29a55534b...",
+    "api_token": "cfut_..."
   }
 
-Output schema (always valid JSON, never crashes the widget):
-  {"realtime": 3, "usersToday": 42, "waClicks": 5,
-   "bySiteToday": {"doppel.cl": 30, "podfactory.cl": 12}}
+Output schema:
+  {"active": 3, "today": 42, "bySiteToday": {"doppel.cl": 30, "podfactory.cl": 12}}
 or
   {"error": "human-readable reason"}
 """
 import json
 import sys
+import urllib.request
+import urllib.error
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
+ENDPOINT = "https://api.cloudflare.com/client/v4/graphql"
 
 
 def out(payload):
     sys.stdout.write(json.dumps(payload))
     sys.exit(0)
+
+
+def gql(token, query, variables):
+    body = json.dumps({"query": query, "variables": variables}).encode()
+    req = urllib.request.Request(
+        ENDPOINT, data=body,
+        headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+    )
+    with urllib.request.urlopen(req, timeout=10) as r:
+        data = json.loads(r.read())
+    if data.get("errors"):
+        raise RuntimeError(str(data["errors"])[:200])
+    return data["data"]
 
 
 try:
@@ -33,62 +49,59 @@ except FileNotFoundError:
 except Exception as e:
     out({"error": f"config inválido: {e}"})
 
-property_id = cfg.get("property_id")
-sa_path = cfg.get("service_account_path")
-if not property_id or not sa_path:
-    out({"error": "config: faltan property_id o service_account_path"})
+account = cfg.get("account_id")
+token = cfg.get("api_token")
+if not account or not token:
+    out({"error": "config: faltan account_id o api_token"})
+
+now = datetime.now(timezone.utc)
+today_start = now.replace(hour=0, minute=0, second=0, microsecond=0).isoformat().replace("+00:00", "Z")
+tomorrow_start = (now.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)).isoformat().replace("+00:00", "Z")
+last_30m = (now - timedelta(minutes=30)).strftime("%Y-%m-%dT%H:%M:%SZ")
+now_iso = now.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+q = """query Stats($a: String!, $todayStart: Time!, $todayEnd: Time!, $live: Time!, $now: Time!) {
+  viewer {
+    accounts(filter: {accountTag: $a}) {
+      today: rumPageloadEventsAdaptiveGroups(
+        limit: 100,
+        filter: {datetime_geq: $todayStart, datetime_lt: $todayEnd}
+      ) { count dimensions { requestHost } }
+      live: rumPageloadEventsAdaptiveGroups(
+        limit: 100,
+        filter: {datetime_geq: $live, datetime_lt: $now}
+      ) { count dimensions { requestHost } }
+    }
+  }
+}"""
 
 try:
-    from google.oauth2 import service_account
-    from google.analytics.data_v1beta import BetaAnalyticsDataClient
-    from google.analytics.data_v1beta.types import (
-        DateRange, Dimension, Metric, RunReportRequest, RunRealtimeReportRequest,
-    )
-except ImportError:
-    out({"error": "pip3 install --user google-analytics-data google-auth"})
+    d = gql(token, q, {
+        "a": account,
+        "todayStart": today_start,
+        "todayEnd": tomorrow_start,
+        "live": last_30m,
+        "now": now_iso,
+    })
+    accounts = d["viewer"]["accounts"]
+    if not accounts:
+        out({"error": "account not found"})
 
-try:
-    creds = service_account.Credentials.from_service_account_file(sa_path)
-    client = BetaAnalyticsDataClient(credentials=creds)
-    prop = f"properties/{property_id}"
+    today_rows = accounts[0]["today"]
+    live_rows = accounts[0]["live"]
 
-    rt = client.run_realtime_report(RunRealtimeReportRequest(
-        property=prop,
-        metrics=[Metric(name="activeUsers")],
-    ))
-    realtime = int(rt.rows[0].metric_values[0].value) if rt.rows else 0
-
-    users = client.run_report(RunReportRequest(
-        property=prop,
-        date_ranges=[DateRange(start_date="today", end_date="today")],
-        dimensions=[Dimension(name="hostName")],
-        metrics=[Metric(name="totalUsers")],
-    ))
-    by_site = {}
-    total_users = 0
-    for row in users.rows:
-        host = row.dimension_values[0].value or "(unknown)"
-        n = int(row.metric_values[0].value)
-        by_site[host] = by_site.get(host, 0) + n
-        total_users += n
-
-    events = client.run_report(RunReportRequest(
-        property=prop,
-        date_ranges=[DateRange(start_date="today", end_date="today")],
-        dimensions=[Dimension(name="eventName")],
-        metrics=[Metric(name="eventCount")],
-    ))
-    wa_clicks = 0
-    for row in events.rows:
-        if row.dimension_values[0].value == "whatsapp_click":
-            wa_clicks = int(row.metric_values[0].value)
-            break
+    by_site = {r["dimensions"]["requestHost"]: r["count"] for r in today_rows}
+    total_today = sum(by_site.values())
+    active = sum(r["count"] for r in live_rows)
 
     out({
-        "realtime": realtime,
-        "usersToday": total_users,
-        "waClicks": wa_clicks,
+        "active": active,
+        "today": total_today,
         "bySiteToday": by_site,
     })
+except urllib.error.HTTPError as e:
+    out({"error": f"HTTP {e.code}: {e.reason}"})
+except urllib.error.URLError as e:
+    out({"error": f"red: {e.reason}"})
 except Exception as e:
     out({"error": str(e)[:200]})

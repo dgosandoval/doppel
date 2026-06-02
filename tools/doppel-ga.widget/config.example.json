@@ -1,4 +1,4 @@
 {
-  "property_id": "REPLACE_WITH_GA4_PROPERTY_ID",
-  "service_account_path": "/Users/domingo/.config/doppel-ga/service-account.json"
+  "account_id": "REPLACE_WITH_CF_ACCOUNT_ID",
+  "api_token": "REPLACE_WITH_CF_API_TOKEN_WITH_ANALYTICS_READ"
 }
