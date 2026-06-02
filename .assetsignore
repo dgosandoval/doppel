@@ -1,0 +1,5 @@
+tools/
+pod_factory/
+.git/
+.gitignore
+README*
