@@ -75,16 +75,6 @@ const SCENES = [
     tag: 'Portal · stencil',
     desc: 'Un portal 3D conecta dos escaneos distintos: cruza de un mundo al otro. Efecto de recorte por stencil.',
     credit: 'Escaneos: Andrii Shramko / schindelar3d'
-  },
-  {
-    id: 'editor',
-    type: 'module',
-    module: 'editor.mjs',
-    name: 'Editor',
-    place: 'Edición en vivo',
-    tag: 'Selección · compute',
-    desc: 'Editor interactivo de splats: selecciona, copia y borra regiones en tiempo real (requiere WebGPU).',
-    credit: 'Escaneo: superspl.at'
   }
 ];
 
@@ -144,6 +134,7 @@ function makeData() {
 // Ciclo de vida
 // ---------------------------------------------------------------------------
 let currentApp = null;
+let currentTour = null;
 let moduleVersion = 0;
 
 function freshCanvas() {
@@ -157,15 +148,26 @@ function freshCanvas() {
 // Elimina el DOM que inyectan los ejemplos (paneles, stats, etc.) al salir de la escena.
 function cleanInjectedDom() {
   const keepClass = ['topbar', 'sidebar', 'info', 'hint'];
+  const keepId = ['application-canvas', 'loader', 'tour-btn', 'tour-audio'];
   Array.from(document.body.children).forEach((el) => {
     if (el.tagName === 'SCRIPT') return;
-    if (el.id === 'application-canvas' || el.id === 'loader') return;
+    if (keepId.includes(el.id)) return;
     if (keepClass.some((c) => el.classList.contains(c))) return;
     el.remove();
   });
 }
 
 function teardown() {
+  if (currentTour) {
+    try {
+      currentTour.stop();
+    } catch (e) {
+      /* noop */
+    }
+    currentTour = null;
+  }
+  const tourBtn = document.getElementById('tour-btn');
+  if (tourBtn) tourBtn.hidden = true;
   if (currentApp) {
     try {
       currentApp.destroy();
@@ -356,8 +358,69 @@ async function loadLod(scene) {
     gsInstances[i].lodMultiplier = 1.5;
   }
 
-  app.on('update', () => {
+  // --- Recorrido automático (vuelo aéreo orbital) + música ---
+  const tourCenter = center.clone();
+  const tourR = Math.max(radius * 0.85, 30);
+  const tourH = center.y + radius * 0.5;
+  let tourAngle = Math.atan2(
+    scene.cameraPosition[2] - center.z,
+    scene.cameraPosition[0] - center.x
+  );
+  let tourActive = false;
+  let tourTime = 0;
+  const tourStartPos = new pc.Vec3();
+  const tourTmp = new pc.Vec3();
+  const audio = document.getElementById('tour-audio');
+  const btn = document.getElementById('tour-btn');
+  const btnLabel = btn ? btn.querySelector('.tour-btn__label') : null;
+  const btnIcon = btn ? btn.querySelector('.tour-btn__icon') : null;
+
+  const tour = {
+    start() {
+      tourActive = true;
+      tourTime = 0;
+      tourStartPos.copy(camera.getPosition());
+      cc.enabled = false;
+      if (btn) btn.classList.add('active');
+      if (btnLabel) btnLabel.textContent = 'Detener recorrido';
+      if (btnIcon) btnIcon.textContent = '⏸';
+      if (audio) audio.play().catch(() => {});
+    },
+    stop() {
+      tourActive = false;
+      cc.enabled = true;
+      if (btn) btn.classList.remove('active');
+      if (btnLabel) btnLabel.textContent = 'Iniciar recorrido';
+      if (btnIcon) btnIcon.textContent = '▶';
+      if (audio) audio.pause();
+    },
+    toggle() {
+      if (tourActive) this.stop();
+      else this.start();
+    }
+  };
+  currentTour = tour;
+  if (btn) btn.hidden = false;
+
+  const easeInOut = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
+
+  app.on('update', (dt) => {
     if (!revealStarted) reveal.effectTime = -1e6;
+    if (!tourActive) return;
+    tourTime += dt;
+    tourAngle += dt * 0.05; // ~125 s por vuelta
+    tourTmp.set(
+      tourCenter.x + Math.cos(tourAngle) * tourR,
+      tourH,
+      tourCenter.z + Math.sin(tourAngle) * tourR
+    );
+    if (tourTime < 3) {
+      // Transición suave desde la posición actual hacia el vuelo aéreo.
+      const t = easeInOut(tourTime / 3);
+      tourTmp.lerp(tourStartPos, tourTmp, t);
+    }
+    camera.setPosition(tourTmp);
+    camera.lookAt(tourCenter);
   });
 
   setTimeout(() => hideLoader(), 15000);
@@ -436,8 +499,14 @@ function buildSceneMenu() {
   });
 }
 
+function setupTourButton() {
+  const btn = document.getElementById('tour-btn');
+  if (btn) btn.addEventListener('click', () => currentTour && currentTour.toggle());
+}
+
 function boot() {
   buildSceneMenu();
+  setupTourButton();
   selectScene(SCENES[0]);
 }
 

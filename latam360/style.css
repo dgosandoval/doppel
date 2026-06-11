@@ -82,10 +82,60 @@ body {
   font-size: 12px;
 }
 .topbar__right {
-  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.topbar__pre {
+  font-size: 11px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  opacity: 0.7;
+  opacity: 0.6;
+}
+.topbar__doppel {
+  height: 18px;
+  width: auto;
+  filter: brightness(0) invert(1);
+  opacity: 0.92;
+}
+
+/* ---- Botón de recorrido ------------------------------------------------ */
+.tour-btn {
+  position: fixed;
+  bottom: 76px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 11;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 22px;
+  border: none;
+  border-radius: 999px;
+  background: var(--coral);
+  color: #fff;
+  font-family: 'Latam Sans', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  box-shadow: 0 12px 30px rgba(255, 79, 109, 0.4);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
+}
+.tour-btn[hidden] {
+  display: none;
+}
+.tour-btn:hover {
+  transform: translateX(-50%) translateY(-2px);
+  box-shadow: 0 16px 38px rgba(255, 79, 109, 0.5);
+}
+.tour-btn.active {
+  background: rgba(20, 8, 46, 0.7);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 20px rgba(8, 2, 30, 0.4);
+}
+.tour-btn__icon {
+  font-size: 12px;
 }
 
 /* ---- Panel de escenas (izquierda) ------------------------------------ */

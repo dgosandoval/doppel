@@ -8,6 +8,11 @@ export async function onRequest(context) {
   const { request, next } = context;
   const url = new URL(request.url);
 
+  // Los assets (logos, fuente) se sirven sin clave para poder mostrarlos en el login.
+  if (url.pathname.startsWith('/latam360/assets/')) {
+    return next();
+  }
+
   // Ya autenticado → servir el contenido real.
   const cookie = request.headers.get('Cookie') || '';
   if (cookie.split(/;\s*/).includes(`${COOKIE}=${TOKEN}`)) {
@@ -60,9 +65,12 @@ function loginPage(failed) {
     backdrop-filter: blur(16px);
     box-shadow: 0 30px 70px rgba(8,2,30,0.5);
   }
-  .wordmark { font-weight: 700; font-size: 30px; letter-spacing: 0.18em; }
-  .wordmark span { color: #ff7a90; }
-  .sub { margin: 8px 0 28px; font-size: 13px; letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.65; }
+  .logo-latam { height: 30px; width: auto; filter: brightness(0) invert(1); }
+  .ttl { margin-top: 14px; font-weight: 700; font-size: 17px; letter-spacing: 0.16em; }
+  .ttl span { color: #ff7a90; }
+  .sub { margin: 6px 0 28px; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.6; }
+  .foot-logo { height: 16px; width: auto; filter: brightness(0) invert(1); opacity: 0.6; vertical-align: middle; }
+  .foot-pre { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.4; margin-bottom: 8px; }
   input {
     width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2);
     background: rgba(255,255,255,0.08); color: #fff; font-size: 15px; outline: none; font-family: inherit;
@@ -80,12 +88,16 @@ function loginPage(failed) {
 </style></head>
 <body>
   <form class="card" method="POST" autocomplete="off">
-    <div class="wordmark">LATAM<span>360°</span></div>
+    <img class="logo-latam" src="/latam360/assets/latam-logo.svg" alt="LATAM" />
+    <div class="ttl">360<span>°</span> EXPERIENCE</div>
     <div class="sub">Experiencia inmersiva · Demo</div>
     <input type="password" name="key" placeholder="Clave de acceso" autofocus />
     <button type="submit">Entrar</button>
     <div class="err">${failed ? 'Clave incorrecta. Inténtalo de nuevo.' : ''}</div>
-    <div class="foot">Doppel</div>
+    <div class="foot">
+      <div class="foot-pre">Una experiencia de</div>
+      <img class="foot-logo" src="/latam360/assets/doppel-logo.png" alt="Doppel" />
+    </div>
   </form>
 </body></html>`;
   return new Response(html, {

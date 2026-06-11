@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <meta name="robots" content="noindex, nofollow" />
 <title>LATAM 360° — Experiencia inmersiva</title>
-<link rel="preconnect" href="https://esm.sh" crossorigin />
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
 <link rel="preconnect" href="https://code.playcanvas.com" crossorigin />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -14,14 +14,14 @@
 <script type="importmap">
 {
   "imports": {
-    "playcanvas": "https://esm.sh/playcanvas@2.19.6",
+    "playcanvas": "https://cdn.jsdelivr.net/npm/playcanvas@2.19.6/build/playcanvas.mjs",
     "examples/context": "/latam360/lib/context.mjs",
-    "playcanvas/scripts/esm/camera-controls.mjs": "https://esm.sh/playcanvas@2.19.6/scripts/esm/camera-controls.mjs?external=playcanvas",
-    "playcanvas/scripts/esm/first-person-controller.mjs": "https://esm.sh/playcanvas@2.19.6/scripts/esm/first-person-controller.mjs?external=playcanvas",
-    "playcanvas/scripts/esm/gsplat/reveal-radial.mjs": "https://esm.sh/playcanvas@2.19.6/scripts/esm/gsplat/reveal-radial.mjs?external=playcanvas",
-    "playcanvas/scripts/esm/gsplat/reveal-rain.mjs": "https://esm.sh/playcanvas@2.19.6/scripts/esm/gsplat/reveal-rain.mjs?external=playcanvas",
-    "playcanvas/scripts/esm/gsplat/reveal-grid-eruption.mjs": "https://esm.sh/playcanvas@2.19.6/scripts/esm/gsplat/reveal-grid-eruption.mjs?external=playcanvas",
-    "playcanvas/scripts/esm/gsplat/gsplat-weather.mjs": "https://esm.sh/playcanvas@2.19.6/scripts/esm/gsplat/gsplat-weather.mjs?external=playcanvas"
+    "playcanvas/scripts/esm/camera-controls.mjs": "https://cdn.jsdelivr.net/npm/playcanvas@2.19.6/scripts/esm/camera-controls.mjs",
+    "playcanvas/scripts/esm/first-person-controller.mjs": "https://cdn.jsdelivr.net/npm/playcanvas@2.19.6/scripts/esm/first-person-controller.mjs",
+    "playcanvas/scripts/esm/gsplat/reveal-radial.mjs": "https://cdn.jsdelivr.net/npm/playcanvas@2.19.6/scripts/esm/gsplat/reveal-radial.mjs",
+    "playcanvas/scripts/esm/gsplat/reveal-rain.mjs": "https://cdn.jsdelivr.net/npm/playcanvas@2.19.6/scripts/esm/gsplat/reveal-rain.mjs",
+    "playcanvas/scripts/esm/gsplat/reveal-grid-eruption.mjs": "https://cdn.jsdelivr.net/npm/playcanvas@2.19.6/scripts/esm/gsplat/reveal-grid-eruption.mjs",
+    "playcanvas/scripts/esm/gsplat/gsplat-weather.mjs": "https://cdn.jsdelivr.net/npm/playcanvas@2.19.6/scripts/esm/gsplat/gsplat-weather.mjs"
   }
 }
 </script>
@@ -36,7 +36,10 @@
       <span class="brand__divider"></span>
       <span class="brand__title">360<sup>°</sup> EXPERIENCE</span>
     </div>
-    <div class="topbar__right">Demo · Doppel</div>
+    <div class="topbar__right">
+      <span class="topbar__pre">Demo ·</span>
+      <img class="topbar__doppel" src="assets/doppel-logo.png" alt="Doppel" />
+    </div>
   </div>
 
   <!-- Selector de escenas -->
@@ -55,6 +58,15 @@
 
   <!-- Hint de controles -->
   <div class="hint" id="hint"></div>
+
+  <!-- Botón de recorrido automático (visible solo en escenas con tour) -->
+  <button class="tour-btn" id="tour-btn" hidden>
+    <span class="tour-btn__icon">▶</span>
+    <span class="tour-btn__label">Iniciar recorrido</span>
+  </button>
+
+  <!-- Música del recorrido (opcional: coloca tu pista en assets/tour-music.mp3) -->
+  <audio id="tour-audio" src="assets/tour-music.mp3" loop preload="none"></audio>
 
   <!-- Loader -->
   <div id="loader">

@@ -6,6 +6,7 @@ import * as pc from 'playcanvas';
 import { GsplatRevealGridEruption } from 'playcanvas/scripts/esm/gsplat/reveal-grid-eruption.mjs';
 import { GsplatRevealRadial } from 'playcanvas/scripts/esm/gsplat/reveal-radial.mjs';
 import { GsplatRevealRain } from 'playcanvas/scripts/esm/gsplat/reveal-rain.mjs';
+import { CameraControls } from 'playcanvas/scripts/esm/camera-controls.mjs';
 
 import { data, deviceType } from 'examples/context';
 
@@ -202,55 +203,17 @@ assetListLoader.load(() => {
     });
     camera.setLocalPosition(3, 1, 0.5);
 
-    // add orbit camera script with a mouse and a touch support
-    camera.addComponent('script');
-    camera.script?.create('orbitCamera', {
-        attributes: {
-            inertiaFactor: 0.2,
-            focusEntity: hotel,
-            distanceMax: 3.2,
-            frameOnStart: false
-        }
-    });
-    camera.script?.create('orbitCameraInputMouse');
-    camera.script?.create('orbitCameraInputTouch');
+    // Navegación orbital con CameraControls (reemplaza los scripts legacy de órbita,
+    // que no respondían al mouse en este montaje). Drag = orbitar, rueda = acercar.
     app.root.addChild(camera);
-
-    // Auto-rotate camera when idle
-    let autoRotateEnabled = true;
-    let lastInteractionTime = 0;
-    const autoRotateDelay = 2; // seconds of inactivity before auto-rotate resumes
-    const autoRotateSpeed = 10; // degrees per second
-
-    // Detect user interaction (click/touch only, not mouse movement)
-    const onUserInteraction = () => {
-        autoRotateEnabled = false;
-        lastInteractionTime = Date.now();
-    };
-
-    // Listen for click and touch events only
-    if (app.mouse) {
-        app.mouse.on('mousedown', onUserInteraction);
-        app.mouse.on('mousewheel', onUserInteraction);
-    }
-    if (app.touch) {
-        app.touch.on('touchstart', onUserInteraction);
-    }
-
-    // Auto-rotate update
-    app.on('update', (dt) => {
-        // Re-enable auto-rotate after delay
-        if (!autoRotateEnabled && (Date.now() - lastInteractionTime) / 1000 > autoRotateDelay) {
-            autoRotateEnabled = true;
-        }
-
-        // Apply auto-rotation
-        if (autoRotateEnabled) {
-            const orbitCamera = camera.script?.get('orbitCamera');
-            if (orbitCamera) {
-                orbitCamera.yaw += autoRotateSpeed * dt;
-            }
-        }
+    camera.addComponent('script');
+    const cc = camera.script.create(CameraControls);
+    Object.assign(cc, {
+        sceneSize: 3,
+        enableOrbit: true,
+        enablePan: true,
+        enableFly: false,
+        focusPoint: hotel.getPosition()
     });
 });
 
