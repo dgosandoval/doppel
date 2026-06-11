@@ -46,6 +46,8 @@ const SCENES = [
     desc: 'Un escaneo enorme servido por niveles de detalle: carga progresiva según te acercas. Cielos HDRI intercambiables.',
     credit: 'Escaneo: Andrii Shramko',
     tourMode: 'dolly',
+    tourSpeed: 1.1,
+    tourDist: 14,
     preload: ['https://code.playcanvas.com/examples_data/example_roman_parish_02/lod-meta.json']
   },
   {
@@ -58,6 +60,8 @@ const SCENES = [
     desc: 'Recorre la escena a pie, en primera persona, con colisiones reales. WASD para moverte, mouse para mirar.',
     credit: 'Escaneo: superspl.at · CC BY 4.0',
     tourMode: 'dolly',
+    tourSpeed: 1.5,
+    tourDist: 28,
     preload: [
       '/latam360/assets/splats/sunnyvale-lite.sog',
       'https://code.playcanvas.com/examples_data/example_sunnyvale/sunnyvale.glb'
@@ -85,7 +89,8 @@ const SCENES = [
     desc: 'Un portal 3D conecta dos escaneos distintos: cruza de un mundo al otro. Efecto de recorte por stencil.',
     credit: 'Escaneos: Andrii Shramko / schindelar3d',
     tourMode: 'dolly',
-    tourReach: 0.25,
+    tourSpeed: 2.4,
+    tourDist: 30,
     preload: [
       'https://code.playcanvas.com/examples_data/example_roman_parish_02/lod-meta.json',
       'https://code.playcanvas.com/examples_data/example_skatepark_02/lod-meta.json'
@@ -473,7 +478,11 @@ async function loadModule(scene) {
         /* noop */
       }
       // Movimiento de cámara para el recorrido (dolly o swing).
-      setupModuleAerial(app, scene.tourMode || 'dolly', scene.tourReach);
+      setupModuleAerial(app, scene.tourMode || 'dolly', {
+        speed: scene.tourSpeed,
+        dist: scene.tourDist,
+        arc: scene.tourReach
+      });
     }
   };
 
@@ -487,9 +496,9 @@ async function loadModule(scene) {
 // Movimiento de cámara genérico para escenas de módulo durante el recorrido.
 // Desactiva el script de control de la cámara (y sus ancestros — en first-person
 // el controlador está en el entity padre) y conduce la cámara en 'update'.
-//  'dolly' = avanza por el lugar (adelante + un poco arriba, ida y vuelta acotada).
+//  'dolly' = avanza por el lugar (velocidad/distancia configurables, mirada estable).
 //  'swing' = arco corto alrededor del objeto (se queda en el lado capturado).
-function setupModuleAerial(app, mode, reach) {
+function setupModuleAerial(app, mode, opts = {}) {
   let active = false;
   let ready = false;
   let cam = null;
@@ -501,6 +510,7 @@ function setupModuleAerial(app, mode, reach) {
   let disabledScripts = [];
   const startPos = new pc.Vec3();
   const fwdH = new pc.Vec3();
+  const startFwdFull = new pc.Vec3();
   const rightH = new pc.Vec3();
   const focus = new pc.Vec3();
   const tmp = new pc.Vec3();
@@ -553,6 +563,7 @@ function setupModuleAerial(app, mode, reach) {
     disableControls();
     const p = cam.getPosition();
     startPos.copy(p);
+    startFwdFull.copy(cam.forward).normalize();
     fwdH.set(cam.forward.x, 0, cam.forward.z);
     if (fwdH.length() < 1e-3) fwdH.set(0, 0, -1);
     fwdH.normalize();
@@ -593,25 +604,26 @@ function setupModuleAerial(app, mode, reach) {
     const d = dt || 1 / 60;
     time += d;
     if (mode === 'swing') {
-      const arc = reach || 0.45;
+      const arc = opts.arc || 0.45;
       const ang = startAngle + arc * Math.sin(time * 0.18);
       const h = baseH + Math.sin(time * 0.3) * radius * 0.05;
       tmp.set(focus.x + Math.cos(ang) * radius, h, focus.z + Math.sin(ang) * radius);
       cam.setPosition(tmp);
       cam.lookAt(focus);
     } else {
-      const r = reach || 0.6;
-      const ph = time * 0.13;
-      const adv = baseDist * r * ((1 - Math.cos(ph)) / 2); // 0 → adelante → 0 (acotado)
-      const rise = baseDist * r * 0.22 * ((1 - Math.cos(ph)) / 2);
-      const sway = baseDist * 0.05 * Math.sin(time * 0.07);
+      // dolly: avanza con velocidad/distancia explícitas, manteniendo la mirada
+      // inicial (no se inclina hacia el piso).
+      const speed = opts.speed || Math.max(0.6, baseDist * 0.05);
+      const maxD = opts.dist || baseDist * 0.6;
+      // arranque suave los primeros 2 s, luego velocidad constante
+      const adv = Math.min(speed * (time < 2 ? (time * time) / 4 : time - 1), maxD);
+      const sway = Math.min(baseDist, maxD) * 0.03 * Math.sin(time * 0.08);
       tmp.copy(fwdH).mulScalar(adv).add(startPos);
       tmp.x += rightH.x * sway;
       tmp.z += rightH.z * sway;
-      tmp.y = startPos.y + rise;
+      tmp.y = startPos.y;
       cam.setPosition(tmp);
-      look.copy(fwdH).mulScalar(baseDist).add(tmp);
-      look.y = focus.y;
+      look.copy(startFwdFull).mulScalar(20).add(tmp);
       cam.lookAt(look);
     }
   });
