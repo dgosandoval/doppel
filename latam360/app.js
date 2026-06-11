@@ -46,8 +46,10 @@ const SCENES = [
     desc: 'Un escaneo enorme servido por niveles de detalle: carga progresiva según te acercas. Cielos HDRI intercambiables.',
     credit: 'Escaneo: Andrii Shramko',
     tourMode: 'dolly',
-    tourSpeed: 0.9,
-    tourDist: 8,
+    tourSpeed: 0.8,
+    tourDist: 18,
+    tourYawDeg: 65,
+    tourCurve: true,
     preload: ['https://code.playcanvas.com/examples_data/example_roman_parish_02/lod-meta.json']
   },
   {
@@ -126,9 +128,9 @@ const TOUR_VOICES = {
   ]
 };
 
-// Volúmenes: música de fondo discreta, y más baja aún mientras habla la voz.
-const MUSIC_VOL = 0.32;
-const MUSIC_VOL_DUCKED = 0.1;
+// Volúmenes fijos: música al 30%, locución al 100%.
+const MUSIC_VOL = 0.3;
+const VOICE_VOL = 1.0;
 
 // ---------------------------------------------------------------------------
 // UI helpers
@@ -504,7 +506,8 @@ async function loadModule(scene) {
         speed: scene.tourSpeed,
         dist: scene.tourDist,
         arc: scene.tourReach,
-        yawDeg: scene.tourYawDeg
+        yawDeg: scene.tourYawDeg,
+        curve: scene.tourCurve
       });
     }
   };
@@ -531,6 +534,7 @@ function setupModuleAerial(app, mode, opts = {}) {
   let baseH = 0;
   let startAngle = 0;
   let disabledScripts = [];
+  let traveled = 0;
   const startPos = new pc.Vec3();
   const fwdH = new pc.Vec3();
   const startFwdFull = new pc.Vec3();
@@ -538,6 +542,8 @@ function setupModuleAerial(app, mode, opts = {}) {
   const focus = new pc.Vec3();
   const tmp = new pc.Vec3();
   const look = new pc.Vec3();
+  const pathPos = new pc.Vec3();
+  const curDir = new pc.Vec3();
 
   const findCamera = () => {
     let c = null;
@@ -591,6 +597,9 @@ function setupModuleAerial(app, mode, opts = {}) {
     if (fwdH.length() < 1e-3) fwdH.set(0, 0, -1);
     fwdH.normalize();
     rightH.set(-fwdH.z, 0, fwdH.x);
+    pathPos.copy(p);
+    curDir.copy(fwdH);
+    traveled = 0;
     const box = contentBox();
     let scaleR = 0;
     if (box) {
@@ -634,24 +643,41 @@ function setupModuleAerial(app, mode, opts = {}) {
       cam.setPosition(tmp);
       cam.lookAt(focus);
     } else {
-      // dolly: avanza con velocidad/distancia explícitas, manteniendo la mirada
-      // inicial (no se inclina hacia el piso).
+      // dolly: avanza con velocidad/distancia explícitas. Con `curve`, el CAMINO
+      // gira gradualmente (yawDeg); sin curve solo gira la mirada.
       const speed = opts.speed || Math.max(0.6, baseDist * 0.05);
       const maxD = opts.dist || baseDist * 0.6;
-      // arranque suave los primeros 2 s, luego velocidad constante
-      const adv = Math.min(speed * (time < 2 ? (time * time) / 4 : time - 1), maxD);
+      const b = Math.min(time / 18, 1);
+      const yawNow = opts.yawDeg ? ((opts.yawDeg * Math.PI) / 180) * (b * b * (3 - 2 * b)) : 0;
+      if (opts.curve && yawNow) {
+        curDir.set(
+          fwdH.x * Math.cos(yawNow) - fwdH.z * Math.sin(yawNow),
+          0,
+          fwdH.x * Math.sin(yawNow) + fwdH.z * Math.cos(yawNow)
+        );
+      } else {
+        curDir.copy(fwdH);
+      }
+      if (traveled < maxD) {
+        // arranque suave los primeros 2 s, luego velocidad constante
+        const inst = speed * (time < 2 ? time / 2 : 1);
+        const step = Math.min(inst * d, maxD - traveled);
+        traveled += step;
+        pathPos.add(tmp.copy(curDir).mulScalar(step));
+      }
       const sway = Math.min(baseDist, maxD) * 0.03 * Math.sin(time * 0.08);
-      tmp.copy(fwdH).mulScalar(adv).add(startPos);
-      tmp.x += rightH.x * sway;
-      tmp.z += rightH.z * sway;
-      tmp.y = startPos.y;
+      tmp.copy(pathPos);
+      tmp.x += -curDir.z * sway;
+      tmp.z += curDir.x * sway;
+      // Elevación opcional proporcional al avance (sobrevuela obstáculos).
+      tmp.y = startPos.y + (opts.rise || 0) * (maxD > 0 ? traveled / maxD : 0);
       cam.setPosition(tmp);
-      if (opts.yawDeg) {
-        // Giro gradual de la mirada (grados sobre la dirección inicial).
-        const b = Math.min(time / 18, 1);
-        const a = ((opts.yawDeg * Math.PI) / 180) * (b * b * (3 - 2 * b));
-        const fx = startFwdFull.x * Math.cos(a) - startFwdFull.z * Math.sin(a);
-        const fz = startFwdFull.x * Math.sin(a) + startFwdFull.z * Math.cos(a);
+      if (opts.curve && opts.yawDeg) {
+        // La mirada sigue la dirección del camino (conservando la inclinación inicial).
+        look.set(curDir.x, startFwdFull.y, curDir.z).normalize().mulScalar(20).add(tmp);
+      } else if (opts.yawDeg) {
+        const fx = startFwdFull.x * Math.cos(yawNow) - startFwdFull.z * Math.sin(yawNow);
+        const fz = startFwdFull.x * Math.sin(yawNow) + startFwdFull.z * Math.cos(yawNow);
         look.set(fx, startFwdFull.y, fz).normalize().mulScalar(20).add(tmp);
       } else {
         look.copy(startFwdFull).mulScalar(20).add(tmp);
@@ -758,7 +784,7 @@ const captions = {
   }
 };
 
-// Locución por escena: agenda los clips del turno y atenúa la música mientras habla.
+// Locución por escena: agenda los clips del turno (voz al 100%, música fija al 30%).
 const voiceover = {
   _timers: [],
   showFor(sceneId) {
@@ -766,21 +792,13 @@ const voiceover = {
     const clips = TOUR_VOICES[sceneId];
     const voice = document.getElementById('tour-voice');
     if (!voice || !clips || !clips.length) return;
-    const music = document.getElementById('tour-audio');
-    const duck = () => {
-      if (music) music.volume = MUSIC_VOL_DUCKED;
-    };
-    const unduck = () => {
-      if (music) music.volume = MUSIC_VOL;
-    };
-    voice.onplay = duck;
-    voice.onended = unduck;
-    voice.onpause = unduck;
+    voice.volume = VOICE_VOL;
     clips.forEach((clip) => {
       this._timers.push(
         setTimeout(() => {
           voice.src = clip.src;
           voice.currentTime = 0;
+          voice.volume = VOICE_VOL;
           voice.play().catch(() => {});
         }, clip.at)
       );
@@ -790,14 +808,7 @@ const voiceover = {
     this._timers.forEach(clearTimeout);
     this._timers = [];
     const voice = document.getElementById('tour-voice');
-    if (voice) {
-      voice.onplay = null;
-      voice.onended = null;
-      voice.onpause = null;
-      voice.pause();
-    }
-    const music = document.getElementById('tour-audio');
-    if (music) music.volume = MUSIC_VOL;
+    if (voice) voice.pause();
   }
 };
 
