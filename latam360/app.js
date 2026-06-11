@@ -134,7 +134,8 @@ function makeData() {
 // Ciclo de vida
 // ---------------------------------------------------------------------------
 let currentApp = null;
-let currentTour = null;
+let currentAerial = null; // controlador de cámara aérea de la escena actual (solo downtown)
+let currentSceneId = null;
 let moduleVersion = 0;
 
 function freshCanvas() {
@@ -158,16 +159,16 @@ function cleanInjectedDom() {
 }
 
 function teardown() {
-  if (currentTour) {
+  // Detiene el movimiento de cámara de la escena, pero NO la música:
+  // el recorrido global mantiene el audio sonando entre escenas.
+  if (currentAerial) {
     try {
-      currentTour.stop();
+      currentAerial.stop();
     } catch (e) {
       /* noop */
     }
-    currentTour = null;
+    currentAerial = null;
   }
-  const tourBtn = document.getElementById('tour-btn');
-  if (tourBtn) tourBtn.hidden = true;
   if (currentApp) {
     try {
       currentApp.destroy();
@@ -370,37 +371,20 @@ async function loadLod(scene) {
   let tourTime = 0;
   const tourStartPos = new pc.Vec3();
   const tourTmp = new pc.Vec3();
-  const audio = document.getElementById('tour-audio');
-  const btn = document.getElementById('tour-btn');
-  const btnLabel = btn ? btn.querySelector('.tour-btn__label') : null;
-  const btnIcon = btn ? btn.querySelector('.tour-btn__icon') : null;
 
-  const tour = {
+  // Movimiento de cámara aéreo (lo arranca/detiene el recorrido global).
+  currentAerial = {
     start() {
       tourActive = true;
       tourTime = 0;
       tourStartPos.copy(camera.getPosition());
       cc.enabled = false;
-      if (btn) btn.classList.add('active');
-      if (btnLabel) btnLabel.textContent = 'Detener recorrido';
-      if (btnIcon) btnIcon.textContent = '⏸';
-      if (audio) audio.play().catch(() => {});
     },
     stop() {
       tourActive = false;
       cc.enabled = true;
-      if (btn) btn.classList.remove('active');
-      if (btnLabel) btnLabel.textContent = 'Iniciar recorrido';
-      if (btnIcon) btnIcon.textContent = '▶';
-      if (audio) audio.pause();
-    },
-    toggle() {
-      if (tourActive) this.stop();
-      else this.start();
     }
   };
-  currentTour = tour;
-  if (btn) btn.hidden = false;
 
   const easeInOut = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
 
@@ -467,6 +451,7 @@ async function loadModule(scene) {
 // Orquestación
 // ---------------------------------------------------------------------------
 async function selectScene(scene) {
+  currentSceneId = scene.id;
   setActiveScene(scene);
   loaderEl().classList.remove('is-error');
   showLoader(scene.type === 'lod' ? 'Transmitiendo la ciudad…' : 'Cargando experiencia…');
@@ -499,9 +484,77 @@ function buildSceneMenu() {
   });
 }
 
+// ---------------------------------------------------------------------------
+// Recorrido completo: avanza automáticamente por todas las escenas (30 s c/u)
+// con la música sonando de forma continua (no se detiene entre escenas).
+// ---------------------------------------------------------------------------
+const SCENE_DWELL_MS = 30000;
+
+const grandTour = {
+  active: false,
+  _timer: null,
+  start() {
+    if (this.active) return;
+    this.active = true;
+    const audio = document.getElementById('tour-audio');
+    if (audio) audio.play().catch(() => {});
+    this._updateBtn(true);
+    this._runCurrent();
+  },
+  stop() {
+    this.active = false;
+    clearTimeout(this._timer);
+    if (currentAerial) {
+      try {
+        currentAerial.stop();
+      } catch (e) {
+        /* noop */
+      }
+    }
+    const audio = document.getElementById('tour-audio');
+    if (audio) audio.pause();
+    this._updateBtn(false);
+  },
+  toggle() {
+    if (this.active) this.stop();
+    else this.start();
+  },
+  _runCurrent() {
+    if (!this.active) return;
+    if (currentAerial) {
+      try {
+        currentAerial.start();
+      } catch (e) {
+        /* noop */
+      }
+    }
+    clearTimeout(this._timer);
+    this._timer = setTimeout(() => this._advance(), SCENE_DWELL_MS);
+  },
+  async _advance() {
+    if (!this.active) return;
+    const idx = SCENES.findIndex((s) => s.id === currentSceneId);
+    const next = SCENES[(idx + 1) % SCENES.length];
+    await selectScene(next);
+    if (!this.active) return;
+    this._runCurrent();
+  },
+  _updateBtn(active) {
+    const btn = document.getElementById('tour-btn');
+    if (!btn) return;
+    btn.classList.toggle('active', active);
+    const label = btn.querySelector('.tour-btn__label');
+    const icon = btn.querySelector('.tour-btn__icon');
+    if (label) label.textContent = active ? 'Detener recorrido' : 'Iniciar recorrido';
+    if (icon) icon.textContent = active ? '⏸' : '▶';
+  }
+};
+
 function setupTourButton() {
   const btn = document.getElementById('tour-btn');
-  if (btn) btn.addEventListener('click', () => currentTour && currentTour.toggle());
+  if (!btn) return;
+  btn.hidden = false;
+  btn.addEventListener('click', () => grandTour.toggle());
 }
 
 function boot() {

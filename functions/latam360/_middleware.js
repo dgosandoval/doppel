@@ -51,9 +51,10 @@ function loginPage(failed) {
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
   * { box-sizing: border-box; }
-  html, body { margin: 0; height: 100%; font-family: 'Inter', system-ui, sans-serif; }
+  html, body { margin: 0; min-height: 100%; font-family: 'Inter', system-ui, sans-serif; background: #1a0058; }
   body {
     display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; width: 100%; padding: 20px;
     background: radial-gradient(120% 120% at 50% 0%, #2a0088 0%, #1a0058 70%);
     color: #fff;
   }
