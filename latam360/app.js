@@ -128,8 +128,11 @@ const TOUR_VOICES = {
   ]
 };
 
-// Volúmenes fijos: música al 15%, locución al 100%.
-const MUSIC_VOL = 0.15;
+// Volúmenes fijos. El archivo tour-music.mp3 viene YA renderizado al 50% de su
+// nivel original (a prueba de iOS: aunque falle todo control por código, nunca
+// sonará más fuerte que la mitad). La ganancia de runtime (0.3) deja el mix
+// efectivo en ~15% donde Web Audio funciona. Locución al 100%.
+const MUSIC_VOL = 0.3;
 const VOICE_VOL = 1.0;
 
 // La música del tour se reproduce 100% por Web Audio (buffer + GainNode):
