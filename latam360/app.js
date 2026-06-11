@@ -46,8 +46,8 @@ const SCENES = [
     desc: 'Un escaneo enorme servido por niveles de detalle: carga progresiva según te acercas. Cielos HDRI intercambiables.',
     credit: 'Escaneo: Andrii Shramko',
     tourMode: 'dolly',
-    tourSpeed: 1.1,
-    tourDist: 14,
+    tourSpeed: 0.9,
+    tourDist: 8,
     preload: ['https://code.playcanvas.com/examples_data/example_roman_parish_02/lod-meta.json']
   },
   {
@@ -62,6 +62,7 @@ const SCENES = [
     tourMode: 'dolly',
     tourSpeed: 1.5,
     tourDist: 28,
+    tourYawDeg: -60,
     preload: [
       '/latam360/assets/splats/sunnyvale-lite.sog',
       'https://code.playcanvas.com/examples_data/example_sunnyvale/sunnyvale.glb'
@@ -89,8 +90,8 @@ const SCENES = [
     desc: 'Un portal 3D conecta dos escaneos distintos: cruza de un mundo al otro. Efecto de recorte por stencil.',
     credit: 'Escaneos: Andrii Shramko / schindelar3d',
     tourMode: 'dolly',
-    tourSpeed: 2.4,
-    tourDist: 30,
+    tourSpeed: 1.8,
+    tourDist: 20,
     preload: [
       'https://code.playcanvas.com/examples_data/example_roman_parish_02/lod-meta.json',
       'https://code.playcanvas.com/examples_data/example_skatepark_02/lod-meta.json'
@@ -111,6 +112,23 @@ const TOUR_MESSAGES = {
   reveal: ['Aparición cinematográfica del splat', 'Volumen y detalle, sin mallas 3D'],
   'splat-portal': ['Un portal entre dos mundos', 'Realidades capturadas, conectadas']
 };
+
+// Locución del recorrido: clips por escena, con su instante de inicio (ms) dentro
+// del turno de 30 s. El cierre (06) suena en el turno del portal, tras su clip.
+const TOUR_VOICES = {
+  downtown: [{ src: 'assets/voice/voice-01.mp3', at: 1500 }],
+  'lod-streaming': [{ src: 'assets/voice/voice-02.mp3', at: 1500 }],
+  'first-person': [{ src: 'assets/voice/voice-03.mp3', at: 1500 }],
+  reveal: [{ src: 'assets/voice/voice-04.mp3', at: 1500 }],
+  'splat-portal': [
+    { src: 'assets/voice/voice-05.mp3', at: 1500 },
+    { src: 'assets/voice/voice-06.mp3', at: 20000 }
+  ]
+};
+
+// Volúmenes: música de fondo discreta, y más baja aún mientras habla la voz.
+const MUSIC_VOL = 0.32;
+const MUSIC_VOL_DUCKED = 0.1;
 
 // ---------------------------------------------------------------------------
 // UI helpers
@@ -183,7 +201,7 @@ function freshCanvas() {
 // Elimina el DOM que inyectan los ejemplos (paneles, stats, etc.) al salir de la escena.
 function cleanInjectedDom() {
   const keepClass = ['topbar', 'sidebar', 'info', 'hint'];
-  const keepId = ['application-canvas', 'loader', 'tour-btn', 'tour-audio', 'tour-caption'];
+  const keepId = ['application-canvas', 'loader', 'tour-btn', 'tour-audio', 'tour-voice', 'tour-caption'];
   Array.from(document.body.children).forEach((el) => {
     if (el.tagName === 'SCRIPT') return;
     if (keepId.includes(el.id)) return;
@@ -393,10 +411,10 @@ async function loadLod(scene) {
     gsInstances[i].lodMultiplier = 1.5;
   }
 
-  // --- Recorrido: sube un poco y AVANZA sobre los edificios (no se aleja) ---
+  // --- Recorrido: sube un poco y AVANZA hacia el centro de la ciudad ---
   const tourCenter = center.clone();
-  const tourAdvReach = radius * 0.45; // cuánto avanza sobre la ciudad
   const tourRise = radius * 0.18; // sube un poco
+  let tourAdvReach = radius * 0.45;
   let tourActive = false;
   let tourTime = 0;
   const tourStartPos = new pc.Vec3();
@@ -409,9 +427,13 @@ async function loadLod(scene) {
       tourActive = true;
       tourTime = 0;
       tourStartPos.copy(camera.getPosition());
-      tourFwdH.set(camera.forward.x, 0, camera.forward.z);
-      if (tourFwdH.length() < 1e-3) tourFwdH.set(0, 0, -1);
+      // Dirección horizontal hacia el centro de la ciudad (no hacia el borde).
+      tourFwdH.set(tourCenter.x - tourStartPos.x, 0, tourCenter.z - tourStartPos.z);
+      const distToCenter = tourFwdH.length();
+      if (distToCenter < 1e-3) tourFwdH.set(0, 0, -1);
       tourFwdH.normalize();
+      // Avanza hasta ~3/4 del camino al centro: termina sobre la ciudad.
+      tourAdvReach = Math.max(20, distToCenter * 0.75);
       cc.enabled = false;
     },
     stop() {
@@ -481,7 +503,8 @@ async function loadModule(scene) {
       setupModuleAerial(app, scene.tourMode || 'dolly', {
         speed: scene.tourSpeed,
         dist: scene.tourDist,
-        arc: scene.tourReach
+        arc: scene.tourReach,
+        yawDeg: scene.tourYawDeg
       });
     }
   };
@@ -623,7 +646,16 @@ function setupModuleAerial(app, mode, opts = {}) {
       tmp.z += rightH.z * sway;
       tmp.y = startPos.y;
       cam.setPosition(tmp);
-      look.copy(startFwdFull).mulScalar(20).add(tmp);
+      if (opts.yawDeg) {
+        // Giro gradual de la mirada (grados sobre la dirección inicial).
+        const b = Math.min(time / 18, 1);
+        const a = ((opts.yawDeg * Math.PI) / 180) * (b * b * (3 - 2 * b));
+        const fx = startFwdFull.x * Math.cos(a) - startFwdFull.z * Math.sin(a);
+        const fz = startFwdFull.x * Math.sin(a) + startFwdFull.z * Math.cos(a);
+        look.set(fx, startFwdFull.y, fz).normalize().mulScalar(20).add(tmp);
+      } else {
+        look.copy(startFwdFull).mulScalar(20).add(tmp);
+      }
       cam.lookAt(look);
     }
   });
@@ -726,6 +758,49 @@ const captions = {
   }
 };
 
+// Locución por escena: agenda los clips del turno y atenúa la música mientras habla.
+const voiceover = {
+  _timers: [],
+  showFor(sceneId) {
+    this.clear();
+    const clips = TOUR_VOICES[sceneId];
+    const voice = document.getElementById('tour-voice');
+    if (!voice || !clips || !clips.length) return;
+    const music = document.getElementById('tour-audio');
+    const duck = () => {
+      if (music) music.volume = MUSIC_VOL_DUCKED;
+    };
+    const unduck = () => {
+      if (music) music.volume = MUSIC_VOL;
+    };
+    voice.onplay = duck;
+    voice.onended = unduck;
+    voice.onpause = unduck;
+    clips.forEach((clip) => {
+      this._timers.push(
+        setTimeout(() => {
+          voice.src = clip.src;
+          voice.currentTime = 0;
+          voice.play().catch(() => {});
+        }, clip.at)
+      );
+    });
+  },
+  clear() {
+    this._timers.forEach(clearTimeout);
+    this._timers = [];
+    const voice = document.getElementById('tour-voice');
+    if (voice) {
+      voice.onplay = null;
+      voice.onended = null;
+      voice.onpause = null;
+      voice.pause();
+    }
+    const music = document.getElementById('tour-audio');
+    if (music) music.volume = MUSIC_VOL;
+  }
+};
+
 const grandTour = {
   active: false,
   _timer: null,
@@ -733,7 +808,10 @@ const grandTour = {
     if (this.active) return;
     this.active = true;
     const audio = document.getElementById('tour-audio');
-    if (audio) audio.play().catch(() => {});
+    if (audio) {
+      audio.volume = MUSIC_VOL;
+      audio.play().catch(() => {});
+    }
     this._updateBtn(true);
     this._runCurrent();
   },
@@ -741,6 +819,7 @@ const grandTour = {
     this.active = false;
     clearTimeout(this._timer);
     captions.clear();
+    voiceover.clear();
     if (currentAerial) {
       try {
         currentAerial.stop();
@@ -765,8 +844,9 @@ const grandTour = {
         /* noop */
       }
     }
-    // Mensajes en tarjetas para esta escena.
+    // Mensajes en tarjetas y locución para esta escena.
     captions.showFor(currentSceneId);
+    voiceover.showFor(currentSceneId);
     // Precarga la siguiente escena durante este turno (30 s de margen).
     const idx = SCENES.findIndex((s) => s.id === currentSceneId);
     preloadScene(SCENES[(idx + 1) % SCENES.length]);
