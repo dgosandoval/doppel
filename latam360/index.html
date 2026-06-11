@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="robots" content="noindex, nofollow" />
+<title>LATAM 360° — Experiencia inmersiva</title>
+<link rel="preconnect" href="https://esm.sh" crossorigin />
+<link rel="preconnect" href="https://code.playcanvas.com" crossorigin />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+<script type="importmap">
+{
+  "imports": {
+    "playcanvas": "https://esm.sh/playcanvas@2.19.6",
+    "examples/context": "/latam360/lib/context.mjs",
+    "playcanvas/scripts/esm/camera-controls.mjs": "https://esm.sh/playcanvas@2.19.6/scripts/esm/camera-controls.mjs?external=playcanvas",
+    "playcanvas/scripts/esm/first-person-controller.mjs": "https://esm.sh/playcanvas@2.19.6/scripts/esm/first-person-controller.mjs?external=playcanvas",
+    "playcanvas/scripts/esm/gsplat/reveal-radial.mjs": "https://esm.sh/playcanvas@2.19.6/scripts/esm/gsplat/reveal-radial.mjs?external=playcanvas",
+    "playcanvas/scripts/esm/gsplat/reveal-rain.mjs": "https://esm.sh/playcanvas@2.19.6/scripts/esm/gsplat/reveal-rain.mjs?external=playcanvas",
+    "playcanvas/scripts/esm/gsplat/reveal-grid-eruption.mjs": "https://esm.sh/playcanvas@2.19.6/scripts/esm/gsplat/reveal-grid-eruption.mjs?external=playcanvas",
+    "playcanvas/scripts/esm/gsplat/gsplat-weather.mjs": "https://esm.sh/playcanvas@2.19.6/scripts/esm/gsplat/gsplat-weather.mjs?external=playcanvas"
+  }
+}
+</script>
+</head>
+<body>
+  <canvas id="application-canvas"></canvas>
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="brand">
+      <img class="brand__logo" src="assets/latam-logo.svg" alt="LATAM" />
+      <span class="brand__divider"></span>
+      <span class="brand__title">360<sup>°</sup> EXPERIENCE</span>
+    </div>
+    <div class="topbar__right">Demo · Doppel</div>
+  </div>
+
+  <!-- Selector de escenas -->
+  <nav class="sidebar">
+    <p class="sidebar__label">Experiencias</p>
+    <div id="scenes"></div>
+  </nav>
+
+  <!-- Panel de información -->
+  <aside class="info">
+    <div class="info__place" id="info-place"></div>
+    <h2 class="info__name" id="info-name"></h2>
+    <p class="info__desc" id="info-desc"></p>
+    <div class="info__credit" id="info-credit"></div>
+  </aside>
+
+  <!-- Hint de controles -->
+  <div class="hint" id="hint"></div>
+
+  <!-- Loader -->
+  <div id="loader">
+    <img class="loader-logo" src="assets/latam-logo.svg" alt="LATAM" />
+    <div class="spinner"></div>
+    <div id="loader-text">Iniciando experiencia inmersiva…</div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

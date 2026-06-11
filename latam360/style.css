@@ -1,0 +1,285 @@
+/* LATAM 360 — identidad de marca LATAM (demo Doppel) */
+@font-face {
+  font-family: 'Latam Sans';
+  src: url('assets/LatamSans-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-display: swap;
+}
+
+:root {
+  --indigo: #2a0088;
+  --indigo-deep: #1a0058;
+  --coral: #ff4f6d;
+  --coral-soft: #ff7a90;
+  --ink: #15082e;
+  --white: #ffffff;
+  --glass: rgba(255, 255, 255, 0.92);
+}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--indigo-deep);
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--white);
+  -webkit-font-smoothing: antialiased;
+}
+
+#application-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: 0;
+  touch-action: none;
+}
+
+/* ---- Top bar ---------------------------------------------------------- */
+.topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 26px;
+  background: linear-gradient(to bottom, rgba(20, 8, 46, 0.78), rgba(20, 8, 46, 0));
+  pointer-events: none;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.brand__logo {
+  height: 26px;
+  width: auto;
+  /* el SVG es indigo; lo pasamos a blanco para fondo oscuro */
+  filter: brightness(0) invert(1);
+}
+.brand__divider {
+  width: 1px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.35);
+}
+.brand__title {
+  font-family: 'Latam Sans', sans-serif;
+  font-weight: 700;
+  font-size: 19px;
+  letter-spacing: 0.04em;
+}
+.brand__title sup {
+  color: var(--coral-soft);
+  font-size: 12px;
+}
+.topbar__right {
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+/* ---- Panel de escenas (izquierda) ------------------------------------ */
+.sidebar {
+  position: fixed;
+  left: 26px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 230px;
+}
+.sidebar__label {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.6;
+  margin: 0 0 2px 4px;
+}
+.scene-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  text-align: left;
+  padding: 13px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  color: var(--white);
+  cursor: pointer;
+  transition: all 0.22s ease;
+  font-family: inherit;
+}
+.scene-card:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateX(3px);
+}
+.scene-card.active {
+  background: var(--coral);
+  border-color: var(--coral);
+  box-shadow: 0 10px 30px rgba(255, 79, 109, 0.35);
+}
+.scene-card.active .scene-card__place,
+.scene-card.active .scene-card__tag {
+  color: rgba(255, 255, 255, 0.85);
+}
+.scene-card__name {
+  font-family: 'Latam Sans', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+}
+.scene-card__place {
+  font-size: 12px;
+  opacity: 0.85;
+}
+.scene-card__tag {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.6;
+  margin-top: 3px;
+}
+
+/* ---- Panel info (abajo derecha) -------------------------------------- */
+.info {
+  position: fixed;
+  right: 26px;
+  bottom: 26px;
+  z-index: 10;
+  width: 300px;
+  padding: 20px 22px;
+  border-radius: 18px;
+  background: var(--glass);
+  color: var(--ink);
+  box-shadow: 0 20px 50px rgba(8, 2, 30, 0.45);
+}
+.info__place {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--coral);
+  font-weight: 700;
+}
+.info__name {
+  font-family: 'Latam Sans', sans-serif;
+  font-weight: 700;
+  font-size: 24px;
+  margin: 4px 0 8px;
+  color: var(--indigo);
+}
+.info__desc {
+  font-size: 13.5px;
+  line-height: 1.5;
+  opacity: 0.85;
+}
+.info__credit {
+  margin-top: 12px;
+  font-size: 11px;
+  opacity: 0.5;
+}
+
+/* ---- Hint de controles (abajo centro) -------------------------------- */
+.hint {
+  position: fixed;
+  bottom: 26px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  font-size: 12.5px;
+  letter-spacing: 0.04em;
+  padding: 9px 18px;
+  border-radius: 999px;
+  background: rgba(20, 8, 46, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* ---- Loader ----------------------------------------------------------- */
+#loader {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 26px;
+  background: radial-gradient(120% 120% at 50% 0%, var(--indigo) 0%, var(--indigo-deep) 70%);
+  transition: opacity 0.6s ease;
+}
+#loader.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+#loader .spinner {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.18);
+  border-top-color: var(--coral);
+  animation: spin 0.9s linear infinite;
+}
+#loader.is-error .spinner {
+  display: none;
+}
+#loader-text {
+  font-size: 15px;
+  letter-spacing: 0.03em;
+  text-align: center;
+  max-width: 460px;
+  padding: 0 24px;
+}
+.loader-logo {
+  height: 30px;
+  filter: brightness(0) invert(1);
+  margin-bottom: 4px;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---- Responsive ------------------------------------------------------- */
+@media (max-width: 820px) {
+  .sidebar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: auto;
+    transform: none;
+    width: 100%;
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 12px;
+    gap: 8px;
+    background: linear-gradient(to top, rgba(20, 8, 46, 0.9), rgba(20, 8, 46, 0));
+  }
+  .sidebar__label {
+    display: none;
+  }
+  .scene-card {
+    min-width: 150px;
+  }
+  .info,
+  .hint {
+    display: none;
+  }
+}
