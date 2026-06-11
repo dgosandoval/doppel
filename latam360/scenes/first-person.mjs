@@ -46,7 +46,9 @@ const gfxOptions = {
 };
 
 const device = await pc.createGraphicsDevice(canvas, gfxOptions);
-device.maxPixelRatio = Math.min(window.devicePixelRatio, 2);
+// Escaneo pesado: renderizar a menor resolución para fluidez (los splats son suaves,
+// apenas se nota). Sin esto, en pantallas retina se renderiza a 2x = 4x los píxeles.
+device.maxPixelRatio = pc.platform.mobile ? 1 : Math.min(window.devicePixelRatio, 1.25);
 
 const createOptions = new pc.AppOptions();
 createOptions.graphicsDevice = device;
@@ -97,7 +99,8 @@ app.start();
 
 // Initial control values
 data.set('renderer', pc.GSPLAT_RENDERER_AUTO);
-data.set('splatBudget', 4);
+// Presupuesto de splats más bajo = más fluido (en móvil aún más).
+data.set('splatBudget', pc.platform.mobile ? 1.5 : 2.5);
 data.set('data.stats.gsplats', '—');
 data.set('data.stats.resolution', '—');
 

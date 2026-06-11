@@ -44,7 +44,12 @@ const SCENES = [
     place: 'Sunnyvale · EE.UU.',
     tag: 'Caminata · colisiones',
     desc: 'Recorre la escena a pie, en primera persona, con colisiones reales. WASD para moverte, mouse para mirar.',
-    credit: 'Escaneo: superspl.at · CC BY 4.0'
+    credit: 'Escaneo: superspl.at · CC BY 4.0',
+    tourMode: 'lookaround',
+    preload: [
+      'https://code.playcanvas.com/examples_data/example_sunnyvale/sunnyvale.sog',
+      'https://code.playcanvas.com/examples_data/example_sunnyvale/sunnyvale.glb'
+    ]
   },
   {
     id: 'lod-streaming',
@@ -54,7 +59,9 @@ const SCENES = [
     place: 'Parroquia romana',
     tag: 'Niveles de detalle',
     desc: 'Un escaneo enorme servido por niveles de detalle: carga progresiva según te acercas. Cielos HDRI intercambiables.',
-    credit: 'Escaneo: Andrii Shramko'
+    credit: 'Escaneo: Andrii Shramko',
+    tourMode: 'orbit',
+    preload: ['https://code.playcanvas.com/examples_data/example_roman_parish_02/lod-meta.json']
   },
   {
     id: 'reveal',
@@ -64,7 +71,9 @@ const SCENES = [
     place: 'Hotel · escultura',
     tag: 'Efectos de aparición',
     desc: 'Aparición cinematográfica del splat con efectos animados (radial, lluvia, erupción). Órbita con el mouse.',
-    credit: 'Escaneo: superspl.at'
+    credit: 'Escaneo: superspl.at',
+    tourMode: 'orbit',
+    preload: ['https://playcanvas.vercel.app/static/assets/splats/hotel-culpture.compressed.ply']
   },
   {
     id: 'splat-portal',
@@ -74,9 +83,28 @@ const SCENES = [
     place: 'Dos mundos',
     tag: 'Portal · stencil',
     desc: 'Un portal 3D conecta dos escaneos distintos: cruza de un mundo al otro. Efecto de recorte por stencil.',
-    credit: 'Escaneos: Andrii Shramko / schindelar3d'
+    credit: 'Escaneos: Andrii Shramko / schindelar3d',
+    tourMode: 'orbit',
+    preload: [
+      'https://code.playcanvas.com/examples_data/example_roman_parish_02/lod-meta.json',
+      'https://code.playcanvas.com/examples_data/example_skatepark_02/lod-meta.json'
+    ]
   }
 ];
+
+// Mensajes que van apareciendo (en tarjetas) durante el recorrido, por escena.
+// Edita libremente estos textos. Acepta <b>negrita</b>.
+const TOUR_MESSAGES = {
+  downtown: [
+    'Bienvenido a <b>LATAM 360°</b>',
+    'Centro histórico de Lublin, reconstruido en 3D',
+    'Vuela sobre la ciudad en tiempo real'
+  ],
+  'first-person': ['Camina dentro de la escena', 'Captura fotorrealista a escala real'],
+  'lod-streaming': ['Escaneos servidos por niveles de detalle', 'Carga progresiva, sin esperas'],
+  reveal: ['Aparición cinematográfica del splat', 'Volumen y detalle, sin mallas 3D'],
+  'splat-portal': ['Un portal entre dos mundos', 'Realidades capturadas, conectadas']
+};
 
 // ---------------------------------------------------------------------------
 // UI helpers
@@ -149,7 +177,7 @@ function freshCanvas() {
 // Elimina el DOM que inyectan los ejemplos (paneles, stats, etc.) al salir de la escena.
 function cleanInjectedDom() {
   const keepClass = ['topbar', 'sidebar', 'info', 'hint'];
-  const keepId = ['application-canvas', 'loader', 'tour-btn', 'tour-audio'];
+  const keepId = ['application-canvas', 'loader', 'tour-btn', 'tour-audio', 'tour-caption'];
   Array.from(document.body.children).forEach((el) => {
     if (el.tagName === 'SCRIPT') return;
     if (keepId.includes(el.id)) return;
@@ -359,10 +387,11 @@ async function loadLod(scene) {
     gsInstances[i].lodMultiplier = 1.5;
   }
 
-  // --- Recorrido automático (vuelo aéreo orbital) + música ---
+  // --- Recorrido automático (vuelo aéreo orbital, sube y baja) ---
   const tourCenter = center.clone();
   const tourR = Math.max(radius * 0.85, 30);
-  const tourH = center.y + radius * 0.5;
+  const tourBaseH = center.y + radius * 0.5;
+  const tourAmpH = radius * 0.35; // amplitud vertical: sube y baja
   let tourAngle = Math.atan2(
     scene.cameraPosition[2] - center.z,
     scene.cameraPosition[0] - center.x
@@ -393,10 +422,13 @@ async function loadLod(scene) {
     if (!tourActive) return;
     tourTime += dt;
     tourAngle += dt * 0.05; // ~125 s por vuelta
+    // Altura oscila (sube y baja) y el radio se acerca/aleja un poco.
+    const h = tourBaseH + Math.sin(tourTime * 0.16) * tourAmpH;
+    const r = tourR * (1 + 0.12 * Math.cos(tourTime * 0.1));
     tourTmp.set(
-      tourCenter.x + Math.cos(tourAngle) * tourR,
-      tourH,
-      tourCenter.z + Math.sin(tourAngle) * tourR
+      tourCenter.x + Math.cos(tourAngle) * r,
+      h,
+      tourCenter.z + Math.sin(tourAngle) * r
     );
     if (tourTime < 3) {
       // Transición suave desde la posición actual hacia el vuelo aéreo.
@@ -437,6 +469,8 @@ async function loadModule(scene) {
       currentApp = app;
       // Ocultar el loader cuando empiece a renderizar.
       app.on('postrender', hide);
+      // Movimiento de cámara para el recorrido (órbita o panorámica).
+      setupModuleAerial(app, scene.tourMode || 'orbit');
     }
   };
 
@@ -445,6 +479,126 @@ async function loadModule(scene) {
 
   // Salvavidas por si el módulo no llega a registrar/renderizar.
   setTimeout(hide, 15000);
+}
+
+// Movimiento de cámara genérico para escenas de módulo durante el recorrido.
+// Desactiva el script de control de la cámara (y sus ancestros — en first-person
+// el controlador está en el entity padre) y conduce la cámara en 'update'.
+// 'orbit' = gira alrededor del contenido; 'lookaround' = panorámica desde el punto actual.
+function setupModuleAerial(app, mode) {
+  let active = false;
+  let ready = false;
+  let cam = null;
+  let time = 0;
+  let angle = 0;
+  let radius = 0;
+  let baseH = 0;
+  const focus = new pc.Vec3();
+  const tmp = new pc.Vec3();
+  const startPos = new pc.Vec3();
+  const startFwd = new pc.Vec3();
+  let disabledScripts = [];
+
+  const findCamera = () => {
+    let c = null;
+    app.root.forEach((e) => {
+      if (e.camera) c = e;
+    });
+    return c;
+  };
+
+  const computeContentCenter = () => {
+    const aabb = new pc.BoundingBox();
+    let has = false;
+    app.root.forEach((e) => {
+      const gs = e.gsplat;
+      const box = gs && gs.instance && gs.instance.aabb;
+      if (box && box.halfExtents.length() > 0) {
+        if (!has) {
+          aabb.copy(box);
+          has = true;
+        } else {
+          aabb.add(box);
+        }
+      }
+    });
+    return has ? aabb.center.clone() : null;
+  };
+
+  const disableControls = () => {
+    disabledScripts = [];
+    let e = cam;
+    while (e) {
+      if (e.script && e.script.enabled) {
+        e.script.enabled = false;
+        disabledScripts.push(e);
+      }
+      e = e.parent;
+    }
+  };
+  const restoreControls = () => {
+    disabledScripts.forEach((e) => {
+      if (e.script) e.script.enabled = true;
+    });
+    disabledScripts = [];
+  };
+
+  const init = () => {
+    disableControls();
+    const p = cam.getPosition();
+    if (mode === 'lookaround') {
+      startPos.copy(p);
+      startFwd.copy(cam.forward);
+      return;
+    }
+    // orbit: alrededor del contenido, conservando la distancia/altura actuales
+    const c = computeContentCenter();
+    if (c) focus.copy(c);
+    else focus.copy(cam.forward).mulScalar(6).add(p);
+    radius = Math.max(2, Math.hypot(p.x - focus.x, p.z - focus.z));
+    baseH = p.y;
+    angle = Math.atan2(p.z - focus.z, p.x - focus.x);
+  };
+
+  app.on('update', (dt) => {
+    if (!active) return;
+    if (!ready) {
+      cam = findCamera();
+      if (!cam) return;
+      init();
+      ready = true;
+    }
+    const d = dt || 1 / 60;
+    time += d;
+    if (mode === 'lookaround') {
+      // panorámica lenta: rota la vista en su sitio (ideal para interiores)
+      const yaw = time * 6; // grados/seg
+      const rad = (yaw * Math.PI) / 180;
+      const fx = startFwd.x * Math.cos(rad) - startFwd.z * Math.sin(rad);
+      const fz = startFwd.x * Math.sin(rad) + startFwd.z * Math.cos(rad);
+      tmp.set(startPos.x + fx, startPos.y + startFwd.y, startPos.z + fz);
+      cam.setPosition(startPos);
+      cam.lookAt(tmp);
+    } else {
+      angle += d * 0.12;
+      const h = baseH + Math.sin(time * 0.3) * radius * 0.1;
+      tmp.set(focus.x + Math.cos(angle) * radius, h, focus.z + Math.sin(angle) * radius);
+      cam.setPosition(tmp);
+      cam.lookAt(focus);
+    }
+  });
+
+  currentAerial = {
+    start() {
+      active = true;
+      ready = false;
+      time = 0;
+    },
+    stop() {
+      active = false;
+      restoreControls();
+    }
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -490,6 +644,48 @@ function buildSceneMenu() {
 // ---------------------------------------------------------------------------
 const SCENE_DWELL_MS = 30000;
 
+// Precarga (warm cache) de los assets pesados de una escena, para que cuando
+// el recorrido avance la siguiente escena no muestre una pantalla de carga larga.
+const _preloaded = new Set();
+function preloadScene(scene) {
+  if (!scene || !scene.preload) return;
+  scene.preload.forEach((url) => {
+    if (_preloaded.has(url)) return;
+    _preloaded.add(url);
+    fetch(url, { mode: 'cors' })
+      .then((r) => r.arrayBuffer())
+      .catch(() => _preloaded.delete(url));
+  });
+}
+
+// Tarjetas de mensajes que aparecen secuencialmente durante el turno de cada escena.
+const captions = {
+  _timers: [],
+  showFor(sceneId) {
+    this.clear();
+    const el = document.getElementById('tour-caption');
+    const msgs = TOUR_MESSAGES[sceneId];
+    if (!el || !msgs || !msgs.length) return;
+    const slot = SCENE_DWELL_MS / msgs.length;
+    msgs.forEach((m, i) => {
+      const start = i * slot + 1200;
+      this._timers.push(
+        setTimeout(() => {
+          el.innerHTML = m;
+          el.classList.add('show');
+        }, start)
+      );
+      this._timers.push(setTimeout(() => el.classList.remove('show'), start + slot - 1400));
+    });
+  },
+  clear() {
+    this._timers.forEach(clearTimeout);
+    this._timers = [];
+    const el = document.getElementById('tour-caption');
+    if (el) el.classList.remove('show');
+  }
+};
+
 const grandTour = {
   active: false,
   _timer: null,
@@ -504,6 +700,7 @@ const grandTour = {
   stop() {
     this.active = false;
     clearTimeout(this._timer);
+    captions.clear();
     if (currentAerial) {
       try {
         currentAerial.stop();
@@ -528,6 +725,11 @@ const grandTour = {
         /* noop */
       }
     }
+    // Mensajes en tarjetas para esta escena.
+    captions.showFor(currentSceneId);
+    // Precarga la siguiente escena durante este turno (30 s de margen).
+    const idx = SCENES.findIndex((s) => s.id === currentSceneId);
+    preloadScene(SCENES[(idx + 1) % SCENES.length]);
     clearTimeout(this._timer);
     this._timer = setTimeout(() => this._advance(), SCENE_DWELL_MS);
   },
