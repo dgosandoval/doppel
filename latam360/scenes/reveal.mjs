@@ -52,7 +52,7 @@ app.on('destroy', () => {
 });
 
 const assets = {
-    hotel: new pc.Asset('gsplat', 'gsplat', { url: 'https://playcanvas.vercel.app/static/assets/splats/hotel-culpture.compressed.ply' }),
+    hotel: new pc.Asset('gsplat', 'gsplat', { url: '/latam360/assets/splats/hotel-lite.sog' }),
     orbit: new pc.Asset('script', 'script', { url: 'https://playcanvas.vercel.app/static/scripts/camera/orbit-camera.js' })
 };
 

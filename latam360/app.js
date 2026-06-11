@@ -59,7 +59,7 @@ const SCENES = [
     credit: 'Escaneo: superspl.at · CC BY 4.0',
     tourMode: 'dolly',
     preload: [
-      'https://code.playcanvas.com/examples_data/example_sunnyvale/sunnyvale.sog',
+      '/latam360/assets/splats/sunnyvale-lite.sog',
       'https://code.playcanvas.com/examples_data/example_sunnyvale/sunnyvale.glb'
     ]
   },
@@ -73,7 +73,7 @@ const SCENES = [
     desc: 'Aparición cinematográfica del splat con efectos animados (radial, lluvia, erupción). Órbita con el mouse.',
     credit: 'Escaneo: superspl.at',
     tourMode: 'swing',
-    preload: ['https://playcanvas.vercel.app/static/assets/splats/hotel-culpture.compressed.ply']
+    preload: ['/latam360/assets/splats/hotel-lite.sog']
   },
   {
     id: 'splat-portal',

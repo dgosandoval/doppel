@@ -87,7 +87,7 @@ app.on('destroy', () => {
 });
 
 const assets = {
-    splat: new pc.Asset('sunnyvale-splat', 'gsplat', { url: 'https://code.playcanvas.com/examples_data/example_sunnyvale/sunnyvale.sog' }),
+    splat: new pc.Asset('sunnyvale-splat', 'gsplat', { url: '/latam360/assets/splats/sunnyvale-lite.sog' }),
     collision: new pc.Asset('sunnyvale-collision', 'container', { url: 'https://code.playcanvas.com/examples_data/example_sunnyvale/sunnyvale.glb' })
 };
 
