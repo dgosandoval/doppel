@@ -37,21 +37,6 @@ const SCENES = [
     cameraRotation: [-14.85, -64.12, 0]
   },
   {
-    id: 'first-person',
-    type: 'module',
-    module: 'first-person.mjs',
-    name: 'Primera persona',
-    place: 'Sunnyvale · EE.UU.',
-    tag: 'Caminata · colisiones',
-    desc: 'Recorre la escena a pie, en primera persona, con colisiones reales. WASD para moverte, mouse para mirar.',
-    credit: 'Escaneo: superspl.at · CC BY 4.0',
-    tourMode: 'lookaround',
-    preload: [
-      'https://code.playcanvas.com/examples_data/example_sunnyvale/sunnyvale.sog',
-      'https://code.playcanvas.com/examples_data/example_sunnyvale/sunnyvale.glb'
-    ]
-  },
-  {
     id: 'lod-streaming',
     type: 'module',
     module: 'lod-streaming.mjs',
@@ -60,8 +45,23 @@ const SCENES = [
     tag: 'Niveles de detalle',
     desc: 'Un escaneo enorme servido por niveles de detalle: carga progresiva según te acercas. Cielos HDRI intercambiables.',
     credit: 'Escaneo: Andrii Shramko',
-    tourMode: 'orbit',
+    tourMode: 'dolly',
     preload: ['https://code.playcanvas.com/examples_data/example_roman_parish_02/lod-meta.json']
+  },
+  {
+    id: 'first-person',
+    type: 'module',
+    module: 'first-person.mjs',
+    name: 'Primera persona',
+    place: 'Sunnyvale · EE.UU.',
+    tag: 'Caminata · colisiones',
+    desc: 'Recorre la escena a pie, en primera persona, con colisiones reales. WASD para moverte, mouse para mirar.',
+    credit: 'Escaneo: superspl.at · CC BY 4.0',
+    tourMode: 'dolly',
+    preload: [
+      'https://code.playcanvas.com/examples_data/example_sunnyvale/sunnyvale.sog',
+      'https://code.playcanvas.com/examples_data/example_sunnyvale/sunnyvale.glb'
+    ]
   },
   {
     id: 'reveal',
@@ -72,7 +72,7 @@ const SCENES = [
     tag: 'Efectos de aparición',
     desc: 'Aparición cinematográfica del splat con efectos animados (radial, lluvia, erupción). Órbita con el mouse.',
     credit: 'Escaneo: superspl.at',
-    tourMode: 'orbit',
+    tourMode: 'swing',
     preload: ['https://playcanvas.vercel.app/static/assets/splats/hotel-culpture.compressed.ply']
   },
   {
@@ -84,7 +84,8 @@ const SCENES = [
     tag: 'Portal · stencil',
     desc: 'Un portal 3D conecta dos escaneos distintos: cruza de un mundo al otro. Efecto de recorte por stencil.',
     credit: 'Escaneos: Andrii Shramko / schindelar3d',
-    tourMode: 'orbit',
+    tourMode: 'dolly',
+    tourReach: 0.25,
     preload: [
       'https://code.playcanvas.com/examples_data/example_roman_parish_02/lod-meta.json',
       'https://code.playcanvas.com/examples_data/example_skatepark_02/lod-meta.json'
@@ -387,26 +388,25 @@ async function loadLod(scene) {
     gsInstances[i].lodMultiplier = 1.5;
   }
 
-  // --- Recorrido automático (vuelo aéreo orbital, sube y baja) ---
+  // --- Recorrido: sube un poco y AVANZA sobre los edificios (no se aleja) ---
   const tourCenter = center.clone();
-  const tourR = Math.max(radius * 0.85, 30);
-  const tourBaseH = center.y + radius * 0.5;
-  const tourAmpH = radius * 0.35; // amplitud vertical: sube y baja
-  let tourAngle = Math.atan2(
-    scene.cameraPosition[2] - center.z,
-    scene.cameraPosition[0] - center.x
-  );
+  const tourAdvReach = radius * 0.45; // cuánto avanza sobre la ciudad
+  const tourRise = radius * 0.18; // sube un poco
   let tourActive = false;
   let tourTime = 0;
   const tourStartPos = new pc.Vec3();
+  const tourFwdH = new pc.Vec3();
   const tourTmp = new pc.Vec3();
+  const tourLook = new pc.Vec3();
 
-  // Movimiento de cámara aéreo (lo arranca/detiene el recorrido global).
   currentAerial = {
     start() {
       tourActive = true;
       tourTime = 0;
       tourStartPos.copy(camera.getPosition());
+      tourFwdH.set(camera.forward.x, 0, camera.forward.z);
+      if (tourFwdH.length() < 1e-3) tourFwdH.set(0, 0, -1);
+      tourFwdH.normalize();
       cc.enabled = false;
     },
     stop() {
@@ -415,28 +415,23 @@ async function loadLod(scene) {
     }
   };
 
-  const easeInOut = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
-
   app.on('update', (dt) => {
     if (!revealStarted) reveal.effectTime = -1e6;
     if (!tourActive) return;
     tourTime += dt;
-    tourAngle += dt * 0.05; // ~125 s por vuelta
-    // Altura oscila (sube y baja) y el radio se acerca/aleja un poco.
-    const h = tourBaseH + Math.sin(tourTime * 0.16) * tourAmpH;
-    const r = tourR * (1 + 0.12 * Math.cos(tourTime * 0.1));
-    tourTmp.set(
-      tourCenter.x + Math.cos(tourAngle) * r,
-      h,
-      tourCenter.z + Math.sin(tourAngle) * r
-    );
-    if (tourTime < 3) {
-      // Transición suave desde la posición actual hacia el vuelo aéreo.
-      const t = easeInOut(tourTime / 3);
-      tourTmp.lerp(tourStartPos, tourTmp, t);
-    }
+    const ph = tourTime * 0.06;
+    const adv = tourAdvReach * ((1 - Math.cos(ph)) / 2); // avanza hacia adelante (acotado)
+    const rise = tourRise * ((1 - Math.cos(ph)) / 2); // sube un poco a la par
+    const sway = radius * 0.04 * Math.sin(tourTime * 0.04);
+    tourTmp.copy(tourFwdH).mulScalar(adv).add(tourStartPos);
+    tourTmp.x += -tourFwdH.z * sway;
+    tourTmp.z += tourFwdH.x * sway;
+    tourTmp.y = tourStartPos.y + rise;
     camera.setPosition(tourTmp);
-    camera.lookAt(tourCenter);
+    // mira hacia adelante, al nivel de la ciudad
+    tourLook.copy(tourFwdH).mulScalar(radius * 0.5).add(tourTmp);
+    tourLook.y = tourCenter.y;
+    camera.lookAt(tourLook);
   });
 
   setTimeout(() => hideLoader(), 15000);
@@ -469,8 +464,16 @@ async function loadModule(scene) {
       currentApp = app;
       // Ocultar el loader cuando empiece a renderizar.
       app.on('postrender', hide);
-      // Movimiento de cámara para el recorrido (órbita o panorámica).
-      setupModuleAerial(app, scene.tourMode || 'orbit');
+      // Rendimiento: limita la resolución de render (los splats son suaves; gran
+      // ganancia de fluidez, sobre todo en escenas pesadas).
+      try {
+        const gd = app.graphicsDevice;
+        gd.maxPixelRatio = Math.min(gd.maxPixelRatio || 2, pc.platform.mobile ? 1 : 1.25);
+      } catch (e) {
+        /* noop */
+      }
+      // Movimiento de cámara para el recorrido (dolly o swing).
+      setupModuleAerial(app, scene.tourMode || 'dolly', scene.tourReach);
     }
   };
 
@@ -484,20 +487,24 @@ async function loadModule(scene) {
 // Movimiento de cámara genérico para escenas de módulo durante el recorrido.
 // Desactiva el script de control de la cámara (y sus ancestros — en first-person
 // el controlador está en el entity padre) y conduce la cámara en 'update'.
-// 'orbit' = gira alrededor del contenido; 'lookaround' = panorámica desde el punto actual.
-function setupModuleAerial(app, mode) {
+//  'dolly' = avanza por el lugar (adelante + un poco arriba, ida y vuelta acotada).
+//  'swing' = arco corto alrededor del objeto (se queda en el lado capturado).
+function setupModuleAerial(app, mode, reach) {
   let active = false;
   let ready = false;
   let cam = null;
   let time = 0;
-  let angle = 0;
-  let radius = 0;
+  let baseDist = 8;
+  let radius = 8;
   let baseH = 0;
+  let startAngle = 0;
+  let disabledScripts = [];
+  const startPos = new pc.Vec3();
+  const fwdH = new pc.Vec3();
+  const rightH = new pc.Vec3();
   const focus = new pc.Vec3();
   const tmp = new pc.Vec3();
-  const startPos = new pc.Vec3();
-  const startFwd = new pc.Vec3();
-  let disabledScripts = [];
+  const look = new pc.Vec3();
 
   const findCamera = () => {
     let c = null;
@@ -507,12 +514,11 @@ function setupModuleAerial(app, mode) {
     return c;
   };
 
-  const computeContentCenter = () => {
+  const contentBox = () => {
     const aabb = new pc.BoundingBox();
     let has = false;
     app.root.forEach((e) => {
-      const gs = e.gsplat;
-      const box = gs && gs.instance && gs.instance.aabb;
+      const box = e.gsplat && e.gsplat.instance && e.gsplat.instance.aabb;
       if (box && box.halfExtents.length() > 0) {
         if (!has) {
           aabb.copy(box);
@@ -522,7 +528,7 @@ function setupModuleAerial(app, mode) {
         }
       }
     });
-    return has ? aabb.center.clone() : null;
+    return has ? aabb : null;
   };
 
   const disableControls = () => {
@@ -546,18 +552,34 @@ function setupModuleAerial(app, mode) {
   const init = () => {
     disableControls();
     const p = cam.getPosition();
-    if (mode === 'lookaround') {
-      startPos.copy(p);
-      startFwd.copy(cam.forward);
-      return;
+    startPos.copy(p);
+    fwdH.set(cam.forward.x, 0, cam.forward.z);
+    if (fwdH.length() < 1e-3) fwdH.set(0, 0, -1);
+    fwdH.normalize();
+    rightH.set(-fwdH.z, 0, fwdH.x);
+    const box = contentBox();
+    let scaleR = 0;
+    if (box) {
+      focus.copy(box.center);
+      scaleR = box.halfExtents.length();
+    } else {
+      // Fallback (escenas LOD cuyo aabb aún no está listo): promedio de posiciones gsplat.
+      const avg = new pc.Vec3();
+      let n = 0;
+      app.root.forEach((e) => {
+        if (e.gsplat) {
+          avg.add(e.getPosition());
+          n += 1;
+        }
+      });
+      if (n) focus.copy(avg.mulScalar(1 / n));
+      else focus.copy(fwdH).mulScalar(8).add(p);
     }
-    // orbit: alrededor del contenido, conservando la distancia/altura actuales
-    const c = computeContentCenter();
-    if (c) focus.copy(c);
-    else focus.copy(cam.forward).mulScalar(6).add(p);
     radius = Math.max(2, Math.hypot(p.x - focus.x, p.z - focus.z));
+    // Escala del movimiento: el mayor entre el tamaño de la escena y la distancia de visión.
+    baseDist = Math.max(radius, scaleR);
     baseH = p.y;
-    angle = Math.atan2(p.z - focus.z, p.x - focus.x);
+    startAngle = Math.atan2(p.z - focus.z, p.x - focus.x);
   };
 
   app.on('update', (dt) => {
@@ -570,21 +592,27 @@ function setupModuleAerial(app, mode) {
     }
     const d = dt || 1 / 60;
     time += d;
-    if (mode === 'lookaround') {
-      // panorámica lenta: rota la vista en su sitio (ideal para interiores)
-      const yaw = time * 6; // grados/seg
-      const rad = (yaw * Math.PI) / 180;
-      const fx = startFwd.x * Math.cos(rad) - startFwd.z * Math.sin(rad);
-      const fz = startFwd.x * Math.sin(rad) + startFwd.z * Math.cos(rad);
-      tmp.set(startPos.x + fx, startPos.y + startFwd.y, startPos.z + fz);
-      cam.setPosition(startPos);
-      cam.lookAt(tmp);
-    } else {
-      angle += d * 0.12;
-      const h = baseH + Math.sin(time * 0.3) * radius * 0.1;
-      tmp.set(focus.x + Math.cos(angle) * radius, h, focus.z + Math.sin(angle) * radius);
+    if (mode === 'swing') {
+      const arc = reach || 0.45;
+      const ang = startAngle + arc * Math.sin(time * 0.18);
+      const h = baseH + Math.sin(time * 0.3) * radius * 0.05;
+      tmp.set(focus.x + Math.cos(ang) * radius, h, focus.z + Math.sin(ang) * radius);
       cam.setPosition(tmp);
       cam.lookAt(focus);
+    } else {
+      const r = reach || 0.6;
+      const ph = time * 0.13;
+      const adv = baseDist * r * ((1 - Math.cos(ph)) / 2); // 0 → adelante → 0 (acotado)
+      const rise = baseDist * r * 0.22 * ((1 - Math.cos(ph)) / 2);
+      const sway = baseDist * 0.05 * Math.sin(time * 0.07);
+      tmp.copy(fwdH).mulScalar(adv).add(startPos);
+      tmp.x += rightH.x * sway;
+      tmp.z += rightH.z * sway;
+      tmp.y = startPos.y + rise;
+      cam.setPosition(tmp);
+      look.copy(fwdH).mulScalar(baseDist).add(tmp);
+      look.y = focus.y;
+      cam.lookAt(look);
     }
   });
 
