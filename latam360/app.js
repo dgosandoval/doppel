@@ -128,38 +128,100 @@ const TOUR_VOICES = {
   ]
 };
 
-// Volúmenes fijos: música al 30%, locución al 100%.
-const MUSIC_VOL = 0.3;
+// Volúmenes fijos: música al 15%, locución al 100%.
+const MUSIC_VOL = 0.15;
 const VOICE_VOL = 1.0;
 
-// iOS ignora la propiedad `volume` de <audio> (siempre suena al 100%). Para que
-// el 30% funcione también en iPhone, la música se enruta por Web Audio con un
-// GainNode. Se conecta en el click de "Iniciar recorrido" (gesto de usuario,
-// requisito de iOS). Si Web Audio falla, se cae al volumen normal del elemento.
-let musicGainWired = false;
-let musicCtx = null;
-function wireMusicGain() {
-  if (musicGainWired) {
-    if (musicCtx && musicCtx.state === 'suspended') musicCtx.resume();
-    return true;
+// La música del tour se reproduce 100% por Web Audio (buffer + GainNode):
+// iOS ignora `element.volume` y la ruta MediaElementSource tampoco es fiable
+// en iPhone — el buffer con ganancia es lo único que garantiza el 15% ahí.
+// El AudioContext se crea/reanuda en el click del botón (gesto de usuario).
+// Si Web Audio no existe o falla la decodificación, cae al <audio> clásico.
+const musicPlayer = {
+  ctx: null,
+  gain: null,
+  buffer: null,
+  source: null,
+  loading: false,
+  fallback: false,
+  active: false,
+  start() {
+    this.active = true;
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) {
+      this._startFallback();
+      return;
+    }
+    if (!this.ctx) {
+      this.ctx = new Ctx();
+      this.gain = this.ctx.createGain();
+      this.gain.gain.value = MUSIC_VOL;
+      this.gain.connect(this.ctx.destination);
+    }
+    if (this.ctx.state === 'suspended') this.ctx.resume();
+    if (this.buffer) {
+      this._play();
+    } else if (!this.loading) {
+      this.loading = true;
+      fetch('/latam360/assets/tour-music.mp3')
+        .then((r) => r.arrayBuffer())
+        .then(
+          (ab) =>
+            new Promise((res, rej) => {
+              this.ctx.decodeAudioData(ab, res, rej);
+            })
+        )
+        .then((buf) => {
+          this.buffer = buf;
+          this.loading = false;
+          if (this.active) this._play();
+        })
+        .catch(() => {
+          this.loading = false;
+          if (this.active) this._startFallback();
+        });
+    }
+  },
+  _play() {
+    this._stopSource();
+    this.source = this.ctx.createBufferSource();
+    this.source.buffer = this.buffer;
+    this.source.loop = true;
+    this.source.connect(this.gain);
+    this.source.start(0);
+  },
+  _stopSource() {
+    if (this.source) {
+      try {
+        this.source.stop();
+      } catch (e) {
+        /* noop */
+      }
+      try {
+        this.source.disconnect();
+      } catch (e) {
+        /* noop */
+      }
+      this.source = null;
+    }
+  },
+  _startFallback() {
+    this.fallback = true;
+    const el = document.getElementById('tour-audio');
+    if (el) {
+      el.volume = MUSIC_VOL;
+      el.play().catch(() => {});
+    }
+  },
+  stop() {
+    this.active = false;
+    this._stopSource();
+    if (this.fallback) {
+      const el = document.getElementById('tour-audio');
+      if (el) el.pause();
+    }
   }
-  const music = document.getElementById('tour-audio');
-  const Ctx = window.AudioContext || window.webkitAudioContext;
-  if (!music || !Ctx) return false;
-  try {
-    musicCtx = new Ctx();
-    const src = musicCtx.createMediaElementSource(music);
-    const gain = musicCtx.createGain();
-    gain.gain.value = MUSIC_VOL;
-    src.connect(gain);
-    gain.connect(musicCtx.destination);
-    if (musicCtx.state === 'suspended') musicCtx.resume();
-    musicGainWired = true;
-    return true;
-  } catch (e) {
-    return false;
-  }
-}
+};
 
 // ---------------------------------------------------------------------------
 // UI helpers
@@ -847,13 +909,7 @@ const grandTour = {
   start() {
     if (this.active) return;
     this.active = true;
-    const audio = document.getElementById('tour-audio');
-    if (audio) {
-      // Con GainNode activo el elemento va al 100% y el nodo aplica el 30%
-      // (si no, doble atenuación en desktop). Sin Web Audio, volumen clásico.
-      audio.volume = wireMusicGain() ? 1 : MUSIC_VOL;
-      audio.play().catch(() => {});
-    }
+    musicPlayer.start();
     this._updateBtn(true);
     this._runCurrent();
   },
@@ -869,8 +925,7 @@ const grandTour = {
         /* noop */
       }
     }
-    const audio = document.getElementById('tour-audio');
-    if (audio) audio.pause();
+    musicPlayer.stop();
     this._updateBtn(false);
   },
   toggle() {
