@@ -132,6 +132,35 @@ const TOUR_VOICES = {
 const MUSIC_VOL = 0.3;
 const VOICE_VOL = 1.0;
 
+// iOS ignora la propiedad `volume` de <audio> (siempre suena al 100%). Para que
+// el 30% funcione también en iPhone, la música se enruta por Web Audio con un
+// GainNode. Se conecta en el click de "Iniciar recorrido" (gesto de usuario,
+// requisito de iOS). Si Web Audio falla, se cae al volumen normal del elemento.
+let musicGainWired = false;
+let musicCtx = null;
+function wireMusicGain() {
+  if (musicGainWired) {
+    if (musicCtx && musicCtx.state === 'suspended') musicCtx.resume();
+    return true;
+  }
+  const music = document.getElementById('tour-audio');
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  if (!music || !Ctx) return false;
+  try {
+    musicCtx = new Ctx();
+    const src = musicCtx.createMediaElementSource(music);
+    const gain = musicCtx.createGain();
+    gain.gain.value = MUSIC_VOL;
+    src.connect(gain);
+    gain.connect(musicCtx.destination);
+    if (musicCtx.state === 'suspended') musicCtx.resume();
+    musicGainWired = true;
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 // ---------------------------------------------------------------------------
 // UI helpers
 // ---------------------------------------------------------------------------
@@ -820,7 +849,9 @@ const grandTour = {
     this.active = true;
     const audio = document.getElementById('tour-audio');
     if (audio) {
-      audio.volume = MUSIC_VOL;
+      // Con GainNode activo el elemento va al 100% y el nodo aplica el 30%
+      // (si no, doble atenuación en desktop). Sin Web Audio, volumen clásico.
+      audio.volume = wireMusicGain() ? 1 : MUSIC_VOL;
       audio.play().catch(() => {});
     }
     this._updateBtn(true);
