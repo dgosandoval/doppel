@@ -163,6 +163,12 @@ body {
     cursor: none;
   }
 }
+/* Durante el recorrido el menú de escenas se oculta en TODOS los dispositivos
+   (en móvil no hay "mouse quieto", así que se ata al estado del tour). */
+body.touring .sidebar {
+  opacity: 0;
+  pointer-events: none;
+}
 .sidebar__label {
   font-size: 11px;
   letter-spacing: 0.18em;

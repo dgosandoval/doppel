@@ -142,119 +142,39 @@ const TOUR_VOICES = {
 const MUSIC_VOL = 1.0;
 const VOICE_VOL = 1.0;
 
-// La música del tour se reproduce 100% por Web Audio (buffer + GainNode):
-// iOS ignora `element.volume` y la ruta MediaElementSource tampoco es fiable
-// en iPhone — el buffer con ganancia es lo único que garantiza el 15% ahí.
-// El AudioContext se crea/reanuda en el click del botón (gesto de usuario).
-// Si Web Audio no existe o falla la decodificación, cae al <audio> clásico.
+// La música del tour se reproduce con un <audio> plano (NO Web Audio). El volumen
+// ya está horneado en el archivo (-44.9 dB), así que no hace falta el GainNode que
+// antes obligaba a usar Web Audio. Un <audio> es mucho más robusto en iOS: el
+// AudioContext de Web Audio se "interrumpe" cuando cada escena recrea el contexto
+// WebGL, cortando la música entre splats; el <audio> sigue sonando. Se arranca en
+// el gesto del botón y `ensure()` lo reanuda si iOS llegara a pausarlo.
 const musicPlayer = {
-  ctx: null,
-  gain: null,
-  buffer: null,
-  source: null,
-  loading: false,
-  fallback: false,
   active: false,
+  _el: null,
+  el() {
+    if (!this._el) this._el = document.getElementById('tour-audio');
+    return this._el;
+  },
   start() {
     this.active = true;
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    if (!Ctx) {
-      this._startFallback();
-      return;
-    }
-    if (!this.ctx) {
-      this.ctx = new Ctx();
-      this.gain = this.ctx.createGain();
-      this.gain.gain.value = MUSIC_VOL;
-      this.gain.connect(this.ctx.destination);
-      // iOS suspende/interrumpe el AudioContext al recrear el canvas/contexto WebGL
-      // de la siguiente escena → la música se cortaba entre splats. Reanudar solo.
-      this.ctx.onstatechange = () => {
-        if (this.active && this.ctx.state !== 'running') this.ctx.resume().catch(() => {});
-      };
-    }
-    if (this.ctx.state !== 'running') this.ctx.resume().catch(() => {});
-    if (this.buffer) {
-      this._play();
-    } else if (!this.loading) {
-      this.loading = true;
-      fetch('/latam360/assets/tour-music.mp3')
-        .then((r) => r.arrayBuffer())
-        .then(
-          (ab) =>
-            new Promise((res, rej) => {
-              this.ctx.decodeAudioData(ab, res, rej);
-            })
-        )
-        .then((buf) => {
-          this.buffer = buf;
-          this.loading = false;
-          if (this.active) this._play();
-        })
-        .catch(() => {
-          this.loading = false;
-          if (this.active) this._startFallback();
-        });
-    }
+    const el = this.el();
+    if (!el) return;
+    el.loop = true;
+    el.preload = 'auto';
+    el.volume = MUSIC_VOL; // 1.0 — iOS lo ignora, pero el nivel ya va en el archivo
+    el.play().catch(() => {});
   },
-  _play() {
-    this._stopSource();
-    const src = this.ctx.createBufferSource();
-    src.buffer = this.buffer;
-    src.loop = true;
-    src.connect(this.gain);
-    // Si iOS termina el source sin que lo hayamos detenido nosotros, reanúdalo.
-    src.onended = () => {
-      if (this.active && this.source === src) {
-        this.source = null;
-        this._play();
-      }
-    };
-    src.start(0);
-    this.source = src;
-  },
-  // Llamar tras cada transición de escena: reanuda el contexto (iOS) y reanima
-  // el buffer si quedó muerto, sin reiniciar la música si sigue sonando.
+  // Llamar tras cada transición de escena (y por keepalive): si iOS pausó el audio,
+  // lo reanuda. No reinicia la pista si ya está sonando.
   ensure() {
-    if (this.fallback) {
-      const el = document.getElementById('tour-audio');
-      if (el && el.paused) el.play().catch(() => {});
-      return;
-    }
-    if (!this.ctx || !this.active) return;
-    if (this.ctx.state !== 'running') this.ctx.resume().catch(() => {});
-    if (!this.source && this.buffer) this._play();
-  },
-  _stopSource() {
-    if (this.source) {
-      try {
-        this.source.stop();
-      } catch (e) {
-        /* noop */
-      }
-      try {
-        this.source.disconnect();
-      } catch (e) {
-        /* noop */
-      }
-      this.source = null;
-    }
-  },
-  _startFallback() {
-    this.fallback = true;
-    const el = document.getElementById('tour-audio');
-    if (el) {
-      el.volume = MUSIC_VOL;
-      el.play().catch(() => {});
-    }
+    if (!this.active) return;
+    const el = this.el();
+    if (el && el.paused) el.play().catch(() => {});
   },
   stop() {
     this.active = false;
-    this._stopSource();
-    if (this.fallback) {
-      const el = document.getElementById('tour-audio');
-      if (el) el.pause();
-    }
+    const el = this.el();
+    if (el) el.pause();
   }
 };
 
