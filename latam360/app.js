@@ -61,11 +61,11 @@ const SCENES = [
     tag: 'Caminata · colisiones',
     desc: 'Recorre la escena a pie, en primera persona, con colisiones reales. WASD para moverte, mouse para mirar.',
     credit: 'Escaneo: superspl.at · CC BY 4.0',
+    // Avanza RECTO; solo gira la vista a la izquierda (sin alterar la trayectoria).
     tourMode: 'dolly',
     tourSpeed: 0.7,
     tourDist: 18,
     tourYawDeg: -60,
-    tourCurve: true,
     preload: [
       '/latam360/assets/splats/sunnyvale-lite.sog',
       'https://code.playcanvas.com/examples_data/example_sunnyvale/sunnyvale.glb'
@@ -92,14 +92,12 @@ const SCENES = [
     tag: 'Portal · stencil',
     desc: 'Un portal 3D conecta dos escaneos distintos: cruza de un mundo al otro. Efecto de recorte por stencil.',
     credit: 'Escaneos: Andrii Shramko / schindelar3d',
-    // Cruza el portal recto los primeros segundos (curveDelay) y luego curva ~160°
+    // Avanza RECTO y cruza el portal; solo gira la vista (sin alterar la trayectoria)
     // para observar el entorno y mirar el portal desde el otro lado.
     tourMode: 'dolly',
-    tourSpeed: 1.0,
-    tourDist: 13,
-    tourYawDeg: 160,
-    tourCurve: true,
-    tourCurveDelay: 3.5,
+    tourSpeed: 1.2,
+    tourDist: 16,
+    tourYawDeg: -160,
     preload: [
       'https://code.playcanvas.com/examples_data/example_roman_parish_02/lod-meta.json',
       'https://code.playcanvas.com/examples_data/example_skatepark_02/lod-meta.json'
@@ -130,7 +128,7 @@ const TOUR_VOICES = {
   reveal: [{ src: 'assets/voice/voice-04.mp3', at: 1500 }],
   'splat-portal': [
     { src: 'assets/voice/voice-05.mp3', at: 1500 },
-    { src: 'assets/voice/voice-06.mp3', at: 20000 }
+    { src: 'assets/voice/voice-06.mp3', at: 10000 }
   ]
 };
 
@@ -899,7 +897,7 @@ function buildSceneMenu() {
 // Recorrido completo: avanza automáticamente por todas las escenas (30 s c/u)
 // con la música sonando de forma continua (no se detiene entre escenas).
 // ---------------------------------------------------------------------------
-const SCENE_DWELL_MS = 30000;
+const SCENE_DWELL_MS = 20000;
 
 // Precarga (warm cache) de los assets pesados de una escena, para que cuando
 // el recorrido avance la siguiente escena no muestre una pantalla de carga larga.
@@ -977,12 +975,14 @@ const grandTour = {
   start() {
     if (this.active) return;
     this.active = true;
+    document.body.classList.add('touring'); // oculta el hint de controles durante el recorrido
     musicPlayer.start();
     this._updateBtn(true);
     this._runCurrent();
   },
   stop() {
     this.active = false;
+    document.body.classList.remove('touring');
     clearTimeout(this._timer);
     captions.clear();
     voiceover.clear();

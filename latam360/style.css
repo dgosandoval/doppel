@@ -271,6 +271,12 @@ body {
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.12);
+  transition: opacity 0.35s ease;
+}
+/* Durante el recorrido el hint de controles se oculta (no aplica en modo libre). */
+body.touring .hint {
+  opacity: 0;
+  pointer-events: none;
 }
 
 /* ---- Tarjeta de mensajes del recorrido -------------------------------- */
