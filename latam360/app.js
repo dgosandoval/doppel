@@ -18,6 +18,7 @@ const SCENES = [
     name: 'Centro histórico',
     place: 'Lublin · Polonia',
     tag: '250M splats · streaming',
+    dwellMs: 24000, // excepción: su locución de bienvenida dura ~22 s (el resto va a 20 s)
     desc: 'Una ciudad real reconstruida en 3D que recorres en tiempo real. Vuela entre las calles con el mouse y WASD.',
     credit: 'Escaneo: Andrii Shramko / Teleportour',
     urls: [
@@ -92,12 +93,14 @@ const SCENES = [
     tag: 'Portal · stencil',
     desc: 'Un portal 3D conecta dos escaneos distintos: cruza de un mundo al otro. Efecto de recorte por stencil.',
     credit: 'Escaneos: Andrii Shramko / schindelar3d',
-    // Avanza RECTO y cruza el portal; solo gira la vista (sin alterar la trayectoria)
-    // para observar el entorno y mirar el portal desde el otro lado.
+    // Avanza RECTO y cruza el portal mirando al frente; SOLO DESPUÉS de cruzarlo
+    // (yawDelay) gira la vista ~160° para mirar el portal desde el otro lado.
     tourMode: 'dolly',
-    tourSpeed: 1.2,
+    tourSpeed: 1.4,
     tourDist: 16,
     tourYawDeg: -160,
+    tourYawDelay: 11,
+    tourYawDur: 8,
     preload: [
       'https://code.playcanvas.com/examples_data/example_roman_parish_02/lod-meta.json',
       'https://code.playcanvas.com/examples_data/example_skatepark_02/lod-meta.json'
@@ -647,7 +650,8 @@ async function loadModule(scene) {
         arc: scene.tourReach,
         yawDeg: scene.tourYawDeg,
         curve: scene.tourCurve,
-        curveDelay: scene.tourCurveDelay
+        yawDelay: scene.tourYawDelay,
+        yawDur: scene.tourYawDur
       });
     }
   };
@@ -787,10 +791,11 @@ function setupModuleAerial(app, mode, opts = {}) {
       // gira gradualmente (yawDeg); sin curve solo gira la mirada.
       const speed = opts.speed || Math.max(0.6, baseDist * 0.05);
       const maxD = opts.dist || baseDist * 0.6;
-      // El giro puede arrancar tras `curveDelay` s (recto al principio: cruzar el
-      // portal de frente y luego curvar para mirar atrás).
-      const cd = opts.curveDelay || 0;
-      const b = Math.min(Math.max(time - cd, 0) / 18, 1);
+      // El giro de vista (yaw) puede RETRASARSE `yawDelay` s y durar `yawDur` s.
+      // Así el portal se cruza RECTO mirando al frente y SOLO DESPUÉS gira la vista.
+      const yawDelay = opts.yawDelay || 0;
+      const yawDur = opts.yawDur || 18;
+      const b = Math.min(Math.max(time - yawDelay, 0) / yawDur, 1);
       const yawNow = opts.yawDeg ? ((opts.yawDeg * Math.PI) / 180) * (b * b * (3 - 2 * b)) : 0;
       if (opts.curve && yawNow) {
         curDir.set(
@@ -898,6 +903,11 @@ function buildSceneMenu() {
 // con la música sonando de forma continua (no se detiene entre escenas).
 // ---------------------------------------------------------------------------
 const SCENE_DWELL_MS = 20000;
+// Duración del turno de una escena (permite excepción por escena vía `dwellMs`).
+function dwellFor(sceneId) {
+  const s = SCENES.find((x) => x.id === sceneId);
+  return (s && s.dwellMs) || SCENE_DWELL_MS;
+}
 
 // Precarga (warm cache) de los assets pesados de una escena, para que cuando
 // el recorrido avance la siguiente escena no muestre una pantalla de carga larga.
@@ -921,7 +931,7 @@ const captions = {
     const el = document.getElementById('tour-caption');
     const msgs = TOUR_MESSAGES[sceneId];
     if (!el || !msgs || !msgs.length) return;
-    const slot = SCENE_DWELL_MS / msgs.length;
+    const slot = dwellFor(sceneId) / msgs.length;
     msgs.forEach((m, i) => {
       const start = i * slot + 1200;
       this._timers.push(
@@ -1016,7 +1026,7 @@ const grandTour = {
     const idx = SCENES.findIndex((s) => s.id === currentSceneId);
     preloadScene(SCENES[(idx + 1) % SCENES.length]);
     clearTimeout(this._timer);
-    this._timer = setTimeout(() => this._advance(), SCENE_DWELL_MS);
+    this._timer = setTimeout(() => this._advance(), dwellFor(currentSceneId));
   },
   async _advance() {
     if (!this.active) return;
