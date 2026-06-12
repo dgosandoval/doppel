@@ -167,8 +167,13 @@ const musicPlayer = {
       this.gain = this.ctx.createGain();
       this.gain.gain.value = MUSIC_VOL;
       this.gain.connect(this.ctx.destination);
+      // iOS suspende/interrumpe el AudioContext al recrear el canvas/contexto WebGL
+      // de la siguiente escena → la música se cortaba entre splats. Reanudar solo.
+      this.ctx.onstatechange = () => {
+        if (this.active && this.ctx.state !== 'running') this.ctx.resume().catch(() => {});
+      };
     }
-    if (this.ctx.state === 'suspended') this.ctx.resume();
+    if (this.ctx.state !== 'running') this.ctx.resume().catch(() => {});
     if (this.buffer) {
       this._play();
     } else if (!this.loading) {
@@ -194,11 +199,31 @@ const musicPlayer = {
   },
   _play() {
     this._stopSource();
-    this.source = this.ctx.createBufferSource();
-    this.source.buffer = this.buffer;
-    this.source.loop = true;
-    this.source.connect(this.gain);
-    this.source.start(0);
+    const src = this.ctx.createBufferSource();
+    src.buffer = this.buffer;
+    src.loop = true;
+    src.connect(this.gain);
+    // Si iOS termina el source sin que lo hayamos detenido nosotros, reanúdalo.
+    src.onended = () => {
+      if (this.active && this.source === src) {
+        this.source = null;
+        this._play();
+      }
+    };
+    src.start(0);
+    this.source = src;
+  },
+  // Llamar tras cada transición de escena: reanuda el contexto (iOS) y reanima
+  // el buffer si quedó muerto, sin reiniciar la música si sigue sonando.
+  ensure() {
+    if (this.fallback) {
+      const el = document.getElementById('tour-audio');
+      if (el && el.paused) el.play().catch(() => {});
+      return;
+    }
+    if (!this.ctx || !this.active) return;
+    if (this.ctx.state !== 'running') this.ctx.resume().catch(() => {});
+    if (!this.source && this.buffer) this._play();
   },
   _stopSource() {
     if (this.source) {
@@ -982,11 +1007,16 @@ const voiceover = {
 const grandTour = {
   active: false,
   _timer: null,
+  _keepalive: null,
   start() {
     if (this.active) return;
     this.active = true;
     document.body.classList.add('touring'); // oculta el hint de controles durante el recorrido
     musicPlayer.start();
+    // Keepalive: en iOS el AudioContext se suspende al cambiar de escena; lo
+    // reanudamos periódicamente para que la música no se corte entre splats.
+    clearInterval(this._keepalive);
+    this._keepalive = setInterval(() => musicPlayer.ensure(), 1500);
     this._updateBtn(true);
     this._runCurrent();
   },
@@ -994,6 +1024,7 @@ const grandTour = {
     this.active = false;
     document.body.classList.remove('touring');
     clearTimeout(this._timer);
+    clearInterval(this._keepalive);
     captions.clear();
     voiceover.clear();
     if (currentAerial) {
@@ -1012,6 +1043,7 @@ const grandTour = {
   },
   _runCurrent() {
     if (!this.active) return;
+    musicPlayer.ensure(); // tras la transición, reanuda el audio si iOS lo suspendió
     if (currentAerial) {
       try {
         currentAerial.start();
