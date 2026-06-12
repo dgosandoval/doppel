@@ -149,6 +149,19 @@ body {
   flex-direction: column;
   gap: 10px;
   width: 230px;
+  transition: opacity 0.45s ease, transform 0.45s ease;
+}
+/* Modo inmersivo: con el mouse quieto, el menú lateral se desvanece (solo desktop;
+   en táctil se mantiene visible). Se reactiva al mover el mouse. */
+@media (hover: hover) and (pointer: fine) {
+  body.is-idle .sidebar {
+    opacity: 0;
+    transform: translate(-16px, -50%);
+    pointer-events: none;
+  }
+  body.is-idle {
+    cursor: none;
+  }
 }
 .sidebar__label {
   font-size: 11px;

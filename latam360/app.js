@@ -520,15 +520,20 @@ async function loadLod(scene) {
   let tourActive = false;
   let tourTime = 0;
   const tourStartPos = new pc.Vec3();
+  const tourStartFwd = new pc.Vec3();
   const tourFwdH = new pc.Vec3();
   const tourTmp = new pc.Vec3();
   const tourLook = new pc.Vec3();
+  const tourLookDir = new pc.Vec3();
 
   currentAerial = {
     start() {
       tourActive = true;
       tourTime = 0;
       tourStartPos.copy(camera.getPosition());
+      // Mirada inicial (la que ve el usuario al cargar): el recorrido arranca desde
+      // aquí y migra suave hacia el centro, sin salto de perspectiva.
+      tourStartFwd.copy(camera.forward).normalize();
       // Dirección horizontal hacia el centro de la ciudad (no hacia el borde).
       tourFwdH.set(tourCenter.x - tourStartPos.x, 0, tourCenter.z - tourStartPos.z);
       const distToCenter = tourFwdH.length();
@@ -557,9 +562,16 @@ async function loadLod(scene) {
     tourTmp.z += tourFwdH.x * sway;
     tourTmp.y = tourStartPos.y + rise;
     camera.setPosition(tourTmp);
-    // mira hacia adelante, al nivel de la ciudad
+    // Mira hacia adelante, al nivel de la ciudad. La dirección de mirada arranca en
+    // la orientación inicial de la cámara (tourStartFwd) y migra hacia el centro en
+    // ~2.5 s con suavizado — así no hay salto al iniciar el recorrido.
     tourLook.copy(tourFwdH).mulScalar(radius * 0.5).add(tourTmp);
     tourLook.y = tourCenter.y;
+    tourLookDir.copy(tourLook).sub(tourTmp).normalize();
+    const lb = Math.min(tourTime / 2.5, 1);
+    const ls = lb * lb * (3 - 2 * lb); // smoothstep
+    tourLookDir.lerp(tourStartFwd, tourLookDir, ls).normalize();
+    tourLook.copy(tourLookDir).mulScalar(radius * 0.5).add(tourTmp);
     camera.lookAt(tourLook);
   });
 
@@ -994,9 +1006,26 @@ function setupTourButton() {
   btn.addEventListener('click', () => grandTour.toggle());
 }
 
+// Oculta el chrome (menú lateral) cuando el mouse lleva un rato quieto, para una
+// vista inmersiva; reaparece con cualquier movimiento del mouse/teclado.
+function setupIdleHide() {
+  const IDLE_MS = 2800;
+  let timer = null;
+  const wake = () => {
+    document.body.classList.remove('is-idle');
+    clearTimeout(timer);
+    timer = setTimeout(() => document.body.classList.add('is-idle'), IDLE_MS);
+  };
+  ['mousemove', 'mousedown', 'wheel', 'keydown', 'touchstart'].forEach((ev) =>
+    window.addEventListener(ev, wake, { passive: true })
+  );
+  wake();
+}
+
 function boot() {
   buildSceneMenu();
   setupTourButton();
+  setupIdleHide();
   selectScene(SCENES[0]);
 }
 
