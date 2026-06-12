@@ -47,7 +47,7 @@ const SCENES = [
     credit: 'Escaneo: Andrii Shramko',
     tourMode: 'dolly',
     tourSpeed: 0.8,
-    tourDist: 18,
+    tourDist: 26,
     tourYawDeg: 65,
     tourCurve: true,
     preload: ['https://code.playcanvas.com/examples_data/example_roman_parish_02/lod-meta.json']
@@ -62,9 +62,10 @@ const SCENES = [
     desc: 'Recorre la escena a pie, en primera persona, con colisiones reales. WASD para moverte, mouse para mirar.',
     credit: 'Escaneo: superspl.at · CC BY 4.0',
     tourMode: 'dolly',
-    tourSpeed: 1.5,
-    tourDist: 28,
+    tourSpeed: 0.7,
+    tourDist: 18,
     tourYawDeg: -60,
+    tourCurve: true,
     preload: [
       '/latam360/assets/splats/sunnyvale-lite.sog',
       'https://code.playcanvas.com/examples_data/example_sunnyvale/sunnyvale.glb'
@@ -91,9 +92,14 @@ const SCENES = [
     tag: 'Portal · stencil',
     desc: 'Un portal 3D conecta dos escaneos distintos: cruza de un mundo al otro. Efecto de recorte por stencil.',
     credit: 'Escaneos: Andrii Shramko / schindelar3d',
+    // Cruza el portal recto los primeros segundos (curveDelay) y luego curva ~160°
+    // para observar el entorno y mirar el portal desde el otro lado.
     tourMode: 'dolly',
-    tourSpeed: 1.8,
-    tourDist: 20,
+    tourSpeed: 1.0,
+    tourDist: 13,
+    tourYawDeg: 160,
+    tourCurve: true,
+    tourCurveDelay: 3.5,
     preload: [
       'https://code.playcanvas.com/examples_data/example_roman_parish_02/lod-meta.json',
       'https://code.playcanvas.com/examples_data/example_skatepark_02/lod-meta.json'
@@ -601,7 +607,8 @@ async function loadModule(scene) {
         dist: scene.tourDist,
         arc: scene.tourReach,
         yawDeg: scene.tourYawDeg,
-        curve: scene.tourCurve
+        curve: scene.tourCurve,
+        curveDelay: scene.tourCurveDelay
       });
     }
   };
@@ -741,7 +748,10 @@ function setupModuleAerial(app, mode, opts = {}) {
       // gira gradualmente (yawDeg); sin curve solo gira la mirada.
       const speed = opts.speed || Math.max(0.6, baseDist * 0.05);
       const maxD = opts.dist || baseDist * 0.6;
-      const b = Math.min(time / 18, 1);
+      // El giro puede arrancar tras `curveDelay` s (recto al principio: cruzar el
+      // portal de frente y luego curvar para mirar atrás).
+      const cd = opts.curveDelay || 0;
+      const b = Math.min(Math.max(time - cd, 0) / 18, 1);
       const yawNow = opts.yawDeg ? ((opts.yawDeg * Math.PI) / 180) * (b * b * (3 - 2 * b)) : 0;
       if (opts.curve && yawNow) {
         curDir.set(
@@ -825,7 +835,12 @@ function buildSceneMenu() {
       <span class="scene-card__name">${scene.name}</span>
       <span class="scene-card__place">${scene.place}</span>
       <span class="scene-card__tag">${scene.tag}</span>`;
-    card.addEventListener('click', () => selectScene(scene));
+    // Elegir una escena a mano detiene el recorrido (música + locución + cámara),
+    // para que no sigan sonando sobre una escena que el usuario eligió manualmente.
+    card.addEventListener('click', () => {
+      grandTour.stop();
+      selectScene(scene);
+    });
     menu.appendChild(card);
   });
 }
