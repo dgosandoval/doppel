@@ -169,7 +169,9 @@ const assetListLoader = new pc.AssetListLoader(Object.values(assets), app.assets
 assetListLoader.load(async () => {
     app.start();
 
-    const miniStats = new pc.MiniStats(app, pc.MiniStats.getDefaultOptions(['gsplats', 'gsplatsCopy'])); // eslint-disable-line no-unused-vars
+    // MiniStats desactivado: mostraba un recuadro de stats abajo a la izquierda
+    // (conteo de gsplats) que rompía el branding LATAM.
+    // const miniStats = new pc.MiniStats(app, pc.MiniStats.getDefaultOptions(['gsplats', 'gsplatsCopy']));
 
     // enable rotation-based LOD updates and behind-camera penalty
     app.scene.gsplat.lodUpdateAngle = 90;

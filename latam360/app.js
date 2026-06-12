@@ -245,7 +245,36 @@ function showLoader(text) {
 }
 function hideLoader() {
   loaderEl().classList.add('hidden');
+  // Cuando la nueva escena ya pintó su primer frame, desvanece el overlay de
+  // transición para revelarla con un fade limpio (en vez de un corte seco).
+  sceneTransition.reveal();
 }
+
+// Overlay de transición (fade a indigo) entre escenas. Se cubre antes de cambiar
+// de splat y se revela cuando la escena nueva está lista (vía hideLoader).
+const sceneTransition = {
+  el: null,
+  _ensure() {
+    if (this.el && document.body.contains(this.el)) return this.el;
+    let d = document.getElementById('scene-transition');
+    if (!d) {
+      d = document.createElement('div');
+      d.id = 'scene-transition';
+      document.body.appendChild(d);
+    }
+    this.el = d;
+    return d;
+  },
+  cover() {
+    const d = this._ensure();
+    void d.offsetWidth; // fuerza reflow para que el fade aplique aunque acabe de crearse
+    d.classList.add('show');
+    return new Promise((r) => setTimeout(r, 460));
+  },
+  reveal() {
+    if (this.el) this.el.classList.remove('show');
+  }
+};
 function showError(msg) {
   loaderTextEl().innerHTML = msg;
   loaderEl().classList.remove('hidden');
@@ -303,7 +332,7 @@ function freshCanvas() {
 // Elimina el DOM que inyectan los ejemplos (paneles, stats, etc.) al salir de la escena.
 function cleanInjectedDom() {
   const keepClass = ['topbar', 'sidebar', 'info', 'hint'];
-  const keepId = ['application-canvas', 'loader', 'tour-btn', 'tour-audio', 'tour-voice', 'tour-caption'];
+  const keepId = ['application-canvas', 'loader', 'scene-transition', 'tour-btn', 'tour-audio', 'tour-voice', 'tour-caption'];
   Array.from(document.body.children).forEach((el) => {
     if (el.tagName === 'SCRIPT') return;
     if (keepId.includes(el.id)) return;
@@ -818,16 +847,25 @@ function setupModuleAerial(app, mode, opts = {}) {
 // ---------------------------------------------------------------------------
 // Orquestación
 // ---------------------------------------------------------------------------
+let sceneShownOnce = false;
 async function selectScene(scene) {
   currentSceneId = scene.id;
   setActiveScene(scene);
   loaderEl().classList.remove('is-error');
-  showLoader(scene.type === 'lod' ? 'Transmitiendo la ciudad…' : 'Cargando experiencia…');
+  // Primera carga: pantalla de carga con spinner. Cambios posteriores entre splats:
+  // transición suave (fade a indigo) sin spinner, revelada al pintar la escena nueva.
+  if (sceneShownOnce) {
+    await sceneTransition.cover();
+  } else {
+    showLoader(scene.type === 'lod' ? 'Transmitiendo la ciudad…' : 'Cargando experiencia…');
+  }
   teardown();
   try {
     if (scene.type === 'lod') await loadLod(scene);
     else await loadModule(scene);
+    sceneShownOnce = true;
   } catch (err) {
+    sceneTransition.reveal();
     console.error('[latam360] error cargando escena', scene.id, err);
     showError(
       `No se pudo cargar <b>${scene.name}</b>.<br><span style="opacity:.7;font-size:13px">` +

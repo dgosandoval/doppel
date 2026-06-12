@@ -308,6 +308,20 @@ body {
   color: var(--coral-soft);
 }
 
+/* ---- Transición entre escenas (fade a indigo) ------------------------- */
+#scene-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(120% 120% at 50% 0%, var(--indigo) 0%, var(--indigo-deep) 75%);
+  transition: opacity 0.45s ease;
+}
+#scene-transition.show {
+  opacity: 1;
+}
+
 /* ---- Loader ----------------------------------------------------------- */
 #loader {
   position: fixed;
