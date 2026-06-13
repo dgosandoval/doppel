@@ -1110,6 +1110,20 @@ const gyroMode = {
   _raf: 0,
   _onOrient: null,
   _q: null,
+  // Controles táctiles añadidos al giroscopio: dedo izq = mover, dedo der = girar vista.
+  _yawOffset: 0, // grados, ajustable con el dedo (gira la vista sin mover el teléfono)
+  _moveX: 0,
+  _moveZ: 0, // -1..1 (strafe, adelante)
+  _leftId: null,
+  _rightId: null,
+  _leftSX: 0,
+  _leftSY: 0,
+  _rightLX: 0,
+  _lastT: 0,
+  _scale: 5,
+  _onTS: null,
+  _onTM: null,
+  _onTE: null,
   available() {
     return typeof window !== 'undefined' && typeof window.DeviceOrientationEvent !== 'undefined';
   },
@@ -1143,6 +1157,8 @@ const gyroMode = {
       this._qz = new pc.Quat();
       this._q1 = new pc.Quat();
       this._q0 = new pc.Quat();
+      this._qOff = new pc.Quat();
+      this._qFinal = new pc.Quat();
       this._axX = new pc.Vec3(1, 0, 0);
       this._axY = new pc.Vec3(0, 1, 0);
       this._axZ = new pc.Vec3(0, 0, 1);
@@ -1155,8 +1171,24 @@ const gyroMode = {
       this._have = true;
     };
     window.addEventListener('deviceorientation', this._onOrient, true);
+    // Controles táctiles (joystick izq = mover, drag der = girar la vista).
+    this._yawOffset = 0;
+    this._moveX = 0;
+    this._moveZ = 0;
+    this._leftId = null;
+    this._rightId = null;
+    this._lastT = performance.now();
+    this._scale = this._sceneScale();
+    this._onTS = (e) => this._touchStart(e);
+    this._onTM = (e) => this._touchMove(e);
+    this._onTE = (e) => this._touchEnd(e);
+    window.addEventListener('touchstart', this._onTS, { passive: true });
+    window.addEventListener('touchmove', this._onTM, { passive: true });
+    window.addEventListener('touchend', this._onTE);
+    window.addEventListener('touchcancel', this._onTE);
     this.active = true;
     document.body.classList.add('gyro-on');
+    $('#hint').textContent = 'AR: mueve el teléfono · desliza izq. para avanzar · der. para girar la vista';
     this._updateBtn(true);
     this._loop();
   },
@@ -1164,6 +1196,15 @@ const gyroMode = {
     this.active = false;
     if (this._onOrient) window.removeEventListener('deviceorientation', this._onOrient, true);
     this._onOrient = null;
+    if (this._onTS) {
+      window.removeEventListener('touchstart', this._onTS, { passive: true });
+      window.removeEventListener('touchmove', this._onTM, { passive: true });
+      window.removeEventListener('touchend', this._onTE);
+      window.removeEventListener('touchcancel', this._onTE);
+    }
+    this._onTS = this._onTM = this._onTE = null;
+    this._moveX = this._moveZ = 0;
+    this._leftId = this._rightId = null;
     cancelAnimationFrame(this._raf);
     this._restore();
     this._cam = null;
@@ -1209,17 +1250,94 @@ const gyroMode = {
     this._q1.setFromAxisAngle(this._axX, -90); // mirar al horizonte (no al suelo)
     this._q0.setFromAxisAngle(this._axZ, -this._screenAngle());
     this._q.mul(this._q1).mul(this._q0);
-    cam.setRotation(this._q);
+    // Giro táctil: rota TODA la vista alrededor del eje vertical del mundo (premultiplica).
+    this._qOff.setFromAxisAngle(this._axY, this._yawOffset);
+    this._qFinal.mul2(this._qOff, this._q);
+    cam.setRotation(this._qFinal);
+  },
+  _sceneScale() {
+    if (!currentApp) return 5;
+    const box = new pc.BoundingBox();
+    let has = false;
+    currentApp.root.forEach((e) => {
+      const b = e.gsplat && e.gsplat.instance && e.gsplat.instance.aabb;
+      if (b && b.halfExtents.length() > 0) {
+        if (!has) {
+          box.copy(b);
+          has = true;
+        } else {
+          box.add(b);
+        }
+      }
+    });
+    return has ? Math.max(2, box.halfExtents.length() * 0.5) : 5;
+  },
+  _touchStart(e) {
+    if (!this.active) return;
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      const t = e.changedTouches[i];
+      if (t.target && t.target.id !== 'application-canvas') continue; // ignora toques en botones/menú
+      const leftHalf = t.clientX < window.innerWidth / 2;
+      if (leftHalf && this._leftId === null) {
+        this._leftId = t.identifier;
+        this._leftSX = t.clientX;
+        this._leftSY = t.clientY;
+      } else if (!leftHalf && this._rightId === null) {
+        this._rightId = t.identifier;
+        this._rightLX = t.clientX;
+      }
+    }
+  },
+  _touchMove(e) {
+    if (!this.active) return;
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      const t = e.changedTouches[i];
+      if (t.identifier === this._leftId) {
+        const R = 60; // radio del joystick (px)
+        this._moveX = Math.max(-1, Math.min(1, (t.clientX - this._leftSX) / R));
+        this._moveZ = Math.max(-1, Math.min(1, -(t.clientY - this._leftSY) / R)); // arrastrar arriba = adelante
+      } else if (t.identifier === this._rightId) {
+        this._yawOffset -= (t.clientX - this._rightLX) * 0.3; // grados/px
+        this._rightLX = t.clientX;
+      }
+    }
+  },
+  _touchEnd(e) {
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      const t = e.changedTouches[i];
+      if (t.identifier === this._leftId) {
+        this._leftId = null;
+        this._moveX = 0;
+        this._moveZ = 0;
+      }
+      if (t.identifier === this._rightId) this._rightId = null;
+    }
   },
   _loop() {
     if (!this.active) return;
+    const now = performance.now();
+    const dt = Math.min(0.05, (now - this._lastT) / 1000);
+    this._lastT = now;
     const cam = this._findCam();
     if (cam) {
       if (cam !== this._cam) {
         this._cam = cam;
         this._disableControls(cam);
+        this._scale = this._sceneScale();
       }
       if (this._have) this._apply(cam);
+      // Movimiento horizontal (joystick izq.) a lo largo de la vista, altura fija.
+      if (this._moveX || this._moveZ) {
+        const f = cam.forward;
+        const r = cam.right;
+        const fl = Math.hypot(f.x, f.z) || 1;
+        const rl = Math.hypot(r.x, r.z) || 1;
+        const speed = this._scale * 0.6;
+        const p = cam.getPosition();
+        const nx = p.x + ((f.x / fl) * this._moveZ + (r.x / rl) * this._moveX) * speed * dt;
+        const nz = p.z + ((f.z / fl) * this._moveZ + (r.z / rl) * this._moveX) * speed * dt;
+        cam.setPosition(nx, p.y, nz);
+      }
     }
     this._raf = requestAnimationFrame(() => this._loop());
   },
