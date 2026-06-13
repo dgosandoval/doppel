@@ -274,6 +274,10 @@ function showError(msg) {
   loaderEl().classList.add('is-error');
 }
 
+// Marca de versión visible en pantalla, para verificar que el dispositivo carga la
+// última build (la caché de Cloudflare puede servir código viejo). Súbelo en cada cambio.
+const BUILD = '613c';
+
 // Detección de dispositivo táctil. Más fiable que `pc.platform.mobile` (que puede
 // dar false en iOS según el user-agent) para mostrar el hint de dedo y el botón AR.
 const IS_TOUCH =
@@ -1232,12 +1236,19 @@ const gyroMode = {
 
 function setupGyroButton() {
   const btn = document.getElementById('gyro-btn');
-  if (!btn) return;
+  let shown = false;
   // En cualquier dispositivo táctil. Si el sensor no está disponible o el permiso
   // se deniega, se avisa al tocar el botón (no se oculta por eso).
-  if (!IS_TOUCH) return;
-  btn.hidden = false;
-  btn.addEventListener('click', () => gyroMode.toggle());
+  if (btn && IS_TOUCH) {
+    btn.hidden = false;
+    btn.addEventListener('click', () => gyroMode.toggle());
+    shown = true;
+  }
+  // Diagnóstico visible: build · táctil · sensor de orientación · botón AR mostrado.
+  const tag = document.getElementById('build-tag');
+  if (tag) {
+    tag.textContent = `b${BUILD} · t${IS_TOUCH ? 1 : 0} · o${gyroMode.available() ? 1 : 0} · ar${shown ? 1 : 0}`;
+  }
 }
 
 // Oculta el chrome (menú lateral) cuando el mouse lleva un rato quieto, para una

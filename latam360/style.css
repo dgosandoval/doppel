@@ -436,6 +436,21 @@ body.touring .hint {
 #loader.is-error #loader-pct {
   display: none;
 }
+/* Marca de versión / diagnóstico (temporal, para verificar caché en móvil). */
+#build-tag {
+  position: fixed;
+  left: 8px;
+  bottom: 6px;
+  z-index: 50;
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.5);
+  background: rgba(20, 8, 46, 0.5);
+  padding: 2px 7px;
+  border-radius: 6px;
+  pointer-events: none;
+}
 .loader-logo {
   height: 30px;
   filter: brightness(0) invert(1);
