@@ -181,6 +181,50 @@ const musicPlayer = {
   }
 };
 
+// Sonido ambiental POR ESCENA (texturas sintetizadas a medida, ~-47 dB = bajo la
+// música). Suena siempre, mezclado bajo la música y la locución. iOS ignora
+// `volume`, así que el nivel real va horneado en el archivo. Arranca en el primer
+// gesto del usuario (igual que la música).
+const AMBIENT = {
+  downtown: 'assets/ambient/city.mp3',
+  'lod-streaming': 'assets/ambient/courtyard.mp3',
+  'first-person': 'assets/ambient/park.mp3',
+  reveal: 'assets/ambient/interior.mp3',
+  'splat-portal': 'assets/ambient/portal.mp3'
+};
+const ambientPlayer = {
+  _el: null,
+  _unlocked: false,
+  el() {
+    if (!this._el) this._el = document.getElementById('ambient-audio');
+    return this._el;
+  },
+  setScene(sceneId) {
+    const el = this.el();
+    if (!el) return;
+    const src = AMBIENT[sceneId];
+    if (!src) {
+      try {
+        el.pause();
+      } catch (e) {
+        /* noop */
+      }
+      return;
+    }
+    const abs = `/latam360/${src}`;
+    if (el.getAttribute('src') !== abs) el.src = abs;
+    el.loop = true;
+    el.volume = 1.0; // el nivel va horneado en el archivo
+    if (this._unlocked) el.play().catch(() => {});
+  },
+  // Llamar en el primer gesto del usuario (iOS exige gesto para reproducir audio).
+  unlock() {
+    this._unlocked = true;
+    const el = this.el();
+    if (el && el.getAttribute('src')) el.play().catch(() => {});
+  }
+};
+
 // ---------------------------------------------------------------------------
 // UI helpers
 // ---------------------------------------------------------------------------
@@ -354,7 +398,7 @@ function freshCanvas() {
 // Elimina el DOM que inyectan los ejemplos (paneles, stats, etc.) al salir de la escena.
 function cleanInjectedDom() {
   const keepClass = ['topbar', 'sidebar', 'info', 'hint'];
-  const keepId = ['application-canvas', 'loader', 'scene-transition', 'controls', 'tour-audio', 'tour-voice', 'tour-caption'];
+  const keepId = ['application-canvas', 'loader', 'scene-transition', 'controls', 'tour-audio', 'tour-voice', 'ambient-audio', 'tour-caption'];
   Array.from(document.body.children).forEach((el) => {
     if (el.tagName === 'SCRIPT') return;
     if (keepId.includes(el.id)) return;
@@ -888,6 +932,7 @@ let sceneShownOnce = false;
 async function selectScene(scene, opts = {}) {
   currentSceneId = scene.id;
   setActiveScene(scene);
+  ambientPlayer.setScene(scene.id); // ambiente de la escena (suena bajo la música)
   loaderEl().classList.remove('is-error');
   // Auto-avance del recorrido (escenas precargadas, rápidas): transición con fade.
   // Primera carga y selección manual: pantalla de carga con % de avance.
@@ -1388,11 +1433,20 @@ function setupIdleHide() {
   wake();
 }
 
+// Arranca el sonido ambiental en el primer gesto del usuario (iOS exige gesto).
+function setupAmbientUnlock() {
+  const u = () => ambientPlayer.unlock();
+  ['pointerdown', 'touchstart', 'keydown'].forEach((ev) =>
+    window.addEventListener(ev, u, { passive: true })
+  );
+}
+
 function boot() {
   buildSceneMenu();
   setupTourButton();
   setupGyroButton();
   setupIdleHide();
+  setupAmbientUnlock();
   selectScene(SCENES[0]);
 }
 
