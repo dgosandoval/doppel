@@ -235,10 +235,18 @@ function setActiveScene(scene) {
   $('#info-place').textContent = scene.place;
   $('#info-desc').textContent = scene.desc;
   $('#info-credit').textContent = scene.credit;
-  $('#hint').textContent =
-    scene.type === 'lod' || scene.id === 'first-person'
-      ? 'Arrastra para mirar · WASD para moverte'
-      : 'Arrastra para orbitar · rueda para acercar';
+  const touch = pc.platform.mobile;
+  let hint;
+  if (scene.id === 'first-person') {
+    hint = touch
+      ? 'Desliza un dedo para avanzar · otro para mirar'
+      : 'Arrastra para mirar · WASD para moverte';
+  } else if (scene.type === 'lod') {
+    hint = touch ? 'Desliza para explorar la ciudad' : 'Arrastra para mirar · WASD para moverte';
+  } else {
+    hint = touch ? 'Desliza para orbitar · pellizca para acercar' : 'Arrastra para orbitar · rueda para acercar';
+  }
+  $('#hint').textContent = hint;
 }
 
 // Stub local de `data` para el port de downtown (independiente del shim de los módulos).
@@ -930,6 +938,7 @@ const grandTour = {
   _keepalive: null,
   start() {
     if (this.active) return;
+    if (gyroMode.active) gyroMode.disable(); // recorrido y vista AR son excluyentes
     this.active = true;
     document.body.classList.add('touring'); // oculta el hint de controles durante el recorrido
     musicPlayer.start();
@@ -983,7 +992,14 @@ const grandTour = {
   async _advance() {
     if (!this.active) return;
     const idx = SCENES.findIndex((s) => s.id === currentSceneId);
-    const next = SCENES[(idx + 1) % SCENES.length];
+    // Tras el último splat: terminar el recorrido (para música/locución/cámara,
+    // muestra de nuevo el menú) y volver al primero en modo libre.
+    if (idx === SCENES.length - 1) {
+      this.stop();
+      await selectScene(SCENES[0]);
+      return;
+    }
+    const next = SCENES[idx + 1];
     await selectScene(next);
     if (!this.active) return;
     this._runCurrent();
@@ -1006,6 +1022,151 @@ function setupTourButton() {
   btn.addEventListener('click', () => grandTour.toggle());
 }
 
+// ---------------------------------------------------------------------------
+// Modo "Vista AR": mirar alrededor moviendo el teléfono (giroscopio). Solo mobile.
+// Toma la cámara de la escena actual, desactiva su control y la orienta según el
+// sensor. Posición fija (miras desde donde estás). NOTA: el mapeo orientación→
+// cámara es el cálculo estándar (port de THREE DeviceOrientationControls); puede
+// requerir ajuste fino de signos según el dispositivo.
+// ---------------------------------------------------------------------------
+const gyroMode = {
+  active: false,
+  _have: false,
+  _alpha: 0,
+  _beta: 0,
+  _gamma: 0,
+  _cam: null,
+  _disabled: [],
+  _raf: 0,
+  _onOrient: null,
+  _q: null,
+  available() {
+    return typeof window !== 'undefined' && typeof window.DeviceOrientationEvent !== 'undefined';
+  },
+  async toggle() {
+    if (this.active) this.disable();
+    else await this.enable();
+  },
+  async enable() {
+    try {
+      const DOE = window.DeviceOrientationEvent;
+      if (DOE && typeof DOE.requestPermission === 'function') {
+        const res = await DOE.requestPermission();
+        if (res !== 'granted') {
+          $('#hint').textContent = 'Permiso de movimiento denegado';
+          return;
+        }
+      }
+    } catch (e) {
+      $('#hint').textContent = 'No se pudo activar la vista AR';
+      return;
+    }
+    if (grandTour.active) grandTour.stop(); // el modo AR es de exploración libre
+    if (!this._q) {
+      this._q = new pc.Quat();
+      this._qx = new pc.Quat();
+      this._qy = new pc.Quat();
+      this._qz = new pc.Quat();
+      this._q1 = new pc.Quat();
+      this._q0 = new pc.Quat();
+      this._axX = new pc.Vec3(1, 0, 0);
+      this._axY = new pc.Vec3(0, 1, 0);
+      this._axZ = new pc.Vec3(0, 0, 1);
+    }
+    this._onOrient = (e) => {
+      if (e.alpha == null) return;
+      this._alpha = e.alpha;
+      this._beta = e.beta || 0;
+      this._gamma = e.gamma || 0;
+      this._have = true;
+    };
+    window.addEventListener('deviceorientation', this._onOrient, true);
+    this.active = true;
+    document.body.classList.add('gyro-on');
+    this._updateBtn(true);
+    this._loop();
+  },
+  disable() {
+    this.active = false;
+    if (this._onOrient) window.removeEventListener('deviceorientation', this._onOrient, true);
+    this._onOrient = null;
+    cancelAnimationFrame(this._raf);
+    this._restore();
+    this._cam = null;
+    this._have = false;
+    document.body.classList.remove('gyro-on');
+    this._updateBtn(false);
+  },
+  _findCam() {
+    if (!currentApp) return null;
+    let c = null;
+    currentApp.root.forEach((e) => {
+      if (e.camera) c = e;
+    });
+    return c;
+  },
+  _disableControls(cam) {
+    this._restore();
+    let e = cam;
+    while (e) {
+      if (e.script && e.script.enabled) {
+        e.script.enabled = false;
+        this._disabled.push(e);
+      }
+      e = e.parent;
+    }
+  },
+  _restore() {
+    this._disabled.forEach((e) => {
+      if (e.script) e.script.enabled = true;
+    });
+    this._disabled = [];
+  },
+  _screenAngle() {
+    const so = screen.orientation && screen.orientation.angle;
+    return so != null ? so : window.orientation || 0;
+  },
+  _apply(cam) {
+    // Port de DeviceOrientationControls (THREE) a pc.Quat: q = qy*qx*qz * q1 * q0.
+    this._qz.setFromAxisAngle(this._axZ, -this._gamma);
+    this._qx.setFromAxisAngle(this._axX, this._beta);
+    this._qy.setFromAxisAngle(this._axY, this._alpha);
+    this._q.copy(this._qy).mul(this._qx).mul(this._qz);
+    this._q1.setFromAxisAngle(this._axX, -90); // mirar al horizonte (no al suelo)
+    this._q0.setFromAxisAngle(this._axZ, -this._screenAngle());
+    this._q.mul(this._q1).mul(this._q0);
+    cam.setRotation(this._q);
+  },
+  _loop() {
+    if (!this.active) return;
+    const cam = this._findCam();
+    if (cam) {
+      if (cam !== this._cam) {
+        this._cam = cam;
+        this._disableControls(cam);
+      }
+      if (this._have) this._apply(cam);
+    }
+    this._raf = requestAnimationFrame(() => this._loop());
+  },
+  _updateBtn(on) {
+    const btn = document.getElementById('gyro-btn');
+    if (!btn) return;
+    btn.classList.toggle('active', on);
+    const label = btn.querySelector('.gyro-btn__label');
+    if (label) label.textContent = on ? 'Salir AR' : 'Vista AR';
+  }
+};
+
+function setupGyroButton() {
+  const btn = document.getElementById('gyro-btn');
+  if (!btn) return;
+  // Solo en mobile y si el dispositivo expone sensores de orientación.
+  if (!(pc.platform.mobile && gyroMode.available())) return;
+  btn.hidden = false;
+  btn.addEventListener('click', () => gyroMode.toggle());
+}
+
 // Oculta el chrome (menú lateral) cuando el mouse lleva un rato quieto, para una
 // vista inmersiva; reaparece con cualquier movimiento del mouse/teclado.
 function setupIdleHide() {
@@ -1025,6 +1186,7 @@ function setupIdleHide() {
 function boot() {
   buildSceneMenu();
   setupTourButton();
+  setupGyroButton();
   setupIdleHide();
   selectScene(SCENES[0]);
 }

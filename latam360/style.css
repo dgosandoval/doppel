@@ -138,6 +138,40 @@ body {
   font-size: 12px;
 }
 
+/* ---- Botón de vista AR (giroscopio, solo mobile) ---------------------- */
+.gyro-btn {
+  position: fixed;
+  bottom: 76px;
+  right: 16px;
+  z-index: 11;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(20, 8, 46, 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #fff;
+  font-family: 'Latam Sans', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.gyro-btn[hidden] {
+  display: none;
+}
+.gyro-btn.active {
+  background: var(--coral);
+  border-color: transparent;
+}
+.gyro-btn__icon {
+  font-size: 15px;
+  line-height: 1;
+}
+
 /* ---- Panel de escenas (izquierda) ------------------------------------ */
 .sidebar {
   position: fixed;
