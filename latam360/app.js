@@ -62,11 +62,11 @@ const SCENES = [
     tag: 'Caminata · colisiones',
     desc: 'Recorre la escena a pie, en primera persona, con colisiones reales. WASD para moverte, mouse para mirar.',
     credit: 'Escaneo: superspl.at · CC BY 4.0',
-    // Avanza RECTO; solo gira la vista a la izquierda (sin alterar la trayectoria).
+    // Avanza RECTO; gira la vista a la izquierda hasta terminar mirando ATRÁS (-180°).
     tourMode: 'dolly',
     tourSpeed: 0.7,
     tourDist: 18,
-    tourYawDeg: -60,
+    tourYawDeg: -180,
     preload: [
       '/latam360/assets/splats/sunnyvale-lite.sog',
       'https://code.playcanvas.com/examples_data/example_sunnyvale/sunnyvale.glb'
@@ -93,14 +93,17 @@ const SCENES = [
     tag: 'Portal · stencil',
     desc: 'Un portal 3D conecta dos escaneos distintos: cruza de un mundo al otro. Efecto de recorte por stencil.',
     credit: 'Escaneos: Andrii Shramko / schindelar3d',
-    // Avanza RECTO y cruza el portal mirando al frente; SOLO DESPUÉS de cruzarlo
-    // (yawDelay) gira la vista ~160° para mirar el portal desde el otro lado.
+    // Cruza el portal RECTO mirando al frente; SOLO DESPUÉS (yawDelay) el camino
+    // CURVA ~80° para esquivar el árbol del fondo y la VISTA gira de vuelta al
+    // portal (lookBack). Así no choca y se ve el portal desde el otro lado.
     tourMode: 'dolly',
-    tourSpeed: 1.4,
-    tourDist: 16,
-    tourYawDeg: -160,
-    tourYawDelay: 11,
-    tourYawDur: 8,
+    tourSpeed: 1.6,
+    tourDist: 18,
+    tourYawDeg: 80,
+    tourCurve: true,
+    tourLookBack: true,
+    tourYawDelay: 9,
+    tourYawDur: 7,
     preload: [
       'https://code.playcanvas.com/examples_data/example_roman_parish_02/lod-meta.json',
       'https://code.playcanvas.com/examples_data/example_skatepark_02/lod-meta.json'
@@ -604,7 +607,8 @@ async function loadModule(scene) {
         yawDeg: scene.tourYawDeg,
         curve: scene.tourCurve,
         yawDelay: scene.tourYawDelay,
-        yawDur: scene.tourYawDur
+        yawDur: scene.tourYawDur,
+        lookBack: scene.tourLookBack
       });
     }
   };
@@ -641,6 +645,7 @@ function setupModuleAerial(app, mode, opts = {}) {
   const look = new pc.Vec3();
   const pathPos = new pc.Vec3();
   const curDir = new pc.Vec3();
+  const backDir = new pc.Vec3();
 
   const findCamera = () => {
     let c = null;
@@ -773,7 +778,18 @@ function setupModuleAerial(app, mode, opts = {}) {
       // Elevación opcional proporcional al avance (sobrevuela obstáculos).
       tmp.y = startPos.y + (opts.rise || 0) * (maxD > 0 ? traveled / maxD : 0);
       cam.setPosition(tmp);
-      if (opts.curve && opts.yawDeg) {
+      if (opts.lookBack) {
+        // Mira de vuelta al punto inicial (el portal): mezcla gradual (b) entre la
+        // mirada de avance y la dirección hacia startPos. El CAMINO curva aparte.
+        backDir.copy(startPos).sub(tmp);
+        backDir.y = 0;
+        if (backDir.length() < 1e-3) backDir.copy(fwdH).mulScalar(-1);
+        backDir.normalize();
+        look.copy(opts.curve ? curDir : fwdH);
+        look.lerp(look, backDir, b).normalize();
+        look.y = startFwdFull.y;
+        look.normalize().mulScalar(20).add(tmp);
+      } else if (opts.curve && opts.yawDeg) {
         // La mirada sigue la dirección del camino (conservando la inclinación inicial).
         look.set(curDir.x, startFwdFull.y, curDir.z).normalize().mulScalar(20).add(tmp);
       } else if (opts.yawDeg) {
