@@ -302,7 +302,19 @@ function setActiveScene(scene) {
   } else {
     hint = touch ? 'Desliza para orbitar · pellizca para acercar' : 'Arrastra para orbitar · rueda para acercar';
   }
-  $('#hint').textContent = hint;
+  showHint(hint);
+}
+
+// Muestra el hint de controles y lo auto-oculta a los pocos segundos, para no tapar
+// la vista de forma permanente. Reaparece al cambiar de escena (o entrar a AR).
+let _hintTimer = null;
+function showHint(text) {
+  const el = $('#hint');
+  if (!el) return;
+  el.textContent = text;
+  el.classList.remove('hint--hidden');
+  clearTimeout(_hintTimer);
+  _hintTimer = setTimeout(() => el.classList.add('hint--hidden'), 5000);
 }
 
 // Stub local de `data` para el port de downtown (independiente del shim de los módulos).
@@ -1188,7 +1200,7 @@ const gyroMode = {
     window.addEventListener('touchcancel', this._onTE);
     this.active = true;
     document.body.classList.add('gyro-on');
-    $('#hint').textContent = 'AR: mueve el teléfono · desliza izq. para avanzar · der. para girar la vista';
+    showHint('AR: mueve el teléfono · desliza izq. para avanzar · der. para girar la vista');
     this._updateBtn(true);
     this._loop();
   },

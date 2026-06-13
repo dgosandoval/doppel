@@ -108,34 +108,33 @@ body {
   z-index: 11;
   display: flex;
   align-items: center;
-  gap: 9px;
-  padding: 11px 22px;
-  border: none;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 999px;
-  background: var(--coral);
+  background: rgba(20, 8, 46, 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   color: #fff;
   font-family: 'Latam Sans', sans-serif;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 13px;
   letter-spacing: 0.02em;
   cursor: pointer;
-  box-shadow: 0 12px 30px rgba(255, 79, 109, 0.4);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
+  transition: transform 0.15s ease, background 0.2s ease;
 }
 .tour-btn[hidden] {
   display: none;
 }
 .tour-btn:hover {
-  transform: translateX(-50%) translateY(-2px);
-  box-shadow: 0 16px 38px rgba(255, 79, 109, 0.5);
+  background: rgba(20, 8, 46, 0.78);
 }
 .tour-btn.active {
   background: rgba(20, 8, 46, 0.7);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 8px 20px rgba(8, 2, 30, 0.4);
 }
 .tour-btn__icon {
-  font-size: 12px;
+  font-size: 11px;
+  color: var(--coral); /* acento coral en el ícono (identifica la acción principal) */
 }
 
 /* ---- Botón de vista AR (giroscopio, solo mobile) ---------------------- */
@@ -320,6 +319,11 @@ body.touring .sidebar {
 }
 /* Durante el recorrido el hint de controles se oculta (no aplica en modo libre). */
 body.touring .hint {
+  opacity: 0;
+  pointer-events: none;
+}
+/* El hint se auto-oculta a los pocos segundos para no tapar la vista. */
+.hint--hidden {
   opacity: 0;
   pointer-events: none;
 }
