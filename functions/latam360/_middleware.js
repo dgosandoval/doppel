@@ -13,10 +13,15 @@ export async function onRequest(context) {
     return next();
   }
 
-  // Ya autenticado → servir el contenido real.
+  // Ya autenticado → servir el contenido real. Forzamos revalidación del código
+  // (app.js/css/html/scenes) para que los cambios del demo se vean al instante en
+  // móvil (Cloudflare sirve los .js con max-age de horas → caché vieja en el iPhone).
   const cookie = request.headers.get('Cookie') || '';
   if (cookie.split(/;\s*/).includes(`${COOKIE}=${TOKEN}`)) {
-    return next();
+    const res = await next();
+    const headers = new Headers(res.headers);
+    headers.set('Cache-Control', 'no-cache, must-revalidate');
+    return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
   }
 
   // Envío del formulario de clave.

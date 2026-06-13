@@ -1116,6 +1116,10 @@ const gyroMode = {
     else await this.enable();
   },
   async enable() {
+    if (!this.available()) {
+      $('#hint').textContent = 'Tu navegador no permite la vista AR (revisa Ajustes → Safari → Movimiento)';
+      return;
+    }
     try {
       const DOE = window.DeviceOrientationEvent;
       if (DOE && typeof DOE.requestPermission === 'function') {
@@ -1229,8 +1233,9 @@ const gyroMode = {
 function setupGyroButton() {
   const btn = document.getElementById('gyro-btn');
   if (!btn) return;
-  // Solo en táctil y si el dispositivo expone sensores de orientación.
-  if (!(IS_TOUCH && gyroMode.available())) return;
+  // En cualquier dispositivo táctil. Si el sensor no está disponible o el permiso
+  // se deniega, se avisa al tocar el botón (no se oculta por eso).
+  if (!IS_TOUCH) return;
   btn.hidden = false;
   btn.addEventListener('click', () => gyroMode.toggle());
 }
