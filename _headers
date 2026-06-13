@@ -1,0 +1,13 @@
+# Código del demo latam360: que el navegador revalide siempre, para que los cambios
+# se vean al instante (Cloudflare servía los .js con max-age de 4 h → caché vieja en móvil).
+# Los assets pesados (splats, música, voz) NO se tocan aquí → mantienen su caché larga.
+/latam360/app.js
+  Cache-Control: no-cache, must-revalidate
+/latam360/style.css
+  Cache-Control: no-cache, must-revalidate
+/latam360/index.html
+  Cache-Control: no-cache, must-revalidate
+/latam360/scenes/*
+  Cache-Control: no-cache, must-revalidate
+/latam360/lib/*
+  Cache-Control: no-cache, must-revalidate
