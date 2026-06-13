@@ -230,6 +230,13 @@ function showError(msg) {
   loaderEl().classList.add('is-error');
 }
 
+// Detección de dispositivo táctil. Más fiable que `pc.platform.mobile` (que puede
+// dar false en iOS según el user-agent) para mostrar el hint de dedo y el botón AR.
+const IS_TOUCH =
+  (typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0) ||
+  (typeof window !== 'undefined' && 'ontouchstart' in window) ||
+  !!(pc.platform && pc.platform.mobile);
+
 function setActiveScene(scene) {
   document.querySelectorAll('.scene-card').forEach((el) => {
     el.classList.toggle('active', el.dataset.scene === scene.id);
@@ -238,7 +245,7 @@ function setActiveScene(scene) {
   $('#info-place').textContent = scene.place;
   $('#info-desc').textContent = scene.desc;
   $('#info-credit').textContent = scene.credit;
-  const touch = pc.platform.mobile;
+  const touch = IS_TOUCH;
   let hint;
   if (scene.id === 'first-person') {
     hint = touch
@@ -1177,8 +1184,8 @@ const gyroMode = {
 function setupGyroButton() {
   const btn = document.getElementById('gyro-btn');
   if (!btn) return;
-  // Solo en mobile y si el dispositivo expone sensores de orientación.
-  if (!(pc.platform.mobile && gyroMode.available())) return;
+  // Solo en táctil y si el dispositivo expone sensores de orientación.
+  if (!(IS_TOUCH && gyroMode.available())) return;
   btn.hidden = false;
   btn.addEventListener('click', () => gyroMode.toggle());
 }
