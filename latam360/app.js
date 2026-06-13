@@ -276,7 +276,7 @@ function showError(msg) {
 
 // Marca de versión visible en pantalla, para verificar que el dispositivo carga la
 // última build (la caché de Cloudflare puede servir código viejo). Súbelo en cada cambio.
-const BUILD = '613e';
+const BUILD = '613f';
 
 // Detección de dispositivo táctil. Más fiable que `pc.platform.mobile` (que puede
 // dar false en iOS según el user-agent) para mostrar el hint de dedo y el botón AR.
@@ -344,7 +344,7 @@ function freshCanvas() {
 // Elimina el DOM que inyectan los ejemplos (paneles, stats, etc.) al salir de la escena.
 function cleanInjectedDom() {
   const keepClass = ['topbar', 'sidebar', 'info', 'hint'];
-  const keepId = ['application-canvas', 'loader', 'scene-transition', 'tour-btn', 'tour-audio', 'tour-voice', 'tour-caption'];
+  const keepId = ['application-canvas', 'loader', 'scene-transition', 'build-tag', 'tour-btn', 'tour-audio', 'tour-voice', 'tour-caption'];
   Array.from(document.body.children).forEach((el) => {
     if (el.tagName === 'SCRIPT') return;
     if (keepId.includes(el.id)) return;

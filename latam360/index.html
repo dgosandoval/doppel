@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="style.css?v=613e" />
+<link rel="stylesheet" href="style.css?v=613f" />
 <script type="importmap">
 {
   "imports": {
@@ -115,8 +115,24 @@
   <audio id="tour-voice" preload="auto"></audio>
 
   <!-- Marca de versión / diagnóstico: barra superior, estilos inline (se ve aunque
-       el CSS/JS estén en caché vieja). El texto estático prueba que el HTML es nuevo. -->
-  <div id="build-tag" style="position:fixed;top:0;left:0;right:0;z-index:2147483647;text-align:center;font:bold 13px/2.2 ui-monospace,monospace;color:#fff;background:#c0264a;">613e·html</div>
+       el CSS/JS estén en caché vieja). Un script inline captura errores de app.js
+       y los muestra aquí, para ver POR QUÉ no arranca si falla. -->
+  <div id="build-tag" style="position:fixed;top:0;left:0;right:0;z-index:2147483647;text-align:center;font:bold 12px/1.6 ui-monospace,monospace;color:#fff;background:#c0264a;padding:6px 8px;word-break:break-word;">613f·html</div>
+  <script>
+    (function () {
+      var set = function (s) { var b = document.getElementById('build-tag'); if (b) b.textContent = s; };
+      window.__l360diag = set;
+      window.addEventListener('error', function (e) {
+        set('ERR: ' + (e.message || e) + ' @ ' + String(e.filename || '').split('/').pop() + ':' + (e.lineno || ''));
+      });
+      window.addEventListener('unhandledrejection', function (e) {
+        set('REJ: ' + ((e.reason && (e.reason.message || e.reason)) || 'promise'));
+      });
+      var t = navigator.maxTouchPoints > 0 ? 1 : 0;
+      var o = typeof window.DeviceOrientationEvent !== 'undefined' ? 1 : 0;
+      set('613f · inlineJS ok · touch:' + t + ' · orient:' + o + ' · cargando app.js…');
+    })();
+  </script>
 
   <!-- Loader -->
   <div id="loader">
@@ -127,6 +143,6 @@
     <div id="loader-pct">0%</div>
   </div>
 
-  <script type="module" src="app.js?v=613e"></script>
+  <script type="module" src="app.js?v=613f"></script>
 </body>
 </html>
