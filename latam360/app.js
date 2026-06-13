@@ -274,9 +274,7 @@ function showError(msg) {
   loaderEl().classList.add('is-error');
 }
 
-// Marca de versión visible en pantalla, para verificar que el dispositivo carga la
 // última build (la caché de Cloudflare puede servir código viejo). Súbelo en cada cambio.
-const BUILD = '613h';
 
 // Detección de dispositivo táctil. Más fiable que `pc.platform.mobile` (que puede
 // dar false en iOS según el user-agent) para mostrar el hint de dedo y el botón AR.
@@ -344,7 +342,7 @@ function freshCanvas() {
 // Elimina el DOM que inyectan los ejemplos (paneles, stats, etc.) al salir de la escena.
 function cleanInjectedDom() {
   const keepClass = ['topbar', 'sidebar', 'info', 'hint'];
-  const keepId = ['application-canvas', 'loader', 'scene-transition', 'build-tag', 'tour-btn', 'gyro-btn', 'tour-audio', 'tour-voice', 'tour-caption'];
+  const keepId = ['application-canvas', 'loader', 'scene-transition', 'tour-btn', 'gyro-btn', 'tour-audio', 'tour-voice', 'tour-caption'];
   Array.from(document.body.children).forEach((el) => {
     if (el.tagName === 'SCRIPT') return;
     if (keepId.includes(el.id)) return;
@@ -1236,18 +1234,11 @@ const gyroMode = {
 
 function setupGyroButton() {
   const btn = document.getElementById('gyro-btn');
-  let shown = false;
   // En cualquier dispositivo táctil. Si el sensor no está disponible o el permiso
   // se deniega, se avisa al tocar el botón (no se oculta por eso).
   if (btn && IS_TOUCH) {
     btn.hidden = false;
     btn.addEventListener('click', () => gyroMode.toggle());
-    shown = true;
-  }
-  // Diagnóstico visible: build · táctil · sensor de orientación · botón AR mostrado.
-  const tag = document.getElementById('build-tag');
-  if (tag) {
-    tag.textContent = `b${BUILD} · t${IS_TOUCH ? 1 : 0} · o${gyroMode.available() ? 1 : 0} · ar${shown ? 1 : 0}`;
   }
 }
 

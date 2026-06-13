@@ -545,3 +545,39 @@ body.touring .hint {
     padding: 12px 18px;
   }
 }
+
+/* ---- Horizontal en móvil: poca altura → compactar el chrome --------- */
+@media (orientation: landscape) and (max-height: 500px) {
+  .topbar {
+    padding: 6px 14px;
+  }
+  .brand__logo {
+    height: 16px;
+  }
+  .topbar__doppel {
+    height: 13px;
+  }
+  /* En horizontal el hint roba altura; se omite (los controles ya se sienten). */
+  .hint {
+    display: none;
+  }
+  .tour-caption {
+    top: 42px;
+    font-size: 13px;
+    padding: 7px 14px;
+  }
+  /* Menú de escenas más bajo y tarjetas compactas (sin la línea de tag). */
+  .sidebar {
+    padding: 6px 0 calc(6px + env(safe-area-inset-bottom, 0px));
+  }
+  .scene-card {
+    min-width: 116px;
+    padding: 7px 12px;
+  }
+  .scene-card__tag {
+    display: none;
+  }
+  .scene-card__place {
+    font-size: 10px;
+  }
+}
