@@ -99,13 +99,18 @@ body {
   opacity: 0.92;
 }
 
-/* ---- Botón de recorrido ------------------------------------------------ */
-.tour-btn {
+/* ---- Cluster de controles (recorrido + AR), agrupados ----------------- */
+#controls {
   position: fixed;
-  bottom: 76px;
+  z-index: 11;
+  bottom: 30px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 11;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.tour-btn {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -139,10 +144,6 @@ body {
 
 /* ---- Botón de vista AR (giroscopio, solo mobile) ---------------------- */
 .gyro-btn {
-  position: fixed;
-  bottom: 76px;
-  right: 16px;
-  z-index: 11;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -522,29 +523,22 @@ body.touring .hint {
     max-width: calc(100vw - 36px);
     text-align: center;
   }
-  /* Botón AR: arriba a la derecha, no choca con el menú de abajo. */
-  .gyro-btn {
-    top: 54px;
+  /* Cluster de controles: arriba al centro, bajo el header (centrado = nunca se
+     sale de pantalla, ni en horizontal con el notch lateral). */
+  #controls {
     bottom: auto;
-    right: 12px;
-    padding: 8px 13px;
+    top: calc(48px + env(safe-area-inset-top, 0px));
+    gap: 8px;
+  }
+  .tour-btn,
+  .gyro-btn {
+    padding: 8px 14px;
     font-size: 12px;
   }
 
-  /* Botón de recorrido: arriba al centro, bajo el header (no choca con las cards) */
-  .tour-btn {
-    bottom: auto;
-    top: 54px;
-    padding: 9px 18px;
-    font-size: 13px;
-  }
-  .tour-btn:hover {
-    transform: translateX(-50%);
-  }
-
-  /* Tarjeta de mensajes: más compacta y debajo del botón */
+  /* Tarjeta de mensajes: más compacta y debajo del cluster */
   .tour-caption {
-    top: 104px;
+    top: calc(96px + env(safe-area-inset-top, 0px));
     font-size: 15px;
     padding: 12px 18px;
   }
@@ -560,6 +554,10 @@ body.touring .hint {
   }
   .topbar__doppel {
     height: 13px;
+  }
+  /* Cluster en la fila superior (entre los logos), para ahorrar altura. */
+  #controls {
+    top: calc(6px + env(safe-area-inset-top, 0px));
   }
   /* En horizontal el hint roba altura; se omite (los controles ya se sienten). */
   .hint {

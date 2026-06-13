@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="style.css?v=613k" />
+<link rel="stylesheet" href="style.css?v=613l" />
 <script type="importmap">
 {
   "imports": {
@@ -93,17 +93,17 @@
   <!-- Hint de controles -->
   <div class="hint" id="hint"></div>
 
-  <!-- Botón de recorrido automático (visible solo en escenas con tour) -->
-  <button class="tour-btn" id="tour-btn" hidden>
-    <span class="tour-btn__icon">▶</span>
-    <span class="tour-btn__label">Iniciar recorrido</span>
-  </button>
-
-  <!-- Botón de vista AR por giroscopio (solo mobile con sensores) -->
-  <button class="gyro-btn" id="gyro-btn" hidden>
-    <span class="gyro-btn__icon">◎</span>
-    <span class="gyro-btn__label">Vista AR</span>
-  </button>
+  <!-- Cluster de controles (recorrido + vista AR), agrupados -->
+  <div id="controls">
+    <button class="tour-btn" id="tour-btn" hidden>
+      <span class="tour-btn__icon">▶</span>
+      <span class="tour-btn__label">Iniciar recorrido</span>
+    </button>
+    <button class="gyro-btn" id="gyro-btn" hidden>
+      <span class="gyro-btn__icon">◎</span>
+      <span class="gyro-btn__label">Vista AR</span>
+    </button>
+  </div>
 
   <!-- Tarjeta de mensajes que aparece durante el recorrido -->
   <div class="tour-caption" id="tour-caption"></div>
@@ -123,6 +123,6 @@
     <div id="loader-pct">0%</div>
   </div>
 
-  <script type="module" src="app.js?v=613k"></script>
+  <script type="module" src="app.js?v=613l"></script>
 </body>
 </html>
