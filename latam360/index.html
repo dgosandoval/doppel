@@ -26,24 +26,36 @@
 }
 </script>
 
-<!-- Analytics: Cloudflare Web Analytics, con exclusión de TUS visitas.
-     1) Pega tu token del beacon en CF_BEACON_TOKEN (Cloudflare → Web Analytics → Add a site).
-     2) En cada uno de tus dispositivos/navegadores, visita una vez:
-        https://doppel.cl/latam360/?notrack=1   (deja de contarte; ?track=1 lo revierte) -->
+<!-- Cloudflare Web Analytics está activo vía la integración automática de Pages
+     (cuenta las visitas solo). Este script NO inyecta beacon; solo EXCLUYE TUS
+     visitas: en cada dispositivo/navegador donde visites .../?notrack=1, silencia
+     el envío del beacon de Cloudflare (deja de contarte). ?track=1 lo revierte. -->
 <script>
 (function () {
-  var CF_BEACON_TOKEN = 'PEGAR_TOKEN_AQUI';
   try {
     var p = new URLSearchParams(location.search);
     if (p.has('notrack')) localStorage.setItem('l360_notrack', '1');
     if (p.has('track')) localStorage.removeItem('l360_notrack');
-    if (localStorage.getItem('l360_notrack') === '1') return; // tus dispositivos: no contar
-    if (!CF_BEACON_TOKEN || CF_BEACON_TOKEN.indexOf('PEGAR') === 0) return; // sin token aún: no inyectar
-    var s = document.createElement('script');
-    s.defer = true;
-    s.src = 'https://static.cloudflareinsights.com/beacon.min.js';
-    s.setAttribute('data-cf-beacon', JSON.stringify({ token: CF_BEACON_TOKEN }));
-    document.head.appendChild(s);
+    if (localStorage.getItem('l360_notrack') !== '1') return; // visitante normal: contar
+    // Tus dispositivos: bloquear el envío de red del beacon de Cloudflare Analytics.
+    var BLOCK = /cloudflareinsights\.com|\/cdn-cgi\/rum/i;
+    if (navigator.sendBeacon) {
+      var _sb = navigator.sendBeacon.bind(navigator);
+      navigator.sendBeacon = function (url) {
+        try { if (BLOCK.test(String(url))) return true; } catch (e) {}
+        return _sb.apply(navigator, arguments);
+      };
+    }
+    if (window.fetch) {
+      var _f = window.fetch.bind(window);
+      window.fetch = function (u) {
+        try {
+          var s = u && u.url ? u.url : String(u);
+          if (BLOCK.test(s)) return Promise.resolve(new Response('', { status: 204 }));
+        } catch (e) {}
+        return _f.apply(window, arguments);
+      };
+    }
   } catch (e) {}
 })();
 </script>
