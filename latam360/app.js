@@ -354,7 +354,7 @@ function freshCanvas() {
 // Elimina el DOM que inyectan los ejemplos (paneles, stats, etc.) al salir de la escena.
 function cleanInjectedDom() {
   const keepClass = ['topbar', 'sidebar', 'info', 'hint'];
-  const keepId = ['application-canvas', 'loader', 'scene-transition', 'tour-btn', 'gyro-btn', 'tour-audio', 'tour-voice', 'tour-caption'];
+  const keepId = ['application-canvas', 'loader', 'scene-transition', 'controls', 'tour-audio', 'tour-voice', 'tour-caption'];
   Array.from(document.body.children).forEach((el) => {
     if (el.tagName === 'SCRIPT') return;
     if (keepId.includes(el.id)) return;
