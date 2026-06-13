@@ -193,11 +193,54 @@ function showLoader(text) {
   loaderEl().classList.remove('hidden');
 }
 function hideLoader() {
+  loaderProgress.finish();
   loaderEl().classList.add('hidden');
   // Cuando la nueva escena ya pintó su primer frame, desvanece el overlay de
   // transición para revelarla con un fade limpio (en vez de un corte seco).
   sceneTransition.reveal();
 }
+
+// Barra/porcentaje de avance en la pantalla de carga. La carga de splats no expone
+// un % de bytes fiable (LOD se transmite por chunks), así que mostramos un avance
+// suavizado que acelera al principio y se completa (100%) cuando la escena pinta.
+const loaderProgress = {
+  _raf: 0,
+  _start: 0,
+  _pct: 0,
+  _running: false,
+  start() {
+    this._running = true;
+    this._pct = 0;
+    this._start = performance.now();
+    this._render(0);
+    cancelAnimationFrame(this._raf);
+    this._tick();
+  },
+  _tick() {
+    if (!this._running) return;
+    const t = (performance.now() - this._start) / 1000;
+    const target = 96 * (1 - Math.exp(-t / 3.5)); // sube rápido y desacelera hacia 96%
+    if (target > this._pct) this._pct = target;
+    this._render(this._pct);
+    this._raf = requestAnimationFrame(() => this._tick());
+  },
+  finish() {
+    if (!this._running) return;
+    this._running = false;
+    cancelAnimationFrame(this._raf);
+    this._render(100);
+  },
+  halt() {
+    this._running = false;
+    cancelAnimationFrame(this._raf);
+  },
+  _render(pct) {
+    const t = document.getElementById('loader-pct');
+    if (t) t.textContent = `${Math.round(pct)}%`;
+    const bar = document.getElementById('loader-bar');
+    if (bar) bar.style.width = `${pct}%`;
+  }
+};
 
 // Overlay de transición (fade a indigo) entre escenas. Se cubre antes de cambiar
 // de splat y se revela cuando la escena nueva está lista (vía hideLoader).
@@ -225,6 +268,7 @@ const sceneTransition = {
   }
 };
 function showError(msg) {
+  loaderProgress.halt();
   loaderTextEl().innerHTML = msg;
   loaderEl().classList.remove('hidden');
   loaderEl().classList.add('is-error');
@@ -827,16 +871,17 @@ function setupModuleAerial(app, mode, opts = {}) {
 // Orquestación
 // ---------------------------------------------------------------------------
 let sceneShownOnce = false;
-async function selectScene(scene) {
+async function selectScene(scene, opts = {}) {
   currentSceneId = scene.id;
   setActiveScene(scene);
   loaderEl().classList.remove('is-error');
-  // Primera carga: pantalla de carga con spinner. Cambios posteriores entre splats:
-  // transición suave (fade a indigo) sin spinner, revelada al pintar la escena nueva.
-  if (sceneShownOnce) {
+  // Auto-avance del recorrido (escenas precargadas, rápidas): transición con fade.
+  // Primera carga y selección manual: pantalla de carga con % de avance.
+  if (opts.fade && sceneShownOnce) {
     await sceneTransition.cover();
   } else {
     showLoader(scene.type === 'lod' ? 'Transmitiendo la ciudad…' : 'Cargando experiencia…');
+    loaderProgress.start();
   }
   teardown();
   try {
@@ -1023,7 +1068,7 @@ const grandTour = {
       return;
     }
     const next = SCENES[idx + 1];
-    await selectScene(next);
+    await selectScene(next, { fade: true });
     if (!this.active) return;
     this._runCurrent();
   },

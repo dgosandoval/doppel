@@ -408,6 +408,34 @@ body.touring .hint {
   max-width: 460px;
   padding: 0 24px;
 }
+/* Barra + porcentaje de avance de carga */
+.loader-progress {
+  width: 220px;
+  max-width: 62vw;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  overflow: hidden;
+  margin-top: 2px;
+}
+.loader-progress__fill {
+  height: 100%;
+  width: 0%;
+  background: var(--coral);
+  border-radius: 999px;
+  transition: width 0.25s ease;
+}
+#loader-pct {
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  opacity: 0.75;
+  font-variant-numeric: tabular-nums;
+}
+/* En estado de error se ocultan la barra y el % (se muestra el mensaje). */
+#loader.is-error .loader-progress,
+#loader.is-error #loader-pct {
+  display: none;
+}
 .loader-logo {
   height: 30px;
   filter: brightness(0) invert(1);
