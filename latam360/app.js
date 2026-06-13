@@ -276,7 +276,7 @@ function showError(msg) {
 
 // Marca de versión visible en pantalla, para verificar que el dispositivo carga la
 // última build (la caché de Cloudflare puede servir código viejo). Súbelo en cada cambio.
-const BUILD = '613c';
+const BUILD = '613d';
 
 // Detección de dispositivo táctil. Más fiable que `pc.platform.mobile` (que puede
 // dar false en iOS según el user-agent) para mostrar el hint de dedo y el botón AR.

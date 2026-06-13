@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="style.css?v=613c" />
+<link rel="stylesheet" href="style.css?v=613d" />
 <script type="importmap">
 {
   "imports": {
@@ -114,8 +114,9 @@
   <!-- Locución del recorrido (un clip por escena, en assets/voice/) -->
   <audio id="tour-voice" preload="auto"></audio>
 
-  <!-- Marca de versión / diagnóstico (esquina inferior izquierda) -->
-  <div id="build-tag"></div>
+  <!-- Marca de versión / diagnóstico (estilos inline para que se vea aunque el CSS
+       esté en caché vieja; el texto estático prueba que el HTML es el nuevo). -->
+  <div id="build-tag" style="position:fixed;left:8px;bottom:6px;z-index:2147483647;font:11px/1.4 ui-monospace,monospace;color:#fff;background:#c0264a;padding:3px 8px;border-radius:6px;">613d·html</div>
 
   <!-- Loader -->
   <div id="loader">
@@ -126,6 +127,6 @@
     <div id="loader-pct">0%</div>
   </div>
 
-  <script type="module" src="app.js?v=613c"></script>
+  <script type="module" src="app.js?v=613d"></script>
 </body>
 </html>
