@@ -185,6 +185,7 @@ const musicPlayer = {
 // música). Suena siempre, mezclado bajo la música y la locución. iOS ignora
 // `volume`, así que el nivel real va horneado en el archivo. Arranca en el primer
 // gesto del usuario (igual que la música).
+const AMBIENT_V = '2'; // subir cuando se re-rendericen las pistas (evita caché vieja)
 const AMBIENT = {
   downtown: 'assets/ambient/city.mp3',
   'lod-streaming': 'assets/ambient/courtyard.mp3',
@@ -211,7 +212,7 @@ const ambientPlayer = {
       }
       return;
     }
-    const abs = `/latam360/${src}`;
+    const abs = `/latam360/${src}?v=${AMBIENT_V}`;
     if (el.getAttribute('src') !== abs) el.src = abs;
     el.loop = true;
     el.volume = 1.0; // el nivel va horneado en el archivo
