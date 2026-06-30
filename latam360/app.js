@@ -158,14 +158,41 @@ const musicPlayer = {
     if (!this._el) this._el = document.getElementById('tour-audio');
     return this._el;
   },
-  start() {
+  // `onReady` se dispara cuando la música EMPIEZA a sonar de verdad (evento 'playing'),
+  // para arrancar la locución/cámara recién ahí y que vayan sincronizadas (la música
+  // tarda en bufferear los 3MB; antes la locución se adelantaba). Fallback a 3.5s.
+  start(onReady) {
     this.active = true;
     const el = this.el();
-    if (!el) return;
+    let fired = false;
+    const ready = () => {
+      if (fired) return;
+      fired = true;
+      if (onReady) onReady();
+    };
+    if (!el) {
+      ready();
+      return;
+    }
     el.loop = true;
     el.preload = 'auto';
     el.volume = MUSIC_VOL; // 1.0 — iOS lo ignora, pero el nivel ya va en el archivo
+    el.addEventListener('playing', ready, { once: true });
+    setTimeout(ready, 3500); // por si 'playing' no dispara
+    if (!el.paused && el.readyState >= 3) ready(); // ya estaba sonando (escenas siguientes)
     el.play().catch(() => {});
+  },
+  // Precarga el archivo (en el primer gesto) para que al iniciar el recorrido ya
+  // esté bufferado y 'playing' dispare de inmediato (sin desfase con la locución).
+  preload() {
+    const el = this.el();
+    if (!el) return;
+    el.preload = 'auto';
+    try {
+      el.load();
+    } catch (e) {
+      /* noop */
+    }
   },
   // Llamar tras cada transición de escena (y por keepalive): si iOS pausó el audio,
   // lo reanuda. No reinicia la pista si ya está sonando.
@@ -185,7 +212,7 @@ const musicPlayer = {
 // música). Suena siempre, mezclado bajo la música y la locución. iOS ignora
 // `volume`, así que el nivel real va horneado en el archivo. Arranca en el primer
 // gesto del usuario (igual que la música).
-const AMBIENT_V = '2'; // subir cuando se re-rendericen las pistas (evita caché vieja)
+const AMBIENT_V = '3'; // subir cuando se re-rendericen las pistas (evita caché vieja)
 const AMBIENT = {
   downtown: 'assets/ambient/city.mp3',
   'lod-streaming': 'assets/ambient/courtyard.mp3',
@@ -1069,13 +1096,16 @@ const grandTour = {
     if (gyroMode.active) gyroMode.disable(); // recorrido y vista AR son excluyentes
     this.active = true;
     document.body.classList.add('touring'); // oculta el hint de controles durante el recorrido
-    musicPlayer.start();
+    // Arranca la música y, SOLO cuando empieza a sonar, lanza locución/cámara para
+    // que vayan juntas (antes la locución se adelantaba mientras la música cargaba).
+    musicPlayer.start(() => {
+      if (this.active) this._runCurrent();
+    });
     // Keepalive: en iOS el AudioContext se suspende al cambiar de escena; lo
     // reanudamos periódicamente para que la música no se corte entre splats.
     clearInterval(this._keepalive);
     this._keepalive = setInterval(() => musicPlayer.ensure(), 1500);
     this._updateBtn(true);
-    this._runCurrent();
   },
   stop() {
     this.active = false;
@@ -1434,9 +1464,13 @@ function setupIdleHide() {
   wake();
 }
 
-// Arranca el sonido ambiental en el primer gesto del usuario (iOS exige gesto).
+// Arranca el sonido ambiental en el primer gesto del usuario (iOS exige gesto) y
+// precarga la música, para que al iniciar el recorrido ya esté bufferada.
 function setupAmbientUnlock() {
-  const u = () => ambientPlayer.unlock();
+  const u = () => {
+    ambientPlayer.unlock();
+    musicPlayer.preload();
+  };
   ['pointerdown', 'touchstart', 'keydown'].forEach((ev) =>
     window.addEventListener(ev, u, { passive: true })
   );
