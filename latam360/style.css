@@ -724,3 +724,23 @@ body.touring .hint {
   }
   .callout__video { border-radius: 0; }
 }
+
+/* ---- Botón mute del sonido ambiente (en el cluster de controles) ------ */
+.mute-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 50%;
+  background: rgba(20, 8, 46, 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.mute-btn:hover { background: rgba(20, 8, 46, 0.78); }
+.mute-btn.muted { opacity: 0.55; }
+.mute-btn__icon { font-size: 15px; line-height: 1; }

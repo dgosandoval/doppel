@@ -223,6 +223,9 @@ const AMBIENT = {
 const ambientPlayer = {
   _el: null,
   _unlocked: false,
+  _muted: false, // apagado manual por el usuario (botón)
+  _videoPaused: false, // pausa temporal mientras se reproduce un video de call-out
+  _hasSrc: false,
   el() {
     if (!this._el) this._el = document.getElementById('ambient-audio');
     return this._el;
@@ -232,24 +235,48 @@ const ambientPlayer = {
     if (!el) return;
     const src = AMBIENT[sceneId];
     if (!src) {
-      try {
-        el.pause();
-      } catch (e) {
-        /* noop */
-      }
+      this._hasSrc = false;
+      this._apply();
       return;
     }
     const abs = `/latam360/${src}?v=${AMBIENT_V}`;
     if (el.getAttribute('src') !== abs) el.src = abs;
     el.loop = true;
     el.volume = 1.0; // el nivel va horneado en el archivo
-    if (this._unlocked) el.play().catch(() => {});
+    this._hasSrc = true;
+    this._apply();
+  },
+  // Reproduce o pausa según el estado (desbloqueado, con pista, no muteado, sin video).
+  _apply() {
+    const el = this.el();
+    if (!el) return;
+    if (this._unlocked && this._hasSrc && !this._muted && !this._videoPaused) {
+      el.play().catch(() => {});
+    } else {
+      try {
+        el.pause();
+      } catch (e) {
+        /* noop */
+      }
+    }
   },
   // Llamar en el primer gesto del usuario (iOS exige gesto para reproducir audio).
   unlock() {
     this._unlocked = true;
-    const el = this.el();
-    if (el && el.getAttribute('src')) el.play().catch(() => {});
+    this._apply();
+  },
+  setMuted(m) {
+    this._muted = m;
+    this._apply();
+  },
+  toggleMuted() {
+    this.setMuted(!this._muted);
+    return this._muted;
+  },
+  // Pausa/reanuda el ambiente mientras hay un video de call-out reproduciéndose.
+  pauseForVideo(on) {
+    this._videoPaused = on;
+    this._apply();
   }
 };
 
@@ -302,15 +329,18 @@ const callouts = {
       const el = document.createElement('button');
       el.className = 'hotspot';
       el.innerHTML = `<span class="hotspot__dot"></span><span class="hotspot__label">${hs.label || ''}</span>`;
-      el.addEventListener('click', () => this.openCard(hs));
       el.style.display = 'none';
       layer.appendChild(el);
-      this._markers.push({
+      const m = {
         el,
         hs,
         pos: hs.pos ? new pc.Vec3(hs.pos[0], hs.pos[1], hs.pos[2]) : new pc.Vec3(),
-        placed: !!hs.pos
-      });
+        placed: !!hs.pos,
+        cssX: 0,
+        cssY: 0
+      };
+      el.addEventListener('click', () => this.openCard(hs, m));
+      this._markers.push(m);
     });
   },
   _findCam() {
@@ -344,15 +374,17 @@ const callouts = {
           m.el.style.display = 'none'; // detrás de la cámara
           continue;
         }
+        m.cssX = this._scr.x * sx;
+        m.cssY = this._scr.y * sy;
         m.el.style.display = '';
-        m.el.style.transform = `translate(-50%, -50%) translate(${this._scr.x * sx}px, ${this._scr.y * sy}px)`;
+        m.el.style.transform = `translate(-50%, -50%) translate(${m.cssX}px, ${m.cssY}px)`;
       }
     } else {
       this._markers.forEach((m) => (m.el.style.display = 'none'));
     }
     this._raf = requestAnimationFrame(() => this._loop());
   },
-  openCard(hs) {
+  openCard(hs, m) {
     const card = document.getElementById('callout');
     const media = document.getElementById('callout-media');
     const body = document.getElementById('callout-body');
@@ -371,12 +403,37 @@ const callouts = {
       `${hs.subtitle ? `<div class="callout__sub">${hs.subtitle}</div>` : ''}` +
       `${hs.body || ''}`;
     card.hidden = false;
+    this._positionCard(m);
+    if (hs.video) ambientPlayer.pauseForVideo(true); // apaga el ambiente durante el video
+  },
+  // Ancla la tarjeta junto al punto (desktop); en móvil queda como hoja inferior (CSS).
+  _positionCard(m) {
+    const card = document.getElementById('callout');
+    if (!card) return;
+    if (window.innerWidth <= 820 || !m) {
+      card.style.left = card.style.top = card.style.right = card.style.bottom = '';
+      return;
+    }
+    card.style.right = 'auto';
+    card.style.bottom = 'auto';
+    const w = card.offsetWidth;
+    const h = card.offsetHeight;
+    const pad = 16;
+    let left = m.cssX + 22; // a la derecha del punto
+    if (left + w > window.innerWidth - pad) left = m.cssX - 22 - w; // si no cabe, a la izquierda
+    if (left < pad) left = pad;
+    let top = m.cssY - h / 2; // centrada verticalmente al punto
+    if (top < pad) top = pad;
+    if (top + h > window.innerHeight - pad) top = window.innerHeight - pad - h;
+    card.style.left = `${left}px`;
+    card.style.top = `${top}px`;
   },
   closeCard() {
     const card = document.getElementById('callout');
     const media = document.getElementById('callout-media');
     if (media) media.innerHTML = ''; // detiene el video al cerrar
     if (card) card.hidden = true;
+    ambientPlayer.pauseForVideo(false); // reanuda el ambiente
   },
   _setupEditor() {
     const panel = document.getElementById('callout-editor');
@@ -1633,8 +1690,21 @@ function boot() {
   setupGyroButton();
   setupIdleHide();
   setupAmbientUnlock();
+  setupMuteButton();
   callouts.init();
   selectScene(SCENES[0]);
+}
+
+// Botón para apagar/encender manualmente el sonido ambiente.
+function setupMuteButton() {
+  const btn = document.getElementById('mute-btn');
+  const icon = document.getElementById('mute-icon');
+  if (!btn) return;
+  btn.addEventListener('click', () => {
+    const muted = ambientPlayer.toggleMuted();
+    if (icon) icon.textContent = muted ? '🔇' : '🔊';
+    btn.classList.toggle('muted', muted);
+  });
 }
 
 if (document.readyState === 'loading') {
