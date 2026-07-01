@@ -254,6 +254,150 @@ const ambientPlayer = {
 };
 
 // ---------------------------------------------------------------------------
+// Call-outs (hotspots): puntos clicables anclados en el splat que despliegan una
+// tarjeta con info, fotos y video embebido. El marcador se proyecta de 3D a pantalla
+// cada frame y sigue la cámara. Se editan por escena en HOTSPOTS (pos = [x,y,z]).
+// MODO EDICIÓN: abre la escena con ?hs=1 y haz clic para obtener coordenadas.
+// Campos por call-out: pos [x,y,z] (o auto:N = N unidades frente a la cámara al
+// cargar), label, title, subtitle, body (HTML), image (url), video (url de embed).
+// ---------------------------------------------------------------------------
+const HOTSPOTS = {
+  downtown: [
+    {
+      auto: 26, // sin pos fija: se ancla 26u frente a la cámara al cargar (visible de entrada)
+      label: 'Ejemplo',
+      title: 'Punto de interés',
+      subtitle: 'Call-out de ejemplo',
+      body:
+        '<p>Aquí va la información del punto: descripción, datos de la operación, ' +
+        'quién trabaja acá. El texto, la foto y el video son editables por call-out.</p>' +
+        '<p style="opacity:.6;font-size:12px">Reemplaza esta tarjeta por contenido real ' +
+        '(foto del lugar + testimonio en video).</p>',
+      image: '/latam360/assets/callouts/sample.jpg',
+      video: 'https://www.youtube.com/embed/aqz-KE-bpKQ' // placeholder — cambiar por video real
+    }
+  ]
+};
+
+const callouts = {
+  _raf: 0,
+  _markers: [],
+  _scr: null,
+  init() {
+    this._scr = new pc.Vec3();
+    const closeBtn = document.getElementById('callout-close');
+    if (closeBtn) closeBtn.addEventListener('click', () => this.closeCard());
+    const card = document.getElementById('callout');
+    if (card) card.addEventListener('click', (e) => { if (e.target === card) this.closeCard(); });
+    if (new URLSearchParams(location.search).has('hs')) this._setupEditor();
+    this._loop();
+  },
+  setScene(sceneId) {
+    this.closeCard();
+    this._markers.forEach((m) => m.el.remove());
+    this._markers = [];
+    const layer = document.getElementById('callout-markers');
+    if (!layer) return;
+    (HOTSPOTS[sceneId] || []).forEach((hs) => {
+      const el = document.createElement('button');
+      el.className = 'hotspot';
+      el.innerHTML = `<span class="hotspot__dot"></span><span class="hotspot__label">${hs.label || ''}</span>`;
+      el.addEventListener('click', () => this.openCard(hs));
+      el.style.display = 'none';
+      layer.appendChild(el);
+      this._markers.push({
+        el,
+        hs,
+        pos: hs.pos ? new pc.Vec3(hs.pos[0], hs.pos[1], hs.pos[2]) : new pc.Vec3(),
+        placed: !!hs.pos
+      });
+    });
+  },
+  _findCam() {
+    if (!currentApp) return null;
+    let c = null;
+    currentApp.root.forEach((e) => {
+      if (e.camera) c = e;
+    });
+    return c;
+  },
+  _loop() {
+    const cam = this._findCam();
+    const canvas = document.getElementById('application-canvas');
+    if (cam && cam.camera && canvas && this._markers.length) {
+      const sx = canvas.clientWidth / (canvas.width || 1);
+      const sy = canvas.clientHeight / (canvas.height || 1);
+      const hidden = document.body.classList.contains('touring'); // ocultar en el recorrido
+      for (const m of this._markers) {
+        if (!m.placed && m.hs.auto) {
+          const f = cam.forward;
+          const p = cam.getPosition();
+          m.pos.set(p.x + f.x * m.hs.auto, p.y + f.y * m.hs.auto, p.z + f.z * m.hs.auto);
+          m.placed = true;
+        }
+        if (!m.placed || hidden) {
+          m.el.style.display = 'none';
+          continue;
+        }
+        cam.camera.worldToScreen(m.pos, this._scr);
+        if (this._scr.z <= 0) {
+          m.el.style.display = 'none'; // detrás de la cámara
+          continue;
+        }
+        m.el.style.display = '';
+        m.el.style.transform = `translate(-50%, -50%) translate(${this._scr.x * sx}px, ${this._scr.y * sy}px)`;
+      }
+    } else {
+      this._markers.forEach((m) => (m.el.style.display = 'none'));
+    }
+    this._raf = requestAnimationFrame(() => this._loop());
+  },
+  openCard(hs) {
+    const card = document.getElementById('callout');
+    const media = document.getElementById('callout-media');
+    const body = document.getElementById('callout-body');
+    if (!card || !media || !body) return;
+    let mediaHtml = '';
+    if (hs.video) {
+      mediaHtml +=
+        `<div class="callout__video"><iframe src="${hs.video}" title="video" frameborder="0" ` +
+        `allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" ` +
+        `allowfullscreen></iframe></div>`;
+    }
+    if (hs.image) mediaHtml += `<img class="callout__img" src="${hs.image}" alt="" />`;
+    media.innerHTML = mediaHtml;
+    body.innerHTML =
+      `${hs.title ? `<h3 class="callout__title">${hs.title}</h3>` : ''}` +
+      `${hs.subtitle ? `<div class="callout__sub">${hs.subtitle}</div>` : ''}` +
+      `${hs.body || ''}`;
+    card.hidden = false;
+  },
+  closeCard() {
+    const card = document.getElementById('callout');
+    const media = document.getElementById('callout-media');
+    if (media) media.innerHTML = ''; // detiene el video al cerrar
+    if (card) card.hidden = true;
+  },
+  _setupEditor() {
+    const canvas = document.getElementById('application-canvas');
+    const panel = document.getElementById('callout-editor');
+    if (!canvas || !panel) return;
+    panel.hidden = false;
+    panel.textContent = 'Edición call-outs: clic en la escena para copiar coordenadas.';
+    const world = new pc.Vec3();
+    canvas.addEventListener('click', (e) => {
+      const cam = this._findCam();
+      if (!cam || !cam.camera) return;
+      const rect = canvas.getBoundingClientRect();
+      const cx = (e.clientX - rect.left) * (canvas.width / rect.width);
+      const cy = (e.clientY - rect.top) * (canvas.height / rect.height);
+      cam.camera.screenToWorld(cx, cy, 30, world);
+      panel.innerHTML = `pos: <b>[${world.x.toFixed(2)}, ${world.y.toFixed(2)}, ${world.z.toFixed(2)}]</b> (30u frente a la cámara)`;
+    });
+  }
+};
+
+// ---------------------------------------------------------------------------
 // UI helpers
 // ---------------------------------------------------------------------------
 const $ = (sel) => document.querySelector(sel);
@@ -961,6 +1105,7 @@ async function selectScene(scene, opts = {}) {
   currentSceneId = scene.id;
   setActiveScene(scene);
   ambientPlayer.setScene(scene.id); // ambiente de la escena (suena bajo la música)
+  callouts.setScene(scene.id); // call-outs (hotspots) de la escena
   loaderEl().classList.remove('is-error');
   // Auto-avance del recorrido (escenas precargadas, rápidas): transición con fade.
   // Primera carga y selección manual: pantalla de carga con % de avance.
@@ -1094,6 +1239,7 @@ const grandTour = {
   start() {
     if (this.active) return;
     if (gyroMode.active) gyroMode.disable(); // recorrido y vista AR son excluyentes
+    callouts.closeCard(); // cierra cualquier call-out abierto
     this.active = true;
     document.body.classList.add('touring'); // oculta el hint de controles durante el recorrido
     // Arranca la música y, SOLO cuando empieza a sonar, lanza locución/cámara para
@@ -1482,6 +1628,7 @@ function boot() {
   setupGyroButton();
   setupIdleHide();
   setupAmbientUnlock();
+  callouts.init();
   selectScene(SCENES[0]);
 }
 

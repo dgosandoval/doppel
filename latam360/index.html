@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="style.css?v=613p" />
+<link rel="stylesheet" href="style.css?v=613q" />
 <script type="importmap">
 {
   "imports": {
@@ -117,6 +117,15 @@
   <!-- Sonido ambiental por escena (loop sutil, en assets/ambient/) -->
   <audio id="ambient-audio" loop preload="none"></audio>
 
+  <!-- Call-outs (hotspots): marcadores 3D + tarjeta de contenido -->
+  <div id="callout-markers"></div>
+  <div id="callout" class="callout" hidden>
+    <button class="callout__close" id="callout-close" aria-label="Cerrar">×</button>
+    <div class="callout__media" id="callout-media"></div>
+    <div class="callout__body" id="callout-body"></div>
+  </div>
+  <div id="callout-editor" hidden></div>
+
   <!-- Loader -->
   <div id="loader">
     <img class="loader-logo" src="assets/latam-logo.svg" alt="LATAM" />
@@ -126,6 +135,6 @@
     <div id="loader-pct">0%</div>
   </div>
 
-  <script type="module" src="app.js?v=613p"></script>
+  <script type="module" src="app.js?v=613q"></script>
 </body>
 </html>
