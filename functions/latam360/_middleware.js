@@ -32,7 +32,7 @@ export async function onRequest(context) {
       return new Response(null, {
         status: 303,
         headers: {
-          Location: url.pathname.endsWith('/') ? url.pathname : url.pathname + '/',
+          Location: (url.pathname.endsWith('/') ? url.pathname : url.pathname + '/') + url.search,
           'Set-Cookie': `${COOKIE}=${TOKEN}; Path=/latam360; Max-Age=604800; HttpOnly; Secure; SameSite=Lax`
         }
       });

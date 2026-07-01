@@ -265,16 +265,16 @@ const HOTSPOTS = {
   downtown: [
     {
       auto: 26, // sin pos fija: se ancla 26u frente a la cámara al cargar (visible de entrada)
-      label: 'Ejemplo',
+      label: 'Ver más',
       title: 'Punto de interés',
       subtitle: 'Call-out de ejemplo',
+      video: 'https://www.youtube.com/embed/0YZuhi6PXZ8', // video de ejemplo (embebido)
       body:
-        '<p>Aquí va la información del punto: descripción, datos de la operación, ' +
-        'quién trabaja acá. El texto, la foto y el video son editables por call-out.</p>' +
-        '<p style="opacity:.6;font-size:12px">Reemplaza esta tarjeta por contenido real ' +
-        '(foto del lugar + testimonio en video).</p>',
-      image: '/latam360/assets/callouts/sample.jpg',
-      video: 'https://www.youtube.com/embed/aqz-KE-bpKQ' // placeholder — cambiar por video real
+        '<p>Así se despliega un call-out: al tocar un punto anclado en el splat, ' +
+        'aparece esta tarjeta con <b>video embebido</b>, texto e imagen.</p>' +
+        '<p style="opacity:.6;font-size:12px">Contenido editable por punto ' +
+        '(testimonio en video, foto del lugar, datos de la operación).</p>',
+      image: '/latam360/assets/callouts/sample.jpg'
     }
   ]
 };
@@ -379,20 +379,25 @@ const callouts = {
     if (card) card.hidden = true;
   },
   _setupEditor() {
-    const canvas = document.getElementById('application-canvas');
     const panel = document.getElementById('callout-editor');
-    if (!canvas || !panel) return;
+    if (!panel) return;
     panel.hidden = false;
-    panel.textContent = 'Edición call-outs: clic en la escena para copiar coordenadas.';
+    panel.textContent = 'Edición call-outs: haz clic en la escena para leer coordenadas.';
     const world = new pc.Vec3();
-    canvas.addEventListener('click', (e) => {
+    // Escuchamos en window (el canvas se recrea por escena) y filtramos por target.
+    window.addEventListener('click', (e) => {
+      const canvas = document.getElementById('application-canvas');
+      if (!canvas || e.target !== canvas) return; // solo clics sobre la escena
       const cam = this._findCam();
-      if (!cam || !cam.camera) return;
+      if (!cam || !cam.camera) {
+        panel.textContent = 'Cargando escena…';
+        return;
+      }
       const rect = canvas.getBoundingClientRect();
       const cx = (e.clientX - rect.left) * (canvas.width / rect.width);
       const cy = (e.clientY - rect.top) * (canvas.height / rect.height);
       cam.camera.screenToWorld(cx, cy, 30, world);
-      panel.innerHTML = `pos: <b>[${world.x.toFixed(2)}, ${world.y.toFixed(2)}, ${world.z.toFixed(2)}]</b> (30u frente a la cámara)`;
+      panel.innerHTML = `pos: <b>[${world.x.toFixed(2)}, ${world.y.toFixed(2)}, ${world.z.toFixed(2)}]</b> — 30u frente a la cámara`;
     });
   }
 };
@@ -570,7 +575,7 @@ function freshCanvas() {
 // Elimina el DOM que inyectan los ejemplos (paneles, stats, etc.) al salir de la escena.
 function cleanInjectedDom() {
   const keepClass = ['topbar', 'sidebar', 'info', 'hint'];
-  const keepId = ['application-canvas', 'loader', 'scene-transition', 'controls', 'tour-audio', 'tour-voice', 'ambient-audio', 'tour-caption'];
+  const keepId = ['application-canvas', 'loader', 'scene-transition', 'controls', 'tour-audio', 'tour-voice', 'ambient-audio', 'tour-caption', 'callout-markers', 'callout', 'callout-editor'];
   Array.from(document.body.children).forEach((el) => {
     if (el.tagName === 'SCRIPT') return;
     if (keepId.includes(el.id)) return;
