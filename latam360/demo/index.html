@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/latam360/style.css?v=615a" />
+<link rel="stylesheet" href="/latam360/style.css?v=615b" />
 <script type="importmap">
 {
   "imports": {
@@ -60,19 +60,19 @@
 <body>
   <canvas id="application-canvas"></canvas>
 
-  <!-- Top bar -->
-  <div class="topbar">
-    <div class="brand">
-      <a class="back-link" href="/latam360/">‹ Proyecto</a>
-      <img class="brand__logo" src="/latam360/assets/latam-logo.svg" alt="LATAM" />
-      <span class="brand__divider"></span>
-      <span class="brand__title">360<sup>°</sup> EXPERIENCE</span>
+  <!-- Navbar LATAM (mismo diseño que el embebido de producto) -->
+  <header class="lnav">
+    <div class="lnav__left">
+      <a class="lnav__back" href="/latam360/" title="Volver al proyecto">‹</a>
+      <img class="lnav__logo" src="/latam360/assets/latam-logo.svg" alt="LATAM" />
+      <span class="lnav__tag">Demo · 360° Experience</span>
     </div>
-    <div class="topbar__right">
-      <span class="topbar__pre">Demo ·</span>
-      <img class="topbar__doppel" src="/latam360/assets/doppel-logo.png" alt="Doppel" />
+    <div class="lnav__right" title="Multi-idioma: ES · PT · EN (ES activo en el demo)">
+      <div class="lnav__lang"><button class="on">ES</button><span>PT</span><span>EN</span></div>
+      <span class="lnav__ico">⌕</span>
+      <span class="lnav__avatar">D</span>
     </div>
-  </div>
+  </header>
 
   <!-- Selector de escenas -->
   <nav class="sidebar">
@@ -136,6 +136,6 @@
     <div id="loader-pct">0%</div>
   </div>
 
-  <script type="module" src="/latam360/app.js?v=615a"></script>
+  <script type="module" src="/latam360/app.js?v=615b"></script>
 </body>
 </html>

@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/latam360/style.css?v=615a" />
+<link rel="stylesheet" href="/latam360/style.css?v=615b" />
 <script type="importmap">
 {
   "imports": {
@@ -30,16 +30,16 @@
   (function () {
     var qp = new URLSearchParams(location.search);
     window.__L360_MODE = 'product';
-    window.__L360_SCENE = qp.get('scene') || 'reveal';
+    window.__L360_SCENE = qp.get('scene') || 'cf100';
     var CIUDAD = {
-      reveal: 'Santiago',
+      cf100: 'Santiago',
       'lod-streaming': 'São Paulo',
       'first-person': 'Lima',
       downtown: 'Bogotá',
       'splat-portal': 'Quito'
     };
     window.__L360_VISIT_LABEL =
-      window.__L360_SCENE === 'reveal'
+      window.__L360_SCENE === 'cf100'
         ? 'Visita virtual del Centro de Mantenimiento'
         : 'Visita virtual · Cápsula ' + (CIUDAD[window.__L360_SCENE] || '');
   })();
@@ -49,42 +49,6 @@
   .sidebar, .info, .topbar { display: none !important; }
   /* Controles (visita guiada / AR / sonido): bajo la navbar, al centro */
   #controls { top: 76px; bottom: auto; }
-
-  /* Navbar LATAM (como la captura: barra flotante, logo izq., ES/PT/EN + buscar + avatar) */
-  .lnav {
-    position: fixed; top: 12px; left: 12px; right: 12px; z-index: 13;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 18px; border-radius: 14px;
-    background: rgba(16, 10, 36, 0.72); backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: 0 14px 40px rgba(5, 2, 15, 0.45);
-  }
-  .lnav__left { display: flex; align-items: center; gap: 13px; }
-  .lnav__back {
-    width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
-    color: rgba(255, 255, 255, 0.75); background: rgba(255, 255, 255, 0.09);
-    text-decoration: none; font-size: 15px; line-height: 1;
-  }
-  .lnav__back:hover { color: #fff; }
-  .lnav__logo { height: 22px; filter: brightness(0) invert(1); }
-  .lnav__right { display: flex; align-items: center; gap: 13px; }
-  .lnav__lang { display: flex; align-items: center; gap: 3px; font: 700 12px 'Latam Sans', 'Inter', sans-serif; color: rgba(255, 255, 255, 0.6); }
-  .lnav__lang .on { background: #ff4f6d; color: #fff; padding: 4px 9px; border-radius: 6px; border: none; font: inherit; cursor: pointer; }
-  .lnav__lang span { padding: 4px 5px; }
-  .lnav__ico {
-    width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center;
-    background: rgba(255, 255, 255, 0.1); font-size: 14px; color: #fff;
-  }
-  .lnav__avatar {
-    width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center;
-    background: linear-gradient(150deg, #ff4f6d, #2a0088);
-    font: 700 12px 'Latam Sans', sans-serif; color: #fff; position: relative;
-  }
-  .lnav__avatar::after {
-    content: ''; position: absolute; top: -1px; right: -1px; width: 9px; height: 9px;
-    border-radius: 50%; background: #ff4f6d; border: 2px solid #140b28;
-  }
 
   /* Tarjeta de testimonio (video embebido), como el mockup */
   .testi {
@@ -270,7 +234,7 @@
 
   <!-- Pastillas de países (cápsula activa subrayada) -->
   <nav class="countries-bar" id="cbar">
-    <a class="cpill" data-scene="reveal" href="/latam360/producto/?scene=reveal">🇨🇱 Chile</a>
+    <a class="cpill" data-scene="cf100" href="/latam360/producto/?scene=cf100">🇨🇱 Chile</a>
     <a class="cpill" data-scene="lod-streaming" href="/latam360/producto/?scene=lod-streaming">🇧🇷 Brasil</a>
     <a class="cpill" data-scene="first-person" href="/latam360/producto/?scene=first-person">🇵🇪 Perú</a>
     <a class="cpill" data-scene="downtown" href="/latam360/producto/?scene=downtown">🇨🇴 Colombia</a>
@@ -315,18 +279,18 @@
         el.classList.toggle('on', el.dataset.scene === scene);
       });
       var PIN = {
-        reveal: [195, 726, 'Santiago'],
+        cf100: [195, 726, 'Santiago'],
         'lod-streaming': [546, 561, 'São Paulo'],
         'first-person': [102, 384, 'Lima'],
         downtown: [145, 138, 'Bogotá'],
         'splat-portal': [81, 209, 'Quito']
       };
-      var p = PIN[scene] || PIN.reveal;
+      var p = PIN[scene] || PIN.cf100;
       var pin = document.getElementById('mm-pin');
       pin.setAttribute('cx', p[0]);
       pin.setAttribute('cy', p[1]);
       document.getElementById('mm-city').textContent = p[2];
-      document.getElementById('mm-chile').style.display = scene === 'reveal' ? '' : 'none';
+      document.getElementById('mm-chile').style.display = scene === 'cf100' ? '' : 'none';
 
       // ===== VIDEO DEL TESTIMONIO (Vimeo unlisted: id + hash de privacidad) =====
       var TESTI_EMBED = 'https://player.vimeo.com/video/1206534909?h=e572ee7fb2';
@@ -363,6 +327,6 @@
       };
     })();
   </script>
-  <script type="module" src="/latam360/app.js?v=615a"></script>
+  <script type="module" src="/latam360/app.js?v=615b"></script>
 </body>
 </html>

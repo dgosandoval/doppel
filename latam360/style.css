@@ -773,3 +773,90 @@ body.touring .hint {
   color: #fff;
   background: linear-gradient(150deg, #ff4f6d, #2a0088);
 }
+
+/* ---- Navbar LATAM compartida (demo + producto): barra flotante ------- */
+.lnav {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  z-index: 13;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 18px;
+  border-radius: 14px;
+  background: rgba(16, 10, 36, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 14px 40px rgba(5, 2, 15, 0.45);
+}
+.lnav__left { display: flex; align-items: center; gap: 13px; }
+.lnav__back {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.09);
+  text-decoration: none;
+  font-size: 15px;
+  line-height: 1;
+}
+.lnav__back:hover { color: #fff; }
+.lnav__logo { height: 22px; filter: brightness(0) invert(1); }
+.lnav__tag {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+  border-left: 1px solid rgba(255, 255, 255, 0.25);
+  padding-left: 13px;
+}
+.lnav__right { display: flex; align-items: center; gap: 13px; }
+.lnav__lang {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font: 700 12px 'Latam Sans', 'Inter', sans-serif;
+  color: rgba(255, 255, 255, 0.6);
+}
+.lnav__lang .on { background: var(--coral); color: #fff; padding: 4px 9px; border-radius: 6px; border: none; font: inherit; cursor: pointer; }
+.lnav__lang span { padding: 4px 5px; }
+.lnav__ico {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 14px;
+  color: #fff;
+}
+.lnav__avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(150deg, var(--coral), var(--indigo));
+  font: 700 12px 'Latam Sans', sans-serif;
+  color: #fff;
+  position: relative;
+}
+.lnav__avatar::after {
+  content: '';
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--coral);
+  border: 2px solid #140b28;
+}
+@media (max-width: 700px) {
+  .lnav__tag, .lnav__ico { display: none; }
+}

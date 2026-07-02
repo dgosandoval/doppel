@@ -108,6 +108,18 @@ const SCENES = [
       'https://code.playcanvas.com/examples_data/example_roman_parish_02/lod-meta.json',
       'https://code.playcanvas.com/examples_data/example_skatepark_02/lod-meta.json'
     ]
+  },
+  {
+    id: 'cf100',
+    type: 'module',
+    module: 'cf100.mjs',
+    name: 'Cápsula producto',
+    place: 'CF-100 · memorial aéreo',
+    tag: 'Hotspots · testimonio',
+    desc: 'La cápsula como producto: puntos de interés anclados al avión y el testimonio de su gente en video embebido.',
+    credit: 'Escaneo: Brandon Barker (superspl.at) · CC BY',
+    tourMode: 'swing',
+    preload: ['/latam360/assets/splats/cf100-lite.sog']
   }
 ];
 
@@ -122,7 +134,8 @@ const TOUR_MESSAGES = {
   'first-person': ['Camina dentro de la escena', 'Captura fotorrealista a escala real'],
   'lod-streaming': ['Escaneos servidos por niveles de detalle', 'Carga progresiva, sin esperas'],
   reveal: ['Aparición cinematográfica del splat', 'Volumen y detalle, sin mallas 3D'],
-  'splat-portal': ['Un portal entre dos mundos', 'Realidades capturadas, conectadas']
+  'splat-portal': ['Un portal entre dos mundos', 'Realidades capturadas, conectadas'],
+  cf100: ['La cápsula, como producto', 'Toca a la persona: su testimonio en video']
 };
 
 // Locución del recorrido: clips por escena, con su instante de inicio (ms) dentro
@@ -218,7 +231,8 @@ const AMBIENT = {
   'lod-streaming': 'assets/ambient/courtyard.mp3',
   'first-person': 'assets/ambient/park.mp3',
   reveal: 'assets/ambient/interior.mp3',
-  'splat-portal': 'assets/ambient/portal.mp3'
+  'splat-portal': 'assets/ambient/portal.mp3',
+  cf100: 'assets/ambient/park.mp3'
 };
 const ambientPlayer = {
   _el: null,
@@ -294,10 +308,10 @@ const ambientPlayer = {
 const L360_MODE = (typeof window !== 'undefined' && window.__L360_MODE) || '';
 
 const HOTSPOTS = {
-  reveal: [
+  cf100: [
     {
-      auto: 5,
-      testi: true, // en la página producto, este punto destaca la tarjeta de testimonio
+      auto: 9,
+      testi: true, // en la página producto, este punto abre la tarjeta de testimonio
       avatar: 'C',
       avatarImg:
         'https://i.vimeocdn.com/video/2175402848-210ddd5959f3939960eb1bdc45e1df106d684068e0140d52876233438fe2567a-d_640?region=us',
@@ -312,20 +326,21 @@ const HOTSPOTS = {
       video: 'https://player.vimeo.com/video/1206534909?h=e572ee7fb2'
     },
     {
-      auto: 6.5,
-      autoRight: -2.6,
-      label: 'Recepción',
-      title: 'Recepción',
-      subtitle: 'Cápsula Santiago',
-      body: '<p>Cada punto de interés despliega información de la operación: qué pasa aquí y quién lo hace.</p>'
+      auto: 11,
+      autoRight: -4,
+      autoUp: 2,
+      label: 'Estructura de cola',
+      title: 'Estructura de cola',
+      subtitle: 'Cápsula · mantenimiento',
+      body: '<p>Cada punto de interés despliega información de la operación: qué se revisa aquí y quién lo hace.</p>'
     },
     {
-      auto: 7,
-      autoRight: 2.4,
-      autoUp: 0.8,
-      label: 'Obra en exhibición',
-      title: 'Obra en exhibición',
-      subtitle: 'Cápsula Santiago',
+      auto: 9,
+      autoRight: 3.5,
+      autoUp: -0.5,
+      label: 'Tren de aterrizaje',
+      title: 'Tren de aterrizaje',
+      subtitle: 'Cápsula · mantenimiento',
       body: '<p>Los datos viven anclados al espacio real: al moverte, cada punto queda donde corresponde.</p>'
     }
   ],
@@ -363,6 +378,7 @@ const callouts = {
     this.closeCard();
     this._markers.forEach((m) => m.el.remove());
     this._markers = [];
+    this._readyAt = 0; // se re-detecta cuándo el splat de la escena nueva es visible
     const layer = document.getElementById('callout-markers');
     if (!layer) return;
     (HOTSPOTS[sceneId] || []).forEach((hs) => {
@@ -402,8 +418,19 @@ const callouts = {
     const cam = this._findCam();
     if (cam && cam.camera && this._markers.length) {
       const hidden = document.body.classList.contains('touring'); // ocultar en el recorrido
+      // Los anclajes `auto` esperan a que el splat sea VISIBLE (aabb listo) + un
+      // margen, para tomar la cámara ya encuadrada (si no, anclan en el vacío).
+      if (!this._readyAt && this._markers.some((mm) => !mm.placed && mm.hs.auto) && currentApp) {
+        let has = false;
+        currentApp.root.forEach((e) => {
+          const b = e.gsplat && e.gsplat.instance && e.gsplat.instance.aabb;
+          if (b && b.halfExtents.length() > 0) has = true;
+        });
+        if (has) this._readyAt = performance.now();
+      }
+      const autoOk = this._readyAt && performance.now() - this._readyAt > 600;
       for (const m of this._markers) {
-        if (!m.placed && m.hs.auto) {
+        if (!m.placed && m.hs.auto && autoOk) {
           // Ancla el punto N unidades frente a la cámara inicial, con desvíos
           // laterales/verticales opcionales (autoRight/autoUp) para repartir puntos.
           const f = cam.forward;
@@ -722,6 +749,10 @@ function freshCanvas() {
   const c = document.createElement('canvas');
   c.id = 'application-canvas';
   old.replaceWith(c);
+  // El canvas recreado debe entrar a la "fotografía" del DOM inicial: si no,
+  // cleanInjectedDom lo borra en el siguiente cambio de escena y la navegación
+  // entre splats se rompe (la 2ª escena ya no encuentra canvas).
+  _initialDom.add(c);
   return c;
 }
 
@@ -1035,6 +1066,7 @@ async function loadModule(scene) {
   window.__l360 = {
     register(app) {
       currentApp = app;
+      window.__l360App = app; // acceso de depuración (leer aabb, cámara, etc.)
       // Ocultar el loader cuando empiece a renderizar.
       app.on('postrender', hide);
       // Rendimiento: limita la resolución de render (los splats son suaves; gran
