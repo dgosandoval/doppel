@@ -52,6 +52,36 @@
     padding: 8px 16px; border-radius: 999px; transition: opacity .4s; }
   .artoast.off { opacity: 0; pointer-events: none; }
 </style>
+<!-- Cloudflare Web Analytics corre vía la integración automática de Pages. Este script
+     solo EXCLUYE TUS visitas (marca ?notrack=1 en cada dispositivo; ?track=1 revierte). -->
+<script>
+(function () {
+  try {
+    var p = new URLSearchParams(location.search);
+    if (p.has('notrack')) localStorage.setItem('l360_notrack', '1');
+    if (p.has('track')) localStorage.removeItem('l360_notrack');
+    if (localStorage.getItem('l360_notrack') !== '1') return;
+    var BLOCK = /cloudflareinsights\.com|\/cdn-cgi\/rum/i;
+    if (navigator.sendBeacon) {
+      var _sb = navigator.sendBeacon.bind(navigator);
+      navigator.sendBeacon = function (url) {
+        try { if (BLOCK.test(String(url))) return true; } catch (e) {}
+        return _sb.apply(navigator, arguments);
+      };
+    }
+    if (window.fetch) {
+      var _f = window.fetch.bind(window);
+      window.fetch = function (u) {
+        try {
+          var s = u && u.url ? u.url : String(u);
+          if (BLOCK.test(s)) return Promise.resolve(new Response('', { status: 204 }));
+        } catch (e) {}
+        return _f.apply(window, arguments);
+      };
+    }
+  } catch (e) {}
+})();
+</script>
 </head>
 <body>
   <canvas id="camerafeed"></canvas>
