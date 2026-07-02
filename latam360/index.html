@@ -2,42 +2,19 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="robots" content="noindex, nofollow" />
-<title>LATAM 360° — Experiencia inmersiva</title>
-<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
-<link rel="preconnect" href="https://code.playcanvas.com" crossorigin />
+<title>Recorrido 360 · Onboarding LATAM</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="style.css?v=613t" />
-<script type="importmap">
-{
-  "imports": {
-    "playcanvas": "https://cdn.jsdelivr.net/npm/playcanvas@2.19.6/build/playcanvas.mjs",
-    "examples/context": "/latam360/lib/context.mjs",
-    "playcanvas/scripts/esm/camera-controls.mjs": "https://cdn.jsdelivr.net/npm/playcanvas@2.19.6/scripts/esm/camera-controls.mjs",
-    "playcanvas/scripts/esm/first-person-controller.mjs": "https://cdn.jsdelivr.net/npm/playcanvas@2.19.6/scripts/esm/first-person-controller.mjs",
-    "playcanvas/scripts/esm/gsplat/reveal-radial.mjs": "https://cdn.jsdelivr.net/npm/playcanvas@2.19.6/scripts/esm/gsplat/reveal-radial.mjs",
-    "playcanvas/scripts/esm/gsplat/reveal-rain.mjs": "https://cdn.jsdelivr.net/npm/playcanvas@2.19.6/scripts/esm/gsplat/reveal-rain.mjs",
-    "playcanvas/scripts/esm/gsplat/reveal-grid-eruption.mjs": "https://cdn.jsdelivr.net/npm/playcanvas@2.19.6/scripts/esm/gsplat/reveal-grid-eruption.mjs",
-    "playcanvas/scripts/esm/gsplat/gsplat-weather.mjs": "https://cdn.jsdelivr.net/npm/playcanvas@2.19.6/scripts/esm/gsplat/gsplat-weather.mjs"
-  }
-}
-</script>
-
-<!-- Cloudflare Web Analytics está activo vía la integración automática de Pages
-     (cuenta las visitas solo). Este script NO inyecta beacon; solo EXCLUYE TUS
-     visitas: en cada dispositivo/navegador donde visites .../?notrack=1, silencia
-     el envío del beacon de Cloudflare (deja de contarte). ?track=1 lo revierte. -->
 <script>
 (function () {
   try {
     var p = new URLSearchParams(location.search);
     if (p.has('notrack')) localStorage.setItem('l360_notrack', '1');
     if (p.has('track')) localStorage.removeItem('l360_notrack');
-    if (localStorage.getItem('l360_notrack') !== '1') return; // visitante normal: contar
-    // Tus dispositivos: bloquear el envío de red del beacon de Cloudflare Analytics.
+    if (localStorage.getItem('l360_notrack') !== '1') return;
     var BLOCK = /cloudflareinsights\.com|\/cdn-cgi\/rum/i;
     if (navigator.sendBeacon) {
       var _sb = navigator.sendBeacon.bind(navigator);
@@ -59,85 +36,312 @@
   } catch (e) {}
 })();
 </script>
+<style>
+  @font-face {
+    font-family: 'Latam Sans';
+    src: url('/latam360/assets/LatamSans-Bold.otf') format('opentype');
+    font-weight: 700;
+    font-display: swap;
+  }
+  :root {
+    --bg: #0c0a12;
+    --panel: #14111d;
+    --line: rgba(255, 255, 255, 0.09);
+    --coral: #ff4f6d;
+    --coral-soft: #ff7a90;
+    --indigo: #2a0088;
+    --txt: #f3f1f7;
+    --dim: rgba(243, 241, 247, 0.62);
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--txt);
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+  }
+  a { color: inherit; text-decoration: none; }
+  h1, h2, h3, .fh { font-family: 'Latam Sans', 'Inter', sans-serif; font-weight: 700; }
+
+  .top {
+    position: sticky; top: 0; z-index: 50;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 5vw;
+    background: rgba(12, 10, 18, 0.82);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+  }
+  .top__brand { display: flex; align-items: center; gap: 13px; }
+  .top__brand img { height: 22px; filter: brightness(0) invert(1); }
+  .top__brand .sep { width: 1px; height: 20px; background: rgba(255,255,255,0.3); }
+  .top__brand .t { font-size: 11px; letter-spacing: 0.22em; opacity: 0.75; }
+  .top__right { display: flex; align-items: center; gap: 9px; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.6; }
+  .top__right img { height: 14px; filter: brightness(0) invert(1); }
+
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 5vw; }
+  section { padding: 84px 0; border-bottom: 1px solid var(--line); }
+
+  .eyebrow {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--coral-soft);
+    margin-bottom: 26px;
+  }
+  .eyebrow::before { content: ''; width: 34px; height: 2px; background: var(--coral); }
+
+  /* Hero */
+  .hero { padding: 96px 0 72px; border-bottom: 1px solid var(--line); }
+  .hero h1 { font-size: clamp(44px, 8vw, 88px); line-height: 1.02; letter-spacing: -0.01em; }
+  .hero .sub { margin-top: 22px; font-size: clamp(16px, 2.4vw, 21px); color: var(--dim); max-width: 560px; }
+  .stats { display: flex; gap: 42px; margin-top: 38px; flex-wrap: wrap; }
+  .stat .n { font-family: 'Latam Sans', sans-serif; font-size: 40px; color: var(--coral); }
+  .stat .l { font-size: 10.5px; letter-spacing: 0.22em; text-transform: uppercase; opacity: 0.6; }
+
+  /* Launch cards */
+  .launch { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; margin-top: 52px; }
+  .launch a {
+    display: block; padding: 22px 22px 20px;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+    transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+  }
+  .launch a:hover { transform: translateY(-3px); border-color: rgba(255, 79, 109, 0.55); background: #191524; }
+  .launch .k { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--coral-soft); }
+  .launch h3 { font-size: 21px; margin: 7px 0 6px; }
+  .launch p { font-size: 13px; color: var(--dim); }
+  .launch .go { display: inline-block; margin-top: 14px; font-size: 13px; font-weight: 600; color: var(--coral); }
+  .launch a.primary { border-color: rgba(255, 79, 109, 0.6); background: linear-gradient(160deg, rgba(255,79,109,0.14), rgba(42,0,136,0.18)), var(--panel); }
+
+  h2 { font-size: clamp(30px, 4.6vw, 46px); line-height: 1.08; max-width: 640px; }
+  .lead { margin-top: 16px; font-size: 16.5px; color: var(--dim); max-width: 620px; }
+
+  .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 34px; margin-top: 44px; }
+  .duo .b h3 { font-size: 13px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--coral-soft); margin-bottom: 10px; }
+  .duo .b p { color: var(--dim); font-size: 15px; }
+
+  .list { margin-top: 44px; }
+  .list .row {
+    display: flex; gap: 22px; padding: 18px 0; border-top: 1px solid var(--line); align-items: baseline;
+  }
+  .list .row .num { font-family: 'Latam Sans', sans-serif; color: var(--coral); font-size: 13px; min-width: 26px; }
+  .list .row h3 { font-size: 17px; min-width: 220px; }
+  .list .row p { color: var(--dim); font-size: 14.5px; }
+
+  .cta-inline {
+    display: inline-flex; align-items: center; gap: 9px;
+    margin-top: 34px; padding: 13px 22px; border-radius: 999px;
+    background: var(--coral); color: #fff; font-weight: 600; font-size: 14.5px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .cta-inline:hover { transform: translateY(-2px); box-shadow: 0 14px 34px rgba(255, 79, 109, 0.35); }
+  .cta-inline.ghost { background: transparent; border: 1px solid rgba(255,255,255,0.25); box-shadow: none; }
+
+  /* La red */
+  .red { display: grid; grid-template-columns: 1fr 0.9fr; gap: 48px; align-items: center; margin-top: 10px; }
+  .paises { margin-top: 34px; }
+  .paises .p { display: flex; justify-content: space-between; align-items: baseline; padding: 13px 0; border-top: 1px solid var(--line); }
+  .paises .p b { font-family: 'Latam Sans', sans-serif; font-size: 16px; }
+  .paises .p span { color: var(--dim); font-size: 13px; }
+  .paises .p em { color: var(--coral-soft); font-style: normal; font-size: 12.5px; }
+  .mapbox { position: relative; }
+  .mapbox svg { width: 100%; height: auto; display: block; }
+  .mapbox .countries path { fill: #191527; stroke: rgba(255,255,255,0.12); stroke-width: 0.7; }
+  .nodeglow { fill: var(--coral); }
+  .nodelabel { fill: #fff; font: 600 17px 'Inter', sans-serif; }
+  .note { margin-top: 26px; font-size: 12.5px; color: var(--dim); max-width: 640px; }
+
+  /* Entregables */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 13px; margin-top: 44px; }
+  .cards .c { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 19px; }
+  .cards .c h3 { font-size: 14.5px; color: var(--coral-soft); margin-bottom: 7px; }
+  .cards .c p { font-size: 13.5px; color: var(--dim); }
+  .fine { margin-top: 30px; padding: 18px 20px; border: 1px solid var(--line); border-radius: 14px; background: rgba(42, 0, 136, 0.12); font-size: 13.5px; color: var(--dim); }
+  .fine b { color: var(--txt); }
+
+  /* Cierre */
+  .cierre { text-align: center; padding: 100px 0 90px; }
+  .cierre h2 { margin: 0 auto; }
+  .cierre .contact { margin-top: 30px; color: var(--dim); font-size: 15px; }
+  .cierre .contact b { color: var(--txt); }
+  footer { display: flex; justify-content: space-between; padding: 22px 5vw 34px; font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.45; }
+
+  @media (max-width: 760px) {
+    .duo, .red { grid-template-columns: 1fr; }
+    .list .row { flex-wrap: wrap; }
+    section { padding: 60px 0; }
+  }
+</style>
 </head>
 <body>
-  <canvas id="application-canvas"></canvas>
 
-  <!-- Top bar -->
-  <div class="topbar">
-    <div class="brand">
-      <img class="brand__logo" src="assets/latam-logo.svg" alt="LATAM" />
-      <span class="brand__divider"></span>
-      <span class="brand__title">360<sup>°</sup> EXPERIENCE</span>
+<header class="top">
+  <div class="top__brand">
+    <img src="/latam360/assets/latam-logo.svg" alt="LATAM" />
+    <span class="sep"></span>
+    <span class="t">RECORRIDO 360</span>
+  </div>
+  <div class="top__right"><span>Propuesta ·</span><img src="/latam360/assets/doppel-logo.png" alt="Doppel" /></div>
+</header>
+
+<div class="wrap">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="eyebrow">Onboarding LATAM 2026</div>
+    <h1>Bienvenido<br />a bordo.</h1>
+    <p class="sub">Una red viva en <b>Gaussian Splatting</b> con video real embebido. Conocer LATAM sin pisar un hangar, desde un link en el correo de bienvenida.</p>
+    <div class="stats">
+      <div class="stat"><div class="n">6</div><div class="l">Países</div></div>
+      <div class="stat"><div class="n">6</div><div class="l">Ciudades</div></div>
+      <div class="stat"><div class="n">6</div><div class="l">Locaciones</div></div>
     </div>
-    <div class="topbar__right">
-      <span class="topbar__pre">Demo ·</span>
-      <img class="topbar__doppel" src="assets/doppel-logo.png" alt="Doppel" />
+
+    <div class="launch">
+      <a class="primary" href="/latam360/demo/">
+        <div class="k">En vivo</div>
+        <h3>▶ Demo interactivo</h3>
+        <p>El recorrido completo: 5 experiencias reales en Gaussian Splatting, con visita guiada, locución y sonido.</p>
+        <span class="go">Iniciar demo →</span>
+      </a>
+      <a href="/latam360/mapa/">
+        <div class="k">La red</div>
+        <h3>◈ Mapa de filiales</h3>
+        <p>La arquitectura del producto: elige una filial en el mapa y entra a su cápsula navegable.</p>
+        <span class="go">Abrir mapa →</span>
+      </a>
+      <a href="/latam360/producto/">
+        <div class="k">Producto</div>
+        <h3>⧉ Embebido</h3>
+        <p>Así se ve integrado en la web de LATAM: hotspots con video de su gente y visita guiada.</p>
+        <span class="go">Ver embebido →</span>
+      </a>
     </div>
-  </div>
+  </section>
 
-  <!-- Selector de escenas -->
-  <nav class="sidebar">
-    <p class="sidebar__label">Experiencias</p>
-    <div id="scenes"></div>
-  </nav>
+  <!-- 01 LA IDEA -->
+  <section id="idea">
+    <div class="eyebrow">01 · La idea</div>
+    <h2>Conocer LATAM sin pisar un hangar.</h2>
+    <p class="lead">Que un nuevo ingreso conozca toda la red —oficinas, hangares, talleres y bodegas— filial por filial, desde el navegador.</p>
+    <div class="duo">
+      <div class="b">
+        <h3>¿Qué es Gaussian Splatting?</h3>
+        <p>No es un render ni una foto 360: es la realidad reconstruida en volumen, navegable en 6DoF, en el navegador y sin instalar nada.</p>
+      </div>
+      <div class="b">
+        <h3>Por qué gana</h3>
+        <p>Lo más cercano a “estar ahí”. Y al ser la realidad —no un avatar— envejece bien.</p>
+      </div>
+    </div>
+  </section>
 
-  <!-- Panel de información -->
-  <aside class="info">
-    <div class="info__place" id="info-place"></div>
-    <h2 class="info__name" id="info-name"></h2>
-    <p class="info__desc" id="info-desc"></p>
-    <div class="info__credit" id="info-credit"></div>
-  </aside>
+  <!-- 02 LA EXPERIENCIA -->
+  <section id="experiencia">
+    <div class="eyebrow">02 · La experiencia</div>
+    <h2>Espacios reales, con su gente adentro.</h2>
+    <p class="lead">Navegas el espacio en 3D y, al tocar un punto, su gente te habla en video embebido dentro del splat.</p>
+    <div class="list">
+      <div class="row"><span class="num">01</span><h3>Recorrido guiado</h3><p>Locución, música y subtítulos sincronizados.</p></div>
+      <div class="row"><span class="num">02</span><h3>Exploración libre</h3><p>Te mueves a tu ritmo, en 6DoF.</p></div>
+      <div class="row"><span class="num">03</span><h3>En el navegador</h3><p>Cualquier dispositivo, sin instalar nada.</p></div>
+      <div class="row"><span class="num">04</span><h3>VR · opcional</h3><p>El mismo splat full-inmersivo en Meta Quest 3, sin recaptura.</p></div>
+    </div>
+    <a class="cta-inline" href="/latam360/demo/">▶ Pruébalo en vivo</a>
+    <a class="cta-inline ghost" href="/latam360/producto/" style="margin-left:10px">Ver el embebido</a>
+  </section>
 
-  <!-- Hint de controles -->
-  <div class="hint" id="hint"></div>
+  <!-- 03 LA RED -->
+  <section id="red">
+    <div class="eyebrow">03 · La red</div>
+    <div class="red">
+      <div>
+        <h2>Una sola red: 6 países, 6 locaciones.</h2>
+        <p class="lead">6 ciudades · arquitectura modular: cada filial es una cápsula independiente.</p>
+        <div class="paises">
+          <div class="p"><b>CHILE</b><span>Santiago</span><em>1 lugar</em></div>
+          <div class="p"><b>BRASIL</b><span>São Paulo</span><em>1 lugar</em></div>
+          <div class="p"><b>COLOMBIA</b><span>Bogotá</span><em>1 lugar</em></div>
+          <div class="p"><b>ECUADOR</b><span>Quito</span><em>1 lugar</em></div>
+          <div class="p"><b>PERÚ</b><span>Lima</span><em>1 lugar</em></div>
+          <div class="p"><b>USA</b><span>Miami</span><em>1 lugar</em></div>
+        </div>
+        <a class="cta-inline" href="/latam360/mapa/">◈ Explorar el mapa de la red</a>
+      </div>
+      <a class="mapbox" href="/latam360/mapa/" aria-label="Mapa de la red">
+        <svg viewBox="0 0 760 1212" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <filter id="g1" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="7" /></filter>
+          </defs>
+          <g class="countries"><path d="M270.4,1178.3L256.5,1179.6L249.0,1170.6L240.2,1169.9L224.6,1169.9L224.6,1114.7L230.2,1125.9L237.5,1144.3L256.5,1159.3L277.0,1165.6L270.4,1178.3Z"/><path d="M278.2,537.6L286.8,549.0L292.5,536.3L309.2,537.0L311.5,540.4L338.4,566.3L350.3,568.7L368.2,580.6L383.3,586.9L385.4,594.0L371.0,618.8L385.7,623.3L402.1,625.8L413.7,623.1L426.9,610.6L429.3,596.2L436.6,593.1L443.9,602.5L443.6,615.5L431.3,624.6L421.5,631.3L405.0,647.4L385.5,670.3L381.8,683.9L377.9,701.5L378.1,718.8L374.9,722.7L373.8,734.0L372.8,743.3L391.3,758.5L389.3,770.9L398.5,778.8L397.7,787.7L383.7,811.3L362.0,821.3L332.7,825.3L316.6,823.4L319.7,834.6L316.7,848.8L319.4,858.5L310.6,865.3L295.7,868.0L281.6,860.9L276.0,866.0L278.0,885.4L287.9,891.4L295.9,885.1L300.2,895.4L286.8,901.6L275.0,914.0L272.9,934.5L269.4,945.5L255.6,945.6L244.2,956.2L240.0,972.0L254.4,987.6L268.3,991.9L263.3,1011.4L246.0,1023.8L236.5,1050.1L223.2,1059.1L217.2,1069.8L221.9,1094.1L231.7,1107.8L225.5,1106.6L211.9,1102.9L176.6,1099.7L170.6,1085.9L170.9,1068.5L161.1,1070.0L156.0,1061.7L154.7,1037.6L165.9,1027.8L170.5,1013.8L168.8,1002.8L176.6,984.4L181.9,956.4L180.4,944.2L186.7,940.3L185.2,932.6L178.4,928.5L183.2,919.9L176.6,912.3L173.2,889.3L179.1,885.3L176.6,861.5L180.1,841.9L184.0,825.0L192.7,818.2L188.3,800.1L188.2,783.3L199.3,771.4L198.9,756.4L207.3,739.0L207.3,722.9L203.5,719.7L196.8,689.9L205.8,672.4L204.4,656.0L209.6,640.9L219.2,625.3L229.5,615.1L225.2,608.7L228.2,603.4L227.7,576.5L243.7,568.6L248.7,552.0L246.9,548.1L259.1,533.8L278.2,537.6Z"/><path d="M309.2,537.0L292.5,536.3L286.8,549.0L278.2,537.6L259.1,533.8L246.9,548.1L236.4,550.2L230.6,528.5L222.8,510.9L227.4,495.9L219.7,489.3L217.8,478.2L210.6,467.8L219.8,451.3L213.5,438.5L216.9,433.4L214.3,427.8L220.0,420.2L220.3,407.4L221.0,396.8L224.1,391.8L211.5,367.7L222.4,369.0L229.9,368.7L233.1,364.2L245.9,358.1L253.6,352.6L272.7,350.1L271.2,361.2L273.0,366.9L271.8,376.9L287.7,390.3L304.1,392.7L309.8,398.3L319.7,401.3L325.7,405.7L334.9,405.5L343.4,410.0L344.1,418.7L346.9,423.1L347.1,429.6L342.8,429.9L348.5,447.6L376.5,448.2L374.3,457.0L375.9,463.0L383.9,467.3L387.3,476.9L384.7,489.0L380.7,495.8L382.1,504.6L377.6,507.9L377.3,503.1L363.7,495.1L350.1,494.9L324.7,499.4L317.7,513.1L317.3,521.5L311.5,540.4L309.2,537.0Z"/><path d="M385.5,670.3L405.0,647.4L421.5,631.3L431.3,624.6L443.6,615.5L443.9,602.5L436.6,593.1L429.3,596.2L432.2,586.9L434.2,577.3L434.2,568.5L428.9,565.6L423.4,568.2L418.0,567.5L416.3,561.3L414.9,546.8L412.2,542.1L402.3,537.8L396.3,540.9L380.9,537.8L381.9,516.5L377.6,507.9L382.1,504.6L380.7,495.8L384.7,489.0L387.3,476.9L383.9,467.3L375.9,463.0L374.3,457.0L376.5,448.2L348.5,447.6L342.8,429.9L347.1,429.6L346.9,423.1L344.1,418.7L343.4,410.0L334.9,405.5L325.7,405.7L319.7,401.3L309.8,398.3L304.1,392.7L287.7,390.3L271.8,376.9L273.0,366.9L271.2,361.2L272.7,350.1L253.6,352.6L245.9,358.1L233.1,364.2L229.9,368.7L222.4,369.0L211.5,367.7L203.2,370.3L196.6,368.6L197.6,346.0L185.6,354.8L172.7,354.4L167.2,346.5L157.5,345.6L160.5,339.3L152.4,330.3L146.3,317.0L150.2,314.3L150.2,308.0L159.0,303.8L157.6,295.8L161.3,290.7L162.3,283.9L179.1,273.9L191.0,271.1L193.0,268.9L206.2,269.6L212.7,229.4L213.1,223.1L210.8,214.7L204.3,209.4L204.4,198.8L212.6,196.4L215.5,197.9L216.0,192.3L207.5,190.8L207.3,181.6L235.8,181.9L240.6,176.9L244.7,181.5L247.5,190.2L250.3,188.4L258.3,196.1L269.7,195.1L272.5,190.7L283.4,187.3L289.4,184.9L291.1,178.7L301.5,174.5L300.7,171.4L288.4,170.2L286.3,161.0L286.9,151.1L280.4,147.3L283.1,146.0L293.9,147.9L305.6,151.5L309.8,148.1L320.3,145.8L336.6,140.3L342.0,134.7L340.0,130.6L347.6,129.9L351.0,133.3L349.1,139.7L354.2,142.0L357.5,148.8L353.5,153.9L351.1,166.4L354.9,173.8L355.9,180.6L364.9,187.4L372.1,188.1L373.7,185.3L378.3,184.7L385.0,182.1L389.7,178.2L397.8,179.4L401.3,178.9L409.3,180.1L410.6,177.1L408.2,174.2L409.6,170.0L415.5,171.3L422.4,169.8L430.8,172.9L437.2,175.9L441.7,171.9L445.0,172.5L447.0,176.7L454.0,175.6L459.6,170.1L464.0,159.3L472.7,145.9L477.7,145.2L481.3,153.3L489.5,178.9L497.3,181.3L497.7,191.4L486.7,203.4L491.2,207.8L517.1,210.1L517.6,224.8L528.7,215.2L547.1,220.4L571.4,229.4L578.5,237.9L576.1,246.0L593.1,241.5L621.6,249.3L643.4,248.7L665.0,260.8L683.7,277.2L694.9,281.5L707.4,282.0L712.7,286.7L717.7,305.4L720.1,314.3L714.3,338.7L706.8,348.4L686.2,369.1L676.9,385.9L666.1,398.9L662.5,399.2L658.4,410.3L659.4,438.6L655.3,462.1L653.8,472.2L649.2,478.2L646.6,498.9L631.8,519.2L629.3,535.4L617.4,542.3L614.0,551.8L598.1,551.7L575.1,557.8L564.9,564.9L548.5,569.6L531.3,582.4L518.9,598.4L516.8,610.6L519.2,619.7L516.5,636.3L513.2,644.4L503.0,653.6L486.7,683.4L473.9,696.9L463.9,705.0L457.3,721.5L447.6,731.6L443.6,721.6L450.0,713.4L441.6,701.6L430.1,692.1L415.1,681.1L409.6,681.6L395.0,668.5L385.5,670.3Z"/><path d="M224.6,1114.7L224.6,1169.9L240.2,1169.9L249.0,1170.6L244.2,1180.9L231.7,1188.9L224.5,1188.1L215.8,1186.0L205.2,1178.3L189.9,1174.6L171.5,1160.5L156.6,1147.0L136.5,1119.6L148.5,1124.6L169.0,1141.0L188.4,1149.9L196.0,1138.6L200.7,1121.8L214.2,1111.9L224.6,1114.7Z"/><path d="M230.6,528.5L236.4,550.2L246.9,548.1L248.7,552.0L243.7,568.6L227.7,576.5L228.2,603.4L225.2,608.7L229.5,615.1L219.2,625.3L209.6,640.9L204.4,656.0L205.8,672.4L196.8,689.9L203.5,719.7L207.3,722.9L207.3,739.0L198.9,756.4L199.3,771.4L188.2,783.3L188.3,800.1L192.7,818.2L184.0,825.0L180.1,841.9L176.6,861.5L179.1,885.3L173.2,889.3L176.6,912.3L183.2,919.9L178.4,928.5L185.2,932.6L186.7,940.3L180.4,944.2L181.9,956.4L176.6,984.4L168.8,1002.8L170.5,1013.8L165.9,1027.8L154.7,1037.6L156.0,1061.7L161.1,1070.0L170.9,1068.5L170.6,1085.9L176.6,1099.7L211.9,1102.9L225.5,1106.6L212.5,1106.4L205.5,1112.3L192.3,1121.1L189.9,1143.9L183.7,1144.5L167.2,1136.5L150.5,1119.5L150.5,1119.5L132.3,1105.7L127.7,1090.7L131.9,1077.0L124.5,1061.7L122.7,1023.3L128.9,1002.2L144.3,985.5L122.1,979.3L136.0,960.6L141.0,926.3L157.3,933.5L164.9,891.8L155.1,886.6L150.5,911.4L141.3,908.6L145.9,880.3L150.9,844.4L157.6,831.5L153.4,813.2L152.2,792.4L158.3,791.8L167.3,762.5L177.4,734.0L183.6,708.0L180.2,682.3L184.6,668.3L182.8,647.6L191.4,627.3L194.0,595.7L198.7,562.3L203.3,526.9L202.2,501.3L199.2,479.5L206.7,475.6L210.6,467.8L217.8,478.2L219.7,489.3L227.4,495.9L222.8,510.9L230.6,528.5Z"/><path d="M126.1,208.9L119.8,205.4L112.7,200.6L108.5,202.9L96.1,200.9L92.5,194.6L89.8,194.8L75.2,186.5L73.2,182.0L78.7,180.9L78.0,173.5L81.4,168.2L88.7,167.3L94.8,158.1L100.4,150.4L95.1,146.9L97.8,138.4L94.5,125.0L97.6,121.1L95.3,108.7L89.4,100.8L91.3,93.7L96.0,94.7L98.8,90.3L95.4,81.6L97.1,79.5L104.7,79.9L115.7,69.6L121.7,68.0L121.8,63.1L124.5,50.6L132.9,43.7L142.1,43.4L143.3,40.3L154.7,41.5L166.2,34.0L171.9,30.7L179.0,23.5L184.2,24.4L188.0,28.3L185.2,33.3L175.8,35.8L172.1,43.3L166.4,47.6L162.2,53.1L160.4,63.7L156.3,72.3L163.9,73.3L165.7,80.1L169.0,83.4L170.1,89.3L168.4,94.8L168.9,97.9L172.5,99.1L176.0,104.2L194.8,102.8L203.3,104.7L213.5,117.4L219.4,115.8L230.0,116.6L238.3,114.9L243.5,117.4L240.8,125.3L237.6,130.3L236.4,140.8L239.4,150.5L243.5,154.9L244.0,158.2L236.6,165.4L241.9,168.7L245.8,173.8L250.3,188.4L247.5,190.2L244.7,181.5L240.6,176.9L235.8,181.9L207.3,181.6L207.5,190.8L216.0,192.3L215.5,197.9L212.6,196.4L204.4,198.8L204.3,209.4L210.8,214.7L213.1,223.1L212.7,229.4L206.2,269.6L198.9,261.8L194.5,261.4L203.9,246.5L192.7,239.7L184.0,240.9L178.7,238.4L170.6,242.3L159.7,240.4L151.1,225.1L144.4,221.3L139.7,214.4L130.0,207.5L126.1,208.9Z"/><path d="M54.0,256.5L61.8,245.5L58.7,239.1L53.1,245.9L44.3,239.5L47.3,235.4L44.8,222.1L49.9,219.9L52.6,210.8L58.2,201.4L57.1,195.5L65.1,192.3L75.2,186.5L89.8,194.8L92.5,194.6L96.1,200.9L108.5,202.9L112.7,200.6L119.8,205.4L126.1,208.9L128.1,220.0L123.6,229.5L107.6,244.8L90.1,250.6L81.1,263.3L78.3,273.2L70.1,279.3L63.9,271.8L58.0,270.3L52.0,271.4L51.6,266.1L55.8,262.6L54.0,256.5Z"/><path d="M333.2,1095.9L350.8,1081.8L363.2,1087.7L372.0,1078.3L383.7,1088.9L379.3,1097.1L359.5,1104.2L353.0,1095.9L340.5,1106.6L333.2,1095.9Z"/><path d="M354.3,84.0L363.9,89.4L372.9,99.0L373.4,106.6L378.9,106.9L386.7,114.1L392.5,119.2L390.1,132.4L381.3,136.3L382.0,139.7L379.3,147.3L385.8,157.9L390.5,157.9L392.4,166.2L401.3,178.9L397.8,179.4L389.7,178.2L385.0,182.1L378.3,184.7L373.7,185.3L372.1,188.1L364.9,187.4L355.9,180.6L354.9,173.8L351.1,166.4L353.5,153.9L357.5,148.8L354.2,142.0L349.1,139.7L351.0,133.3L347.6,129.9L340.0,130.6L330.2,119.4L334.1,115.4L333.8,108.6L342.8,106.2L346.4,103.5L341.4,98.0L342.7,92.6L354.3,84.0Z"/><path d="M89.4,100.8L84.6,96.6L81.4,88.6L85.0,84.7L81.3,83.7L78.6,78.8L71.3,74.7L64.9,75.6L62.0,80.7L56.1,84.5L52.9,85.0L51.4,88.0L58.4,96.1L54.4,97.9L52.3,100.1L45.5,100.9L43.0,92.1L41.1,94.6L36.3,93.7L33.3,87.8L27.3,86.8L23.5,85.1L17.2,85.1L16.8,88.3L15.1,86.1L15.9,83.1L17.1,80.1L16.5,77.5L18.7,75.7L15.7,73.5L15.6,67.5L21.2,66.2L26.5,71.5L26.2,74.7L32.0,75.3L33.4,74.1L37.4,77.8L44.6,76.7L50.8,73.0L59.7,70.0L64.7,65.5L72.8,66.4L72.2,67.9L80.4,68.4L86.9,70.9L91.6,75.4L97.1,79.5L95.4,81.6L98.8,90.3L96.0,94.7L91.3,93.7L89.4,100.8Z"/><path d="M210.6,467.8L206.7,475.6L199.2,479.5L184.5,470.7L183.2,464.4L154.3,449.1L128.1,432.5L116.8,423.2L110.7,410.7L113.1,406.4L100.8,386.7L86.3,359.2L72.5,329.7L66.6,323.0L62.0,312.1L50.6,302.5L40.2,296.5L44.9,290.0L37.8,276.0L42.4,265.7L54.0,256.5L55.8,262.6L51.6,266.1L52.0,271.4L58.0,270.3L63.9,271.8L70.1,279.3L78.3,273.2L81.1,263.3L90.1,250.6L107.6,244.8L123.6,229.5L128.1,220.0L126.1,208.9L130.0,207.5L139.7,214.4L144.4,221.3L151.1,225.1L159.7,240.4L170.6,242.3L178.7,238.4L184.0,240.9L192.7,239.7L203.9,246.5L194.5,261.4L198.9,261.8L206.2,269.6L193.0,268.9L191.0,271.1L179.1,273.9L162.3,283.9L161.3,290.7L157.6,295.8L159.0,303.8L150.2,308.0L150.2,314.3L146.3,317.0L152.4,330.3L160.5,339.3L157.5,345.6L167.2,346.5L172.7,354.4L185.6,354.8L197.6,346.0L196.6,368.6L203.2,370.3L211.5,367.7L224.1,391.8L221.0,396.8L220.3,407.4L220.0,420.2L214.3,427.8L216.9,433.4L213.5,438.5L219.8,451.3L210.6,467.8Z"/><path d="M311.5,540.4L317.3,521.5L317.7,513.1L324.7,499.4L350.1,494.9L363.7,495.1L377.3,503.1L377.6,507.9L381.9,516.5L380.9,537.8L396.3,540.9L402.3,537.8L412.2,542.1L414.9,546.8L416.3,561.3L418.0,567.5L423.4,568.2L428.9,565.6L434.2,568.5L434.2,577.3L432.2,586.9L429.3,596.2L426.9,610.6L413.7,623.1L402.1,625.8L385.7,623.3L371.0,618.8L385.4,594.0L383.3,586.9L368.2,580.6L350.3,568.7L338.4,566.3L311.5,540.4Z"/><path d="M392.5,119.2L410.0,122.2L411.5,119.5L423.4,118.5L439.1,122.4L431.5,135.0L432.6,145.1L438.4,153.7L435.8,160.0L434.5,166.7L430.8,172.9L422.4,169.8L415.5,171.3L409.6,170.0L408.2,174.2L410.6,177.1L409.3,180.1L401.3,178.9L392.4,166.2L390.5,157.9L385.8,157.9L379.3,147.3L382.0,139.7L381.3,136.3L390.1,132.4L392.5,119.2Z"/><path d="M385.5,670.3L395.0,668.5L409.6,681.6L415.1,681.1L430.1,692.1L441.6,701.6L450.0,713.4L443.6,721.6L447.6,731.6L441.3,742.6L424.8,752.5L414.0,749.0L406.1,750.9L392.6,743.2L382.7,743.8L373.8,734.0L374.9,722.7L378.1,718.8L377.9,701.5L381.8,683.9L385.5,670.3Z"/><path d="M185.2,33.3L184.7,36.9L176.2,38.6L180.9,45.4L180.7,53.1L174.3,61.8L179.8,73.5L186.1,72.6L189.4,61.9L184.9,56.6L184.1,45.4L202.3,39.3L200.3,32.3L205.4,27.6L210.7,38.1L220.9,38.3L230.4,46.6L231.0,51.5L244.1,51.7L259.7,50.1L268.1,56.8L279.3,58.6L287.5,54.0L287.7,50.3L305.8,49.4L323.3,49.1L310.9,53.5L315.9,60.5L327.5,61.7L338.6,69.0L341.0,80.8L348.6,80.5L354.3,84.0L342.7,92.6L341.4,98.0L346.4,103.5L342.8,106.2L333.8,108.6L334.1,115.4L330.2,119.4L340.0,130.6L342.0,134.7L336.6,140.3L320.3,145.8L309.8,148.1L305.6,151.5L293.9,147.9L283.1,146.0L280.4,147.3L286.9,151.1L286.3,161.0L288.4,170.2L300.7,171.4L301.5,174.5L291.1,178.7L289.4,184.9L283.4,187.3L272.5,190.7L269.7,195.1L258.3,196.1L250.3,188.4L245.8,173.8L241.9,168.7L236.6,165.4L244.0,158.2L243.5,154.9L239.4,150.5L236.4,140.8L237.6,130.3L240.8,125.3L243.5,117.4L238.3,114.9L230.0,116.6L219.4,115.8L213.5,117.4L203.3,104.7L194.8,102.8L176.0,104.2L172.5,99.1L168.9,97.9L168.4,94.8L170.1,89.3L169.0,83.4L165.7,80.1L163.9,73.3L156.3,72.3L160.4,63.7L162.2,53.1L166.4,47.6L172.1,43.3L175.8,35.8L185.2,33.3Z"/></g>
+          <g>
+            <circle class="nodeglow" cx="195" cy="726" r="13" filter="url(#g1)" opacity="0.85"/><circle class="nodeglow" cx="195" cy="726" r="4.5"/>
+            <circle class="nodeglow" cx="546" cy="561" r="11" filter="url(#g1)" opacity="0.7"/><circle class="nodeglow" cx="546" cy="561" r="4"/>
+            <circle class="nodeglow" cx="102" cy="384" r="11" filter="url(#g1)" opacity="0.7"/><circle class="nodeglow" cx="102" cy="384" r="4"/>
+            <circle class="nodeglow" cx="145" cy="138" r="11" filter="url(#g1)" opacity="0.7"/><circle class="nodeglow" cx="145" cy="138" r="4"/>
+            <circle class="nodeglow" cx="81" cy="209" r="11" filter="url(#g1)" opacity="0.7"/><circle class="nodeglow" cx="81" cy="209" r="4"/>
+            <text class="nodelabel" x="212" y="732">Santiago</text>
+            <text class="nodelabel" x="563" y="567">São Paulo</text>
+            <text class="nodelabel" x="119" y="390">Lima</text>
+            <text class="nodelabel" x="162" y="144">Bogotá</text>
+            <text class="nodelabel" x="98" y="215">Quito</text>
+          </g>
+        </svg>
+      </a>
+    </div>
+    <p class="note"><b>Qué es una locación:</b> un espacio capturado en una sesión y entregado como una escena navegable —un exterior con drone, o un interior como un hangar, taller o piso. LATAM lanza con las filiales que quiera y suma nuevas sin rehacer el resto. <b>Parte por Santiago y escala a la red · Go-live Q3 2026.</b></p>
+  </section>
 
-  <!-- Cluster de controles (recorrido + vista AR), agrupados -->
-  <div id="controls">
-    <button class="tour-btn" id="tour-btn" hidden>
-      <span class="tour-btn__icon">▶</span>
-      <span class="tour-btn__label">Iniciar recorrido</span>
-    </button>
-    <button class="gyro-btn" id="gyro-btn" hidden>
-      <span class="gyro-btn__icon">◎</span>
-      <span class="gyro-btn__label">Vista AR</span>
-    </button>
-    <button class="mute-btn" id="mute-btn" title="Sonido ambiente" aria-label="Sonido ambiente">
-      <span class="mute-btn__icon" id="mute-icon">🔊</span>
-    </button>
-  </div>
+  <!-- 04 QUÉ RECIBE LATAM -->
+  <section id="entregables">
+    <div class="eyebrow">04 · Qué recibe LATAM</div>
+    <h2>Entregables · propiedad 100% LATAM.</h2>
+    <div class="cards">
+      <div class="c"><h3>Embebible por filial</h3><p>Se inserta en el LMS o web de LATAM.</p></div>
+      <div class="c"><h3>6 splats en GS</h3><p>Las 6 locaciones, reconstruidas en volumen.</p></div>
+      <div class="c"><h3>Componente + guía</h3><p>iframe / web component con guía de integración.</p></div>
+      <div class="c"><h3>3 idiomas</h3><p>ES · PT · EN.</p></div>
+      <div class="c"><h3>Capa accesible</h3><p>Alternativa narrada + subtítulos cerrados, navegable por teclado y lector de pantalla. Diseñada según WCAG 2.1 AA.</p></div>
+      <div class="c"><h3>Masters 8K + datasets</h3><p>En custodia de LATAM.</p></div>
+    </div>
+    <div class="fine">
+      <b>Propiedad:</b> el recorrido queda 100% de LATAM, sobre tecnología open-source (PlayCanvas / WebGL): sin licencias recurrentes ni lock-in.<br />
+      <b>LMS / SSO:</b> Doppel entrega los hooks estándar (paquete SCORM/xAPI + embebible que acepta token SSO); la integración a la plataforma la realiza el equipo IT de LATAM.
+    </div>
+  </section>
 
-  <!-- Tarjeta de mensajes que aparece durante el recorrido -->
-  <div class="tour-caption" id="tour-caption"></div>
+  <!-- 05 VR -->
+  <section id="vr">
+    <div class="eyebrow">05 · Activación VR · Meta Quest 3</div>
+    <h2>Vivir el splat por dentro.</h2>
+    <p class="lead">El mismo Gaussian Splatting, ahora full-inmersivo en un headset. Módulo opcional.</p>
+    <div class="list">
+      <div class="row"><span class="num">01</span><h3>WebXR · sin PC ni cables</h3><p>Corre en el Meta Quest 3 standalone.</p></div>
+      <div class="row"><span class="num">02</span><h3>Escala 1:1 · presencia real</h3><p>El colaborador camina dentro del hangar.</p></div>
+      <div class="row"><span class="num">03</span><h3>Mismo splat · cero recaptura</h3><p>El activo de la web, ahora inmersivo.</p></div>
+      <div class="row"><span class="num">04</span><h3>Evento · activación in situ</h3><p>Inducciones, ferias y salas de bienvenida.</p></div>
+    </div>
+    <p class="note">Módulo opcional · se suma sin rehacer la plataforma.</p>
+  </section>
 
-  <!-- Música del recorrido (opcional: coloca tu pista en assets/tour-music.mp3) -->
-  <audio id="tour-audio" src="assets/tour-music.mp3" loop preload="none"></audio>
+  <!-- CIERRE -->
+  <section class="cierre" style="border-bottom:none">
+    <div class="eyebrow" style="justify-content:center">Gracias</div>
+    <h2>Elevando tu viaje en LATAM.</h2>
+    <div class="contact">
+      <b>Domingo Sandoval</b> · Productor ejecutivo · Doppel<br />
+      domingo@doppel.cl · +56 9 8808 3000
+    </div>
+    <div style="margin-top:36px">
+      <a class="cta-inline" href="/latam360/demo/">▶ Iniciar el demo</a>
+    </div>
+  </section>
 
-  <!-- Locución del recorrido (un clip por escena, en assets/voice/) -->
-  <audio id="tour-voice" preload="auto"></audio>
+</div>
 
-  <!-- Sonido ambiental por escena (loop sutil, en assets/ambient/) -->
-  <audio id="ambient-audio" loop preload="none"></audio>
+<footer>
+  <span>Productora audiovisual · Santiago de Chile</span>
+  <span>Recorrido 360 · Onboarding LATAM 2026</span>
+</footer>
 
-  <!-- Call-outs (hotspots): marcadores 3D + tarjeta de contenido -->
-  <div id="callout-markers"></div>
-  <div id="callout" class="callout" hidden>
-    <button class="callout__close" id="callout-close" aria-label="Cerrar">×</button>
-    <div class="callout__media" id="callout-media"></div>
-    <div class="callout__body" id="callout-body"></div>
-  </div>
-  <div id="callout-editor" hidden></div>
-
-  <!-- Loader -->
-  <div id="loader">
-    <img class="loader-logo" src="assets/latam-logo.svg" alt="LATAM" />
-    <div class="spinner"></div>
-    <div id="loader-text">Iniciando experiencia inmersiva…</div>
-    <div class="loader-progress"><div class="loader-progress__fill" id="loader-bar"></div></div>
-    <div id="loader-pct">0%</div>
-  </div>
-
-  <script type="module" src="app.js?v=613t"></script>
 </body>
 </html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="robots" content="noindex, nofollow" />
+<title>LATAM 360° — Demo interactivo</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link rel="preconnect" href="https://code.playcanvas.com" crossorigin />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/latam360/style.css?v=614a" />
+<script type="importmap">
+{
+  "imports": {
+    "playcanvas": "https://cdn.jsdelivr.net/npm/playcanvas@2.19.6/build/playcanvas.mjs",
+    "examples/context": "/latam360/lib/context.mjs",
+    "playcanvas/scripts/esm/camera-controls.mjs": "https://cdn.jsdelivr.net/npm/playcanvas@2.19.6/scripts/esm/camera-controls.mjs",
+    "playcanvas/scripts/esm/first-person-controller.mjs": "https://cdn.jsdelivr.net/npm/playcanvas@2.19.6/scripts/esm/first-person-controller.mjs",
+    "playcanvas/scripts/esm/gsplat/reveal-radial.mjs": "https://cdn.jsdelivr.net/npm/playcanvas@2.19.6/scripts/esm/gsplat/reveal-radial.mjs",
+    "playcanvas/scripts/esm/gsplat/reveal-rain.mjs": "https://cdn.jsdelivr.net/npm/playcanvas@2.19.6/scripts/esm/gsplat/reveal-rain.mjs",
+    "playcanvas/scripts/esm/gsplat/reveal-grid-eruption.mjs": "https://cdn.jsdelivr.net/npm/playcanvas@2.19.6/scripts/esm/gsplat/reveal-grid-eruption.mjs",
+    "playcanvas/scripts/esm/gsplat/gsplat-weather.mjs": "https://cdn.jsdelivr.net/npm/playcanvas@2.19.6/scripts/esm/gsplat/gsplat-weather.mjs"
+  }
+}
+</script>
+
+<!-- Cloudflare Web Analytics corre vía la integración automática de Pages. Este script
+     solo EXCLUYE TUS visitas (marca ?notrack=1 en cada dispositivo; ?track=1 revierte). -->
+<script>
+(function () {
+  try {
+    var p = new URLSearchParams(location.search);
+    if (p.has('notrack')) localStorage.setItem('l360_notrack', '1');
+    if (p.has('track')) localStorage.removeItem('l360_notrack');
+    if (localStorage.getItem('l360_notrack') !== '1') return;
+    var BLOCK = /cloudflareinsights\.com|\/cdn-cgi\/rum/i;
+    if (navigator.sendBeacon) {
+      var _sb = navigator.sendBeacon.bind(navigator);
+      navigator.sendBeacon = function (url) {
+        try { if (BLOCK.test(String(url))) return true; } catch (e) {}
+        return _sb.apply(navigator, arguments);
+      };
+    }
+    if (window.fetch) {
+      var _f = window.fetch.bind(window);
+      window.fetch = function (u) {
+        try {
+          var s = u && u.url ? u.url : String(u);
+          if (BLOCK.test(s)) return Promise.resolve(new Response('', { status: 204 }));
+        } catch (e) {}
+        return _f.apply(window, arguments);
+      };
+    }
+  } catch (e) {}
+})();
+</script>
+</head>
+<body>
+  <canvas id="application-canvas"></canvas>
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="brand">
+      <a class="back-link" href="/latam360/">‹ Proyecto</a>
+      <img class="brand__logo" src="/latam360/assets/latam-logo.svg" alt="LATAM" />
+      <span class="brand__divider"></span>
+      <span class="brand__title">360<sup>°</sup> EXPERIENCE</span>
+    </div>
+    <div class="topbar__right">
+      <span class="topbar__pre">Demo ·</span>
+      <img class="topbar__doppel" src="/latam360/assets/doppel-logo.png" alt="Doppel" />
+    </div>
+  </div>
+
+  <!-- Selector de escenas -->
+  <nav class="sidebar">
+    <p class="sidebar__label">Experiencias</p>
+    <div id="scenes"></div>
+  </nav>
+
+  <!-- Panel de información -->
+  <aside class="info">
+    <div class="info__place" id="info-place"></div>
+    <h2 class="info__name" id="info-name"></h2>
+    <p class="info__desc" id="info-desc"></p>
+    <div class="info__credit" id="info-credit"></div>
+  </aside>
+
+  <!-- Hint de controles -->
+  <div class="hint" id="hint"></div>
+
+  <!-- Cluster de controles (recorrido + vista AR), agrupados -->
+  <div id="controls">
+    <button class="tour-btn" id="tour-btn" hidden>
+      <span class="tour-btn__icon">▶</span>
+      <span class="tour-btn__label">Iniciar recorrido</span>
+    </button>
+    <button class="gyro-btn" id="gyro-btn" hidden>
+      <span class="gyro-btn__icon">◎</span>
+      <span class="gyro-btn__label">Vista AR</span>
+    </button>
+    <button class="mute-btn" id="mute-btn" title="Sonido ambiente" aria-label="Sonido ambiente">
+      <span class="mute-btn__icon" id="mute-icon">🔊</span>
+    </button>
+  </div>
+
+  <!-- Tarjeta de mensajes que aparece durante el recorrido -->
+  <div class="tour-caption" id="tour-caption"></div>
+
+  <!-- Música del recorrido -->
+  <audio id="tour-audio" src="/latam360/assets/tour-music.mp3" loop preload="none"></audio>
+
+  <!-- Locución del recorrido (un clip por escena, en assets/voice/) -->
+  <audio id="tour-voice" preload="auto"></audio>
+
+  <!-- Sonido ambiental por escena (loop sutil, en assets/ambient/) -->
+  <audio id="ambient-audio" loop preload="none"></audio>
+
+  <!-- Call-outs (hotspots): marcadores 3D + tarjeta de contenido -->
+  <div id="callout-markers"></div>
+  <div id="callout" class="callout" hidden>
+    <button class="callout__close" id="callout-close" aria-label="Cerrar">×</button>
+    <div class="callout__media" id="callout-media"></div>
+    <div class="callout__body" id="callout-body"></div>
+  </div>
+  <div id="callout-editor" hidden></div>
+
+  <!-- Loader -->
+  <div id="loader">
+    <img class="loader-logo" src="/latam360/assets/latam-logo.svg" alt="LATAM" />
+    <div class="spinner"></div>
+    <div id="loader-text">Iniciando experiencia inmersiva…</div>
+    <div class="loader-progress"><div class="loader-progress__fill" id="loader-bar"></div></div>
+    <div id="loader-pct">0%</div>
+  </div>
+
+  <script type="module" src="/latam360/app.js?v=614a"></script>
+</body>
+</html>

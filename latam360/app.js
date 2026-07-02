@@ -288,7 +288,27 @@ const ambientPlayer = {
 // Campos por call-out: pos [x,y,z] (o auto:N = N unidades frente a la cámara al
 // cargar), label, title, subtitle, body (HTML), image (url), video (url de embed).
 // ---------------------------------------------------------------------------
+// Modo de la página: '' = demo completo; 'product' = embebido de producto (una sola
+// cápsula, visita guiada con barra de progreso, sin menú de escenas). Lo define la
+// página huésped (producto/index.html) antes de cargar este módulo.
+const L360_MODE = (typeof window !== 'undefined' && window.__L360_MODE) || '';
+
 const HOTSPOTS = {
+  reveal: [
+    {
+      auto: 5,
+      avatar: 'C',
+      label: 'Camila',
+      title: 'Camila · Técnica de Mantenimiento',
+      subtitle: 'Centro de Mantenimiento · Santiago',
+      body:
+        '<p>“Acá revisamos cada componente antes de que vuelva a volar. ' +
+        'Te muestro cómo trabajamos.”</p>' +
+        '<p style="opacity:.6;font-size:12px">Hotspot de producto: la gente de la ' +
+        'filial, en video, dentro de su espacio real.</p>',
+      video: 'https://www.youtube.com/embed/0YZuhi6PXZ8'
+    }
+  ],
   downtown: [
     {
       auto: 26, // sin pos fija: se ancla 26u frente a la cámara al cargar (visible de entrada)
@@ -328,7 +348,10 @@ const callouts = {
     (HOTSPOTS[sceneId] || []).forEach((hs) => {
       const el = document.createElement('button');
       el.className = 'hotspot';
-      el.innerHTML = `<span class="hotspot__dot"></span><span class="hotspot__label">${hs.label || ''}</span>`;
+      // `avatar`: marcador estilo persona (círculo grande con iniciales) — producto.
+      el.innerHTML = hs.avatar
+        ? `<span class="hotspot__dot hotspot__dot--avatar">${hs.avatar}</span><span class="hotspot__label">${hs.label || ''}</span>`
+        : `<span class="hotspot__dot"></span><span class="hotspot__label">${hs.label || ''}</span>`;
       el.style.display = 'none';
       layer.appendChild(el);
       const m = {
@@ -1354,6 +1377,7 @@ const grandTour = {
     document.body.classList.remove('touring');
     clearTimeout(this._timer);
     clearInterval(this._keepalive);
+    this._stopProgress();
     captions.clear();
     voiceover.clear();
     if (currentAerial) {
@@ -1383,6 +1407,7 @@ const grandTour = {
     // Mensajes en tarjetas y locución para esta escena.
     captions.showFor(currentSceneId);
     voiceover.showFor(currentSceneId);
+    this._startProgress(); // barra "visita virtual" (solo existe en modo producto)
     // Precarga la siguiente escena durante este turno (30 s de margen).
     const idx = SCENES.findIndex((s) => s.id === currentSceneId);
     preloadScene(SCENES[(idx + 1) % SCENES.length]);
@@ -1391,6 +1416,11 @@ const grandTour = {
   },
   async _advance() {
     if (!this.active) return;
+    // Modo producto: la visita es de UNA cápsula — termina aquí, sin avanzar.
+    if (L360_MODE === 'product') {
+      this.stop();
+      return;
+    }
     const idx = SCENES.findIndex((s) => s.id === currentSceneId);
     // Tras el último splat: terminar el recorrido (para música/locución/cámara,
     // muestra de nuevo el menú) y volver al primero en modo libre.
@@ -1404,13 +1434,41 @@ const grandTour = {
     if (!this.active) return;
     this._runCurrent();
   },
+  // Barra de progreso de la visita (elementos #visit* — solo en la página producto).
+  _progressTick: null,
+  _startProgress() {
+    const box = document.getElementById('visit');
+    const fill = document.getElementById('visit-fill');
+    const label = document.getElementById('visit-label');
+    if (!box || !fill) return;
+    const scene = SCENES.find((s) => s.id === currentSceneId);
+    if (label) label.textContent = `Visita virtual · ${(scene && scene.place) || ''}`;
+    box.hidden = false;
+    fill.style.width = '0%';
+    const total = dwellFor(currentSceneId);
+    const t0 = performance.now();
+    clearInterval(this._progressTick);
+    this._progressTick = setInterval(() => {
+      fill.style.width = `${Math.min(100, ((performance.now() - t0) / total) * 100)}%`;
+    }, 250);
+  },
+  _stopProgress() {
+    clearInterval(this._progressTick);
+    const box = document.getElementById('visit');
+    if (box) box.hidden = true;
+  },
   _updateBtn(active) {
     const btn = document.getElementById('tour-btn');
     if (!btn) return;
     btn.classList.toggle('active', active);
     const label = btn.querySelector('.tour-btn__label');
     const icon = btn.querySelector('.tour-btn__icon');
-    if (label) label.textContent = active ? 'Detener recorrido' : 'Iniciar recorrido';
+    const product = L360_MODE === 'product';
+    if (label) {
+      label.textContent = active
+        ? (product ? 'Detener visita' : 'Detener recorrido')
+        : (product ? 'Visita guiada' : 'Iniciar recorrido');
+    }
     if (icon) icon.textContent = active ? '⏸' : '▶';
   }
 };
@@ -1726,7 +1784,12 @@ function boot() {
   setupAmbientUnlock();
   setupMuteButton();
   callouts.init();
-  selectScene(SCENES[0]);
+  // Escena inicial: la fija la página huésped (producto) o el parámetro ?scene=
+  // (el mapa de la red enlaza cada filial a su cápsula). Por defecto, la primera.
+  const wantId =
+    (typeof window !== 'undefined' && window.__L360_SCENE) ||
+    new URLSearchParams(location.search).get('scene');
+  selectScene(SCENES.find((s) => s.id === wantId) || SCENES[0]);
 }
 
 // Botón para apagar/encender manualmente el sonido ambiente.
