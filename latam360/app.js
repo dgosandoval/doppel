@@ -120,6 +120,21 @@ const SCENES = [
     credit: 'Escaneo: Brandon Barker (superspl.at) · CC BY',
     tourMode: 'swing',
     preload: ['/latam360/assets/splats/cf100-lite.sog']
+  },
+  {
+    // Escena de PRUEBA (oculta del menú): primer splat entrenado por Doppel en el
+    // pipeline propio (video aéreo → COLMAP → Brush/Metal). Solo vía ?scene=prueba.
+    id: 'prueba',
+    hidden: true,
+    type: 'module',
+    module: 'prueba.mjs',
+    name: 'Prueba Doppel',
+    place: 'Splat propio · pipeline Doppel',
+    tag: 'Test interno',
+    desc: 'Primer splat entrenado con el pipeline propio de Doppel: video aéreo → poses COLMAP → entrenamiento 3DGS local.',
+    credit: 'Captura: material de archivo · Entrenamiento: Doppel',
+    tourMode: 'swing',
+    preload: ['/latam360/assets/splats/prueba-lite.sog']
   }
 ];
 
@@ -234,7 +249,8 @@ const AMBIENT = {
   'first-person': 'assets/ambient/park.mp3',
   reveal: 'assets/ambient/interior.mp3',
   'splat-portal': 'assets/ambient/portal.mp3',
-  cf100: 'assets/ambient/park.mp3'
+  cf100: 'assets/ambient/park.mp3',
+  prueba: 'assets/ambient/city.mp3'
 };
 const ambientPlayer = {
   _el: null,
@@ -1381,7 +1397,7 @@ async function selectScene(scene, opts = {}) {
 
 function buildSceneMenu() {
   const menu = $('#scenes');
-  SCENES.forEach((scene) => {
+  SCENES.filter((s) => !s.hidden).forEach((scene) => {
     const card = document.createElement('button');
     card.className = 'scene-card';
     card.dataset.scene = scene.id;
@@ -1537,9 +1553,10 @@ const grandTour = {
     captions.showFor(currentSceneId);
     voiceover.showFor(currentSceneId);
     this._startProgress(); // barra "visita virtual" (solo existe en modo producto)
-    // Precarga la siguiente escena durante este turno (30 s de margen).
-    const idx = SCENES.findIndex((s) => s.id === currentSceneId);
-    preloadScene(SCENES[(idx + 1) % SCENES.length]);
+    // Precarga la siguiente escena VISIBLE durante este turno.
+    const vis = SCENES.filter((s) => !s.hidden);
+    const idx = vis.findIndex((s) => s.id === currentSceneId);
+    preloadScene(vis[(idx + 1) % vis.length]);
     clearTimeout(this._timer);
     this._timer = setTimeout(() => this._advance(), dwellFor(currentSceneId));
   },
@@ -1550,15 +1567,17 @@ const grandTour = {
       this.stop();
       return;
     }
-    const idx = SCENES.findIndex((s) => s.id === currentSceneId);
+    // El recorrido solo pasa por las escenas VISIBLES (las ocultas son de prueba).
+    const visibles = SCENES.filter((s) => !s.hidden);
+    const idx = visibles.findIndex((s) => s.id === currentSceneId);
     // Tras el último splat: terminar el recorrido (para música/locución/cámara,
     // muestra de nuevo el menú) y volver al primero en modo libre.
-    if (idx === SCENES.length - 1) {
+    if (idx === -1 || idx === visibles.length - 1) {
       this.stop();
-      await selectScene(SCENES[0]);
+      await selectScene(visibles[0]);
       return;
     }
-    const next = SCENES[idx + 1];
+    const next = visibles[idx + 1];
     await selectScene(next, { fade: true });
     if (!this.active) return;
     this._runCurrent();
