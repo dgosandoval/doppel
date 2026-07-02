@@ -674,7 +674,7 @@ body.touring .hint {
 .callout__img {
   width: 100%;
   display: block;
-  max-height: 190px;
+  height: 170px;
   object-fit: cover;
 }
 .callout__body { padding: 15px 18px 18px; }

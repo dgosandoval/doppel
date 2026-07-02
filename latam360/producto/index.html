@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/latam360/style.css?v=614b" />
+<link rel="stylesheet" href="/latam360/style.css?v=614c" />
 <script type="importmap">
 {
   "imports": {
@@ -47,41 +47,48 @@
 <style>
   /* Chrome de demo que NO va en el producto */
   .sidebar, .info, .topbar { display: none !important; }
-  /* Controles (visita guiada / AR / sonido): arriba al centro */
-  #controls { top: 14px; bottom: auto; }
+  /* Controles (visita guiada / AR / sonido): bajo la navbar, al centro */
+  #controls { top: 76px; bottom: auto; }
 
-  .plink {
-    position: fixed; top: 16px; left: 16px; z-index: 12;
-    font: 600 12px 'Inter', sans-serif; color: rgba(255, 255, 255, 0.8); text-decoration: none;
-    padding: 7px 13px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 999px;
-    background: rgba(12, 8, 28, 0.5); backdrop-filter: blur(8px);
+  /* Navbar LATAM (como la captura: barra flotante, logo izq., ES/PT/EN + buscar + avatar) */
+  .lnav {
+    position: fixed; top: 12px; left: 12px; right: 12px; z-index: 13;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 18px; border-radius: 14px;
+    background: rgba(16, 10, 36, 0.72); backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 14px 40px rgba(5, 2, 15, 0.45);
   }
-  .plink:hover { color: #fff; }
-
-  /* Tarjeta LATAM blanca (como el mockup) + selector de idioma */
-  .latamcard {
-    position: fixed; top: 0; right: 0; z-index: 12;
-    background: #fff; padding: 16px 26px 14px; border-radius: 0 0 0 18px;
-    box-shadow: 0 12px 34px rgba(5, 2, 15, 0.35);
+  .lnav__left { display: flex; align-items: center; gap: 13px; }
+  .lnav__back {
+    width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
+    color: rgba(255, 255, 255, 0.75); background: rgba(255, 255, 255, 0.09);
+    text-decoration: none; font-size: 15px; line-height: 1;
   }
-  .latamcard img { height: 30px; display: block; }
-  .lang {
-    position: fixed; top: 74px; right: 16px; z-index: 12;
-    display: flex; align-items: center; gap: 3px; padding: 4px;
-    background: rgba(255, 255, 255, 0.92); border-radius: 10px;
-    font: 700 12px 'Latam Sans', 'Inter', sans-serif;
-    box-shadow: 0 8px 22px rgba(5, 2, 15, 0.3);
+  .lnav__back:hover { color: #fff; }
+  .lnav__logo { height: 22px; filter: brightness(0) invert(1); }
+  .lnav__right { display: flex; align-items: center; gap: 13px; }
+  .lnav__lang { display: flex; align-items: center; gap: 3px; font: 700 12px 'Latam Sans', 'Inter', sans-serif; color: rgba(255, 255, 255, 0.6); }
+  .lnav__lang .on { background: #ff4f6d; color: #fff; padding: 4px 9px; border-radius: 6px; border: none; font: inherit; cursor: pointer; }
+  .lnav__lang span { padding: 4px 5px; }
+  .lnav__ico {
+    width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center;
+    background: rgba(255, 255, 255, 0.1); font-size: 14px; color: #fff;
   }
-  .lang button {
-    border: none; background: none; color: #55506b; padding: 5px 9px; border-radius: 7px;
-    cursor: pointer; font: inherit;
+  .lnav__avatar {
+    width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center;
+    background: linear-gradient(150deg, #ff4f6d, #2a0088);
+    font: 700 12px 'Latam Sans', sans-serif; color: #fff; position: relative;
   }
-  .lang button.on { background: #ff4f6d; color: #fff; }
-  .lang .sl { color: #b9b5c9; }
+  .lnav__avatar::after {
+    content: ''; position: absolute; top: -1px; right: -1px; width: 9px; height: 9px;
+    border-radius: 50%; background: #ff4f6d; border: 2px solid #140b28;
+  }
 
   /* Tarjeta de testimonio (video embebido), como el mockup */
   .testi {
-    position: fixed; right: 16px; top: 132px; z-index: 12;
+    position: fixed; right: 16px; top: 80px; z-index: 12;
     width: min(320px, calc(100vw - 32px));
     background: rgba(255, 255, 255, 0.95); border-radius: 16px; overflow: hidden;
     box-shadow: 0 22px 60px rgba(5, 2, 15, 0.5);
@@ -194,13 +201,18 @@
 <body>
   <canvas id="application-canvas"></canvas>
 
-  <a class="plink" href="/latam360/">‹ Proyecto</a>
-
-  <!-- Marca LATAM en tarjeta blanca + idiomas (como el mockup de la propuesta) -->
-  <div class="latamcard"><img src="/latam360/assets/latam-logo.svg" alt="LATAM" /></div>
-  <div class="lang" title="Multi-idioma: ES · PT · EN (ES activo en el demo)">
-    <button class="on">ES</button><span class="sl">/</span><button>PT</button><span class="sl">/</span><button>EN</button>
-  </div>
+  <!-- Navbar LATAM (como la captura de referencia) -->
+  <header class="lnav">
+    <div class="lnav__left">
+      <a class="lnav__back" href="/latam360/" title="Volver al proyecto">‹</a>
+      <img class="lnav__logo" src="/latam360/assets/latam-logo.svg" alt="LATAM" />
+    </div>
+    <div class="lnav__right" title="Multi-idioma: ES · PT · EN (ES activo en el demo)">
+      <div class="lnav__lang"><button class="on">ES</button><span>PT</span><span>EN</span></div>
+      <span class="lnav__ico">⌕</span>
+      <span class="lnav__avatar">D</span>
+    </div>
+  </header>
 
   <!-- Tarjeta de testimonio con video embebido -->
   <div class="testi" id="testi">
@@ -331,11 +343,13 @@
       document.getElementById('testi-restore').addEventListener('click', function () {
         testi.classList.remove('min');
       });
-      // El hotspot del splat destaca la tarjeta de testimonio (no abre el callout genérico).
+      // Solo el hotspot de la persona (data-testi) destaca la tarjeta de testimonio;
+      // los demás puntos abren su tarjeta de información normal.
       document.getElementById('callout-markers').addEventListener(
         'click',
         function (e) {
-          if (!e.target.closest('.hotspot')) return;
+          var hs = e.target.closest('.hotspot');
+          if (!hs || hs.dataset.testi !== '1') return;
           e.stopPropagation();
           e.preventDefault();
           testi.classList.remove('min');
@@ -346,6 +360,6 @@
       );
     })();
   </script>
-  <script type="module" src="/latam360/app.js?v=614b"></script>
+  <script type="module" src="/latam360/app.js?v=614c"></script>
 </body>
 </html>

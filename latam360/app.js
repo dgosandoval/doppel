@@ -297,6 +297,7 @@ const HOTSPOTS = {
   reveal: [
     {
       auto: 5,
+      testi: true, // en la página producto, este punto destaca la tarjeta de testimonio
       avatar: 'C',
       avatarImg: 'https://img.youtube.com/vi/0YZuhi6PXZ8/default.jpg',
       label: 'Camila',
@@ -308,6 +309,23 @@ const HOTSPOTS = {
         '<p style="opacity:.6;font-size:12px">Hotspot de producto: la gente de la ' +
         'filial, en video, dentro de su espacio real.</p>',
       video: 'https://www.youtube.com/embed/0YZuhi6PXZ8'
+    },
+    {
+      auto: 6.5,
+      autoRight: -2.6,
+      label: 'Recepción',
+      title: 'Recepción',
+      subtitle: 'Cápsula Santiago',
+      body: '<p>Cada punto de interés despliega información de la operación: qué pasa aquí y quién lo hace.</p>'
+    },
+    {
+      auto: 7,
+      autoRight: 2.4,
+      autoUp: 0.8,
+      label: 'Obra en exhibición',
+      title: 'Obra en exhibición',
+      subtitle: 'Cápsula Santiago',
+      body: '<p>Los datos viven anclados al espacio real: al moverte, cada punto queda donde corresponde.</p>'
     }
   ],
   downtown: [
@@ -356,6 +374,7 @@ const callouts = {
       el.innerHTML = hs.avatar
         ? `<span class="hotspot__dot hotspot__dot--avatar"${avStyle}>${hs.avatarImg ? '' : hs.avatar}</span><span class="hotspot__label">${hs.label || ''}</span>`
         : `<span class="hotspot__dot"></span><span class="hotspot__label">${hs.label || ''}</span>`;
+      if (hs.testi) el.dataset.testi = '1'; // la página producto intercepta SOLO este
       el.style.display = 'none';
       layer.appendChild(el);
       const m = {
@@ -380,29 +399,39 @@ const callouts = {
   },
   _loop() {
     const cam = this._findCam();
-    const canvas = document.getElementById('application-canvas');
-    if (cam && cam.camera && canvas && this._markers.length) {
-      const sx = canvas.clientWidth / (canvas.width || 1);
-      const sy = canvas.clientHeight / (canvas.height || 1);
+    if (cam && cam.camera && this._markers.length) {
       const hidden = document.body.classList.contains('touring'); // ocultar en el recorrido
       for (const m of this._markers) {
         if (!m.placed && m.hs.auto) {
+          // Ancla el punto N unidades frente a la cámara inicial, con desvíos
+          // laterales/verticales opcionales (autoRight/autoUp) para repartir puntos.
           const f = cam.forward;
+          const r = cam.right;
+          const u = cam.up;
           const p = cam.getPosition();
-          m.pos.set(p.x + f.x * m.hs.auto, p.y + f.y * m.hs.auto, p.z + f.z * m.hs.auto);
+          const ar = m.hs.autoRight || 0;
+          const au = m.hs.autoUp || 0;
+          m.pos.set(
+            p.x + f.x * m.hs.auto + r.x * ar + u.x * au,
+            p.y + f.y * m.hs.auto + r.y * ar + u.y * au,
+            p.z + f.z * m.hs.auto + r.z * ar + u.z * au
+          );
           m.placed = true;
         }
         if (!m.placed || hidden) {
           m.el.style.display = 'none';
           continue;
         }
+        // OJO: worldToScreen entrega píxeles CSS (usa device.clientRect) — usar tal
+        // cual, SIN re-escalar por el buffer del canvas (eso corría el marcador y
+        // lo hacía "derivar" al mover la cámara, peor aún con resolución adaptativa).
         cam.camera.worldToScreen(m.pos, this._scr);
         if (this._scr.z <= 0) {
           m.el.style.display = 'none'; // detrás de la cámara
           continue;
         }
-        m.cssX = this._scr.x * sx;
-        m.cssY = this._scr.y * sy;
+        m.cssX = this._scr.x;
+        m.cssY = this._scr.y;
         m.el.style.display = '';
         m.el.style.transform = `translate(-50%, -50%) translate(${m.cssX}px, ${m.cssY}px)`;
       }
@@ -454,6 +483,9 @@ const callouts = {
     if (top + h > window.innerHeight - pad) top = window.innerHeight - pad - h;
     card.style.left = `${left}px`;
     card.style.top = `${top}px`;
+    // Nunca desbordar por abajo, aunque el contenido crezca tras posicionar
+    // (imágenes que terminan de cargar): tope duro + scroll interno.
+    card.style.maxHeight = `${window.innerHeight - top - pad}px`;
   },
   closeCard() {
     const card = document.getElementById('callout');
@@ -477,10 +509,9 @@ const callouts = {
         panel.textContent = 'Cargando escena…';
         return;
       }
+      // screenToWorld espera píxeles CSS (clientRect), no del buffer del canvas.
       const rect = canvas.getBoundingClientRect();
-      const cx = (e.clientX - rect.left) * (canvas.width / rect.width);
-      const cy = (e.clientY - rect.top) * (canvas.height / rect.height);
-      cam.camera.screenToWorld(cx, cy, 30, world);
+      cam.camera.screenToWorld(e.clientX - rect.left, e.clientY - rect.top, 30, world);
       panel.innerHTML = `pos: <b>[${world.x.toFixed(2)}, ${world.y.toFixed(2)}, ${world.z.toFixed(2)}]</b> — 30u frente a la cámara`;
     });
   }
