@@ -101,20 +101,16 @@ body {
 
 /* ---- Cluster de controles (recorrido + AR), agrupados ----------------- */
 #controls {
-  position: fixed;
-  z-index: 11;
-  bottom: 30px;
-  left: 50%;
-  transform: translateX(-50%);
+  /* Integrado en la navbar (.lnav__right): grupo estático de botones */
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 .tour-btn {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 16px;
+  padding: 8px 13px;
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 999px;
   background: rgba(20, 8, 46, 0.6);
@@ -147,7 +143,7 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 16px;
+  padding: 8px 13px;
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 999px;
   background: rgba(20, 8, 46, 0.6);
@@ -525,14 +521,9 @@ body.touring .hint {
   }
   /* Cluster de controles: arriba al centro, bajo el header (centrado = nunca se
      sale de pantalla, ni en horizontal con el notch lateral). */
-  #controls {
-    bottom: auto;
-    top: calc(48px + env(safe-area-inset-top, 0px));
-    gap: 8px;
-  }
   .tour-btn,
   .gyro-btn {
-    padding: 8px 14px;
+    padding: 7px 11px;
     font-size: 12px;
   }
 
@@ -554,10 +545,6 @@ body.touring .hint {
   }
   .topbar__doppel {
     height: 13px;
-  }
-  /* Cluster en la fila superior (entre los logos), para ahorrar altura. */
-  #controls {
-    top: calc(6px + env(safe-area-inset-top, 0px));
   }
   /* En horizontal el hint roba altura; se omite (los controles ya se sienten). */
   .hint {
@@ -730,8 +717,8 @@ body.touring .hint {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 38px;
-  height: 38px;
+  width: 32px;
+  height: 32px;
   padding: 0;
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 50%;
@@ -858,5 +845,9 @@ body.touring .hint {
   border: 2px solid #140b28;
 }
 @media (max-width: 700px) {
-  .lnav__tag, .lnav__ico { display: none; }
+  .lnav__tag, .lnav__ico, .lnav__lang { display: none; }
+}
+@media (max-width: 480px) {
+  .tour-btn__label, .gyro-btn__label { display: none; }
+  .tour-btn__icon { font-size: 14px; }
 }

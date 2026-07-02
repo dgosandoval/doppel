@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/latam360/style.css?v=615c" />
+<link rel="stylesheet" href="/latam360/style.css?v=615d" />
 <script type="importmap">
 {
   "imports": {
@@ -67,8 +67,21 @@
       <img class="lnav__logo" src="/latam360/assets/latam-logo.svg" alt="LATAM" />
       <span class="lnav__tag">Demo · 360° Experience</span>
     </div>
-    <div class="lnav__right" title="Multi-idioma: ES · PT · EN (ES activo en el demo)">
-      <div class="lnav__lang"><button class="on">ES</button><span>PT</span><span>EN</span></div>
+    <div class="lnav__right">
+      <div id="controls">
+        <button class="tour-btn" id="tour-btn" hidden>
+          <span class="tour-btn__icon">▶</span>
+          <span class="tour-btn__label">Iniciar recorrido</span>
+        </button>
+        <button class="gyro-btn" id="gyro-btn" hidden>
+          <span class="gyro-btn__icon">◎</span>
+          <span class="gyro-btn__label">Vista AR</span>
+        </button>
+        <button class="mute-btn" id="mute-btn" title="Sonido ambiente" aria-label="Sonido ambiente">
+          <span class="mute-btn__icon" id="mute-icon">🔊</span>
+        </button>
+      </div>
+      <div class="lnav__lang" title="Multi-idioma: ES · PT · EN (ES activo en el demo)"><button class="on">ES</button><span>PT</span><span>EN</span></div>
       <span class="lnav__ico">⌕</span>
       <span class="lnav__avatar">D</span>
     </div>
@@ -90,21 +103,6 @@
 
   <!-- Hint de controles -->
   <div class="hint" id="hint"></div>
-
-  <!-- Cluster de controles (recorrido + vista AR), agrupados -->
-  <div id="controls">
-    <button class="tour-btn" id="tour-btn" hidden>
-      <span class="tour-btn__icon">▶</span>
-      <span class="tour-btn__label">Iniciar recorrido</span>
-    </button>
-    <button class="gyro-btn" id="gyro-btn" hidden>
-      <span class="gyro-btn__icon">◎</span>
-      <span class="gyro-btn__label">Vista AR</span>
-    </button>
-    <button class="mute-btn" id="mute-btn" title="Sonido ambiente" aria-label="Sonido ambiente">
-      <span class="mute-btn__icon" id="mute-icon">🔊</span>
-    </button>
-  </div>
 
   <!-- Tarjeta de mensajes que aparece durante el recorrido -->
   <div class="tour-caption" id="tour-caption"></div>
@@ -136,6 +134,6 @@
     <div id="loader-pct">0%</div>
   </div>
 
-  <script type="module" src="/latam360/app.js?v=615c"></script>
+  <script type="module" src="/latam360/app.js?v=615d"></script>
 </body>
 </html>
