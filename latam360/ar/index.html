@@ -74,9 +74,10 @@
 
 <script type="module">
 import * as THREE from 'three'
-import { SplatMesh } from '@sparkjsdev/spark'
+import { SplatMesh, SparkRenderer } from '@sparkjsdev/spark'
 
-const SPLAT_URL = '/latam360/assets/splats/prueba-lite.spz'
+// OJO: NO usar .spz de splat-transform@2.5.2 — escribe SPZ v4 y Spark 2.1 solo lee v1-3.
+const SPLAT_URL = '/latam360/assets/splats/prueba-lite.compressed.ply'
 
 // Geometría medida del PLY de origen (p2..p98): centro y tamaño para normalizar la maqueta.
 // El splat viene con eje Y invertido (convención Brush) → giro 180° en X, igual que en el visor.
@@ -99,13 +100,23 @@ window.addEventListener('error', (e) => {
   toast.textContent = 'Error: ' + (e.message || 'desconocido')
   toast.classList.remove('off')
 })
+window.addEventListener('unhandledrejection', (e) => {
+  toast.textContent = 'Error async: ' + (e.reason && e.reason.message || e.reason || '?')
+  toast.classList.remove('off')
+})
+
+// ?flat=1 = visor plano sin AR (para aislar problemas de Spark vs motor 8th Wall)
+const FLAT = new URLSearchParams(location.search).has('flat')
+
+const setStage = (s) => { toast.textContent = s; toast.classList.remove('off') }
+let splatState = 'sin crear'
 
 // La descarga del splat parte DE INMEDIATO, en paralelo con el motor AR y la cámara.
 // (No se usa SplatMesh({url}) directo: el gate manda no-cache y Spark no muestra progreso.)
 const splatBytes = (async () => {
   const res = await fetch(SPLAT_URL)
   if (!res.ok) throw new Error('HTTP ' + res.status)
-  const total = Number(res.headers.get('Content-Length')) || 4033112
+  const total = Number(res.headers.get('Content-Length')) || 3682514
   const reader = res.body.getReader()
   const chunks = []
   let got = 0
@@ -119,7 +130,7 @@ const splatBytes = (async () => {
   const buf = new Uint8Array(got)
   let o = 0
   for (const c of chunks) { buf.set(c, o); o += c.length }
-  toast.textContent = 'Preparando maqueta…'
+  setStage(FLAT ? 'Maqueta descargada…' : 'Maqueta descargada · esperando cámara…')
   return buf
 })()
 splatBytes.catch((e) => { toast.textContent = 'No se pudo descargar la maqueta (' + e.message + ')' })
@@ -128,8 +139,28 @@ const raycaster = new THREE.Raycaster()
 const ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0)
 const tmpVec = new THREE.Vector3()
 
+// Construye el SplatMesh dentro de `model` (compartido por modo AR y modo flat).
+const attachSplat = () => splatBytes.then((bytes) => {
+  setStage('Construyendo maqueta…')
+  splatState = 'construyendo'
+  const splat = new SplatMesh({ fileBytes: bytes, fileName: 'prueba-lite.compressed.ply' })
+  splat.quaternion.set(1, 0, 0, 0)                    // flip 180° X (Y-down → Y-up)
+  splat.position.copy(FLIPPED_CENTER).multiplyScalar(-1)
+  model.add(splat)
+  setStage('Procesando splats…')
+  splatState = 'procesando'
+  return splat.initialized
+}).then(() => {
+  splatState = 'listo'
+  toast.classList.add('off')
+}).catch((e) => {
+  splatState = 'error'
+  setStage('No se pudo cargar la maqueta (' + (e && e.message || e) + ')')
+})
+
 const scenePipelineModule = () => {
-  const initXrScene = ({ scene, camera }) => {
+  const initXrScene = ({ scene, camera, renderer }) => {
+    scene.add(new SparkRenderer({ renderer }))   // requerido: sin él los SplatMesh no se pintan
     scene.add(new THREE.AmbientLight(0xffffff, 1))
 
     // Maqueta: splat centrado dentro de un grupo escalable.
@@ -138,17 +169,7 @@ const scenePipelineModule = () => {
     model.visible = false
     scene.add(model)
 
-    splatBytes.then((bytes) => {
-      const splat = new SplatMesh({ fileBytes: bytes, fileName: 'prueba-lite.spz' })
-      splat.quaternion.set(1, 0, 0, 0)                  // flip 180° X (Y-down → Y-up)
-      splat.position.copy(FLIPPED_CENTER).multiplyScalar(-1)
-      model.add(splat)
-      return splat.initialized
-    }).then(() => {
-      toast.classList.add('off')
-    }).catch((e) => {
-      toast.textContent = 'No se pudo cargar la maqueta (' + (e.message || e) + ')'
-    })
+    attachSplat()
 
     camera.position.set(0, 1.6, 0)
   }
@@ -210,8 +231,8 @@ const scenePipelineModule = () => {
   return {
     name: 'latam360-ar',
     onStart: ({ canvas }) => {
-      const { scene, camera } = XR8.Threejs.xrScene()
-      initXrScene({ scene, camera })
+      const { scene, camera, renderer } = XR8.Threejs.xrScene()
+      initXrScene({ scene, camera, renderer })
 
       canvas.addEventListener('touchstart', onTouchStart)
       canvas.addEventListener('touchmove', onTouchMove, { passive: false })
@@ -247,7 +268,75 @@ const onxrloaded = () => {
   ])
   XR8.run({ canvas: document.getElementById('camerafeed') })
 }
-window.XR8 ? onxrloaded() : window.addEventListener('xrloaded', onxrloaded)
+
+// Modo visor plano (?flat=1): three.js puro, sin cámara ni SLAM — aísla Spark del motor AR.
+const runFlat = async () => {
+  hint.textContent = 'Visor sin AR — un dedo rota, pinch escala'
+  const canvas = document.getElementById('camerafeed')
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: false })
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+  const scene = new THREE.Scene()
+  scene.background = new THREE.Color(0x0d0630)
+  const camera = new THREE.PerspectiveCamera(60, 1, 0.01, 100)
+  camera.position.set(0, 1.1, 2.1)
+  camera.lookAt(0, 0.25, 0)
+  const resize = () => {
+    renderer.setSize(window.innerWidth, window.innerHeight)
+    camera.aspect = window.innerWidth / window.innerHeight
+    camera.updateProjectionMatrix()
+  }
+  resize()
+  window.addEventListener('resize', resize)
+
+  scene.add(new SparkRenderer({ renderer }))
+  model = new THREE.Group()
+  model.scale.setScalar(BASE_SCALE)
+  scene.add(model)
+  placed = true
+  placing = false
+
+  // Gestos básicos del visor plano
+  let lastX = null, lastPinch = null
+  canvas.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 1) lastX = e.touches[0].clientX
+    if (e.touches.length === 2) lastPinch = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY)
+  })
+  canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault()
+    if (e.touches.length === 1 && lastX !== null) {
+      model.rotation.y += (e.touches[0].clientX - lastX) * 0.008
+      lastX = e.touches[0].clientX
+    } else if (e.touches.length === 2 && lastPinch !== null) {
+      const p = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY)
+      model.scale.setScalar(THREE.MathUtils.clamp(model.scale.x * (p / lastPinch), BASE_SCALE * 0.15, BASE_SCALE * 12))
+      lastPinch = p
+    }
+  }, { passive: false })
+  canvas.addEventListener('touchend', () => { lastX = null; lastPinch = null })
+  canvas.addEventListener('mousemove', (e) => { if (e.buttons === 1) model.rotation.y += e.movementX * 0.008 })
+
+  await attachSplat()
+  renderer.setAnimationLoop(() => renderer.render(scene, camera))
+  window.__ar = { renderer, scene, camera, model }
+}
+
+// Watchdog: si a los 18s la carga sigue pegada, muestra diagnóstico compacto.
+setTimeout(() => {
+  if (toast.classList.contains('off') || splatState === 'error') return
+  let gl2 = '?'
+  try {
+    const xr3 = !FLAT && window.XR8 && XR8.Threejs.xrScene()
+    if (xr3 && xr3.renderer) gl2 = xr3.renderer.getContext() instanceof WebGL2RenderingContext ? 'sí' : 'NO'
+  } catch (e) {}
+  setStage(`Pegado en: ${toast.textContent} · splat=${splatState} · XR8=${window.XR8 ? 'ok' : 'NO'} · gl2=${gl2}`)
+}, 18000)
+
+if (FLAT) {
+  runFlat()
+} else {
+  window.XR8 ? onxrloaded() : window.addEventListener('xrloaded', onxrloaded)
+}
 </script>
 </body>
 </html>
