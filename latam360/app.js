@@ -310,7 +310,7 @@ const L360_MODE = (typeof window !== 'undefined' && window.__L360_MODE) || '';
 const HOTSPOTS = {
   cf100: [
     {
-      auto: 9,
+      aabbOff: [0.1, 0.05, 0.15], // sobre el avión (fracciones del aabb del splat)
       testi: true, // en la página producto, este punto abre la tarjeta de testimonio
       avatar: 'C',
       avatarImg:
@@ -326,18 +326,14 @@ const HOTSPOTS = {
       video: 'https://player.vimeo.com/video/1206534909?h=e572ee7fb2'
     },
     {
-      auto: 11,
-      autoRight: -4,
-      autoUp: 2,
+      aabbOff: [-0.35, 0.3, -0.3],
       label: 'Estructura de cola',
       title: 'Estructura de cola',
       subtitle: 'Cápsula · mantenimiento',
       body: '<p>Cada punto de interés despliega información de la operación: qué se revisa aquí y quién lo hace.</p>'
     },
     {
-      auto: 9,
-      autoRight: 3.5,
-      autoUp: -0.5,
+      aabbOff: [0.3, -0.25, 0.1],
       label: 'Tren de aterrizaje',
       title: 'Tren de aterrizaje',
       subtitle: 'Cápsula · mantenimiento',
@@ -380,6 +376,7 @@ const callouts = {
     this._markers = [];
     this._readyAt = 0; // se re-detecta cuándo el splat de la escena nueva es visible
     this._camSeenAt = 0; // fallback: cuánto llevamos con cámara sin aabb detectado
+    this._box = null; // caja del splat de la escena nueva (para anclajes aabbOff)
     const layer = document.getElementById('callout-markers');
     if (!layer) return;
     (HOTSPOTS[sceneId] || []).forEach((hs) => {
@@ -422,13 +419,23 @@ const callouts = {
       // Los anclajes `auto` esperan a que el splat sea VISIBLE (aabb listo) + un
       // margen, para tomar la cámara ya encuadrada (si no, anclan en el vacío).
       if (!this._camSeenAt) this._camSeenAt = performance.now();
-      if (!this._readyAt && this._markers.some((mm) => !mm.placed && mm.hs.auto) && currentApp) {
-        let has = false;
+      if (
+        !this._readyAt &&
+        this._markers.some((mm) => !mm.placed && (mm.hs.auto || mm.hs.aabbOff)) &&
+        currentApp
+      ) {
+        let ent = null;
         currentApp.root.forEach((e) => {
           const b = e.gsplat && e.gsplat.instance && e.gsplat.instance.aabb;
-          if (b && b.halfExtents.length() > 0) has = true;
+          if (b && b.halfExtents.length() > 0 && !ent) ent = e;
         });
-        if (has) this._readyAt = performance.now();
+        if (ent) {
+          this._readyAt = performance.now();
+          // Guarda la caja LOCAL del splat + su entidad, para anclar puntos AL objeto
+          // (fracciones del aabb) transformados al mundo.
+          const b = ent.gsplat.instance.aabb;
+          this._box = { ent, c: b.center.clone(), h: b.halfExtents.clone() };
+        }
       }
       // Coloca los anclajes `auto` cuando el splat es visible (+margen). Fallback:
       // si en 8 s no se detectó el aabb, colócalos igual (mejor puntos aproximados
@@ -437,7 +444,20 @@ const callouts = {
       const autoOk =
         (this._readyAt && nowMs - this._readyAt > 600) || nowMs - this._camSeenAt > 8000;
       for (const m of this._markers) {
-        if (!m.placed && m.hs.auto && autoOk) {
+        if (!m.placed && m.hs.aabbOff && autoOk && this._box) {
+          // Ancla el punto AL OBJETO: fracciones del aabb local del splat (-1..1 por
+          // eje respecto del centro), transformadas al mundo por la entidad. Así el
+          // punto queda sobre el splat sin importar cámara ni escala de la escena.
+          const o = m.hs.aabbOff;
+          const bx = this._box;
+          const local = new pc.Vec3(
+            bx.c.x + bx.h.x * o[0],
+            bx.c.y + bx.h.y * o[1],
+            bx.c.z + bx.h.z * o[2]
+          );
+          bx.ent.getWorldTransform().transformPoint(local, m.pos);
+          m.placed = true;
+        } else if (!m.placed && m.hs.auto && autoOk) {
           // Ancla el punto N unidades frente a la cámara inicial, con desvíos
           // laterales/verticales opcionales (autoRight/autoUp) para repartir puntos.
           const f = cam.forward;
@@ -519,14 +539,21 @@ const callouts = {
     let left = m.cssX + 22; // a la derecha del punto
     if (left + w > window.innerWidth - pad) left = m.cssX - 22 - w; // si no cabe, a la izquierda
     if (left < pad) left = pad;
-    let top = m.cssY - h / 2; // centrada verticalmente al punto
-    if (top < pad) top = pad;
-    if (top + h > window.innerHeight - pad) top = window.innerHeight - pad - h;
+    const place = (hh) => {
+      let top = m ? m.cssY - hh / 2 : pad; // centrada verticalmente al punto
+      if (top + hh > window.innerHeight - pad) top = window.innerHeight - pad - hh; // sube si no cabe
+      if (top < pad) top = pad;
+      card.style.top = `${top}px`;
+      // Nunca desbordar por abajo (scroll interno solo si es más alta que la ventana).
+      card.style.maxHeight = `${window.innerHeight - top - pad}px`;
+    };
     card.style.left = `${left}px`;
-    card.style.top = `${top}px`;
-    // Nunca desbordar por abajo, aunque el contenido crezca tras posicionar
-    // (imágenes que terminan de cargar): tope duro + scroll interno.
-    card.style.maxHeight = `${window.innerHeight - top - pad}px`;
+    place(h);
+    // Segundo pase: al frame siguiente el contenido (video/fuentes) ya midió su
+    // altura real — re-sube la tarjeta para que se vea COMPLETA sin scroll.
+    requestAnimationFrame(() => {
+      if (!card.hidden) place(card.offsetHeight);
+    });
   },
   closeCard() {
     const card = document.getElementById('callout');
