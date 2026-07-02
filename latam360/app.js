@@ -461,8 +461,11 @@ const callouts = {
       const nowMs = performance.now();
       const autoOk =
         (this._readyAt && nowMs - this._readyAt > 600) || nowMs - this._camSeenAt > 8000;
+      // Los anclajes al OBJETO (aabbOff) no dependen del encuadre de la cámara:
+      // se colocan apenas existe la caja del splat, sin el margen de 600 ms.
+      const aabbOk = !!this._readyAt || nowMs - this._camSeenAt > 8000;
       for (const m of this._markers) {
-        if (!m.placed && m.hs.aabbOff && autoOk && this._box) {
+        if (!m.placed && m.hs.aabbOff && aabbOk && this._box) {
           // Ancla el punto AL OBJETO: fracciones del aabb del splat (-1..1 por eje
           // respecto del centro). OJO: instance.aabb ya está en coordenadas de MUNDO
           // (la cámara del tour lo usa tal cual) — NO volver a transformar por la
