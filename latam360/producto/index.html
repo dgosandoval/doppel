@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/latam360/style.css?v=614f" />
+<link rel="stylesheet" href="/latam360/style.css?v=615a" />
 <script type="importmap">
 {
   "imports": {
@@ -328,12 +328,11 @@
       document.getElementById('mm-city').textContent = p[2];
       document.getElementById('mm-chile').style.display = scene === 'reveal' ? '' : 'none';
 
-      // ===== VIDEO DEL TESTIMONIO — cambiar AQUÍ al pasarlo a Vimeo =====
-      // Vimeo:   EMBED = 'https://player.vimeo.com/video/ID_DEL_VIDEO'
-      //          THUMB = 'https://vumbnail.com/ID_DEL_VIDEO.jpg'
-      var TESTI_EMBED = 'https://www.youtube.com/embed/0YZuhi6PXZ8';
-      var TESTI_THUMB = 'https://img.youtube.com/vi/0YZuhi6PXZ8/hqdefault.jpg';
-      // ==================================================================
+      // ===== VIDEO DEL TESTIMONIO (Vimeo unlisted: id + hash de privacidad) =====
+      var TESTI_EMBED = 'https://player.vimeo.com/video/1206534909?h=e572ee7fb2';
+      var TESTI_THUMB =
+        'https://i.vimeocdn.com/video/2175402848-210ddd5959f3939960eb1bdc45e1df106d684068e0140d52876233438fe2567a-d_640?region=us';
+      // ==========================================================================
       document.getElementById('testi-thumb').src = TESTI_THUMB;
       var video = document.getElementById('testi-video');
       var playing = false;
@@ -364,6 +363,6 @@
       };
     })();
   </script>
-  <script type="module" src="/latam360/app.js?v=614f"></script>
+  <script type="module" src="/latam360/app.js?v=615a"></script>
 </body>
 </html>

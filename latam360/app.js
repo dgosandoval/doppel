@@ -299,7 +299,8 @@ const HOTSPOTS = {
       auto: 5,
       testi: true, // en la página producto, este punto destaca la tarjeta de testimonio
       avatar: 'C',
-      avatarImg: 'https://img.youtube.com/vi/0YZuhi6PXZ8/default.jpg',
+      avatarImg:
+        'https://i.vimeocdn.com/video/2175402848-210ddd5959f3939960eb1bdc45e1df106d684068e0140d52876233438fe2567a-d_640?region=us',
       label: '▶ Camila · su testimonio',
       title: 'Camila · Técnica de Mantenimiento',
       subtitle: 'Centro de Mantenimiento · Santiago',
@@ -308,7 +309,7 @@ const HOTSPOTS = {
         'Te muestro cómo trabajamos.”</p>' +
         '<p style="opacity:.6;font-size:12px">Hotspot de producto: la gente de la ' +
         'filial, en video, dentro de su espacio real.</p>',
-      video: 'https://www.youtube.com/embed/0YZuhi6PXZ8'
+      video: 'https://player.vimeo.com/video/1206534909?h=e572ee7fb2'
     },
     {
       auto: 6.5,
@@ -334,7 +335,7 @@ const HOTSPOTS = {
       label: 'Ver más',
       title: 'Punto de interés',
       subtitle: 'Call-out de ejemplo',
-      video: 'https://www.youtube.com/embed/0YZuhi6PXZ8', // video de ejemplo (embebido)
+      video: 'https://player.vimeo.com/video/1206534909?h=e572ee7fb2', // video de ejemplo (Vimeo unlisted)
       body:
         '<p>Así se despliega un call-out: al tocar un punto anclado en el splat, ' +
         'aparece esta tarjeta con <b>video embebido</b>, texto e imagen.</p>' +
