@@ -379,6 +379,7 @@ const callouts = {
     this._markers.forEach((m) => m.el.remove());
     this._markers = [];
     this._readyAt = 0; // se re-detecta cuándo el splat de la escena nueva es visible
+    this._camSeenAt = 0; // fallback: cuánto llevamos con cámara sin aabb detectado
     const layer = document.getElementById('callout-markers');
     if (!layer) return;
     (HOTSPOTS[sceneId] || []).forEach((hs) => {
@@ -420,6 +421,7 @@ const callouts = {
       const hidden = document.body.classList.contains('touring'); // ocultar en el recorrido
       // Los anclajes `auto` esperan a que el splat sea VISIBLE (aabb listo) + un
       // margen, para tomar la cámara ya encuadrada (si no, anclan en el vacío).
+      if (!this._camSeenAt) this._camSeenAt = performance.now();
       if (!this._readyAt && this._markers.some((mm) => !mm.placed && mm.hs.auto) && currentApp) {
         let has = false;
         currentApp.root.forEach((e) => {
@@ -428,7 +430,12 @@ const callouts = {
         });
         if (has) this._readyAt = performance.now();
       }
-      const autoOk = this._readyAt && performance.now() - this._readyAt > 600;
+      // Coloca los anclajes `auto` cuando el splat es visible (+margen). Fallback:
+      // si en 8 s no se detectó el aabb, colócalos igual (mejor puntos aproximados
+      // que puntos ausentes).
+      const nowMs = performance.now();
+      const autoOk =
+        (this._readyAt && nowMs - this._readyAt > 600) || nowMs - this._camSeenAt > 8000;
       for (const m of this._markers) {
         if (!m.placed && m.hs.auto && autoOk) {
           // Ancla el punto N unidades frente a la cámara inicial, con desvíos

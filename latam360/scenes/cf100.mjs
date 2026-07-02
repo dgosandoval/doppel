@@ -67,7 +67,7 @@ assetListLoader.load(() => {
         sceneSize: 10,
         enableOrbit: true,
         enablePan: true,
-        enableFly: false
+        enableFly: true // habilita WASD (el teclado de CameraControls solo actúa en fly)
     });
 
     // Encuadre automático: cuando el aabb del splat está listo, posiciona la cámara
