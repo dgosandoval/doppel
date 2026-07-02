@@ -561,6 +561,37 @@ const IS_TOUCH =
   (typeof window !== 'undefined' && 'ontouchstart' in window) ||
   !!(pc.platform && pc.platform.mobile);
 
+// Resolución adaptativa: el costo del splatting escala con los píxeles renderizados.
+// Si el framerate cae, baja gradualmente la resolución interna (los splats son
+// suaves: apenas se nota); cuando sobra rendimiento, la recupera hasta su techo.
+// Mantiene pantalla completa y fluidez a la vez.
+function setupAdaptiveResolution(app) {
+  const gd = app.graphicsDevice;
+  if (!gd) return;
+  const MIN = pc.platform.mobile ? 0.55 : 0.7;
+  let max = gd.maxPixelRatio || (pc.platform.mobile ? 1 : 1.25); // techo = valor inicial
+  let ema = 1 / 60; // media móvil del frame time
+  let cooldown = 1.5; // deja estabilizar la carga inicial
+  app.on('update', (dt) => {
+    if (!dt || dt > 0.5) return; // ignora hipos (cambio de pestaña, carga)
+    ema += (dt - ema) * 0.06;
+    cooldown -= dt;
+    if (cooldown > 0) return;
+    const fps = 1 / ema;
+    const r = gd.maxPixelRatio;
+    max = Math.max(max, r); // si la escena subió su techo después, respétalo
+    if (fps < 45 && r > MIN) {
+      gd.maxPixelRatio = Math.max(MIN, r - 0.15);
+      app.resizeCanvas();
+      cooldown = 1.5;
+    } else if (fps > 56 && r < max) {
+      gd.maxPixelRatio = Math.min(max, r + 0.1);
+      app.resizeCanvas();
+      cooldown = 2.5; // sube con más calma que baja (evita oscilar)
+    }
+  });
+}
+
 function setActiveScene(scene) {
   document.querySelectorAll('.scene-card').forEach((el) => {
     el.classList.toggle('active', el.dataset.scene === scene.id);
@@ -705,6 +736,7 @@ async function makeApp(canvas) {
   };
   window.addEventListener('resize', resize);
   app.on('destroy', () => window.removeEventListener('resize', resize));
+  setupAdaptiveResolution(app);
 
   return { app, device };
 }
@@ -835,7 +867,8 @@ async function loadLod(scene) {
     focusPoint
   });
 
-  const budget = pc.platform.mobile ? 4 : 8;
+  // Presupuesto de splats algo más bajo = más fluido (la pérdida visual es mínima).
+  const budget = pc.platform.mobile ? 3 : 6;
   app.scene.gsplat.splatBudget = Math.round(budget * 1000000);
   for (let i = 0; i < gsInstances.length; i++) {
     gsInstances[i].lodBaseDistance = scene.lodBaseDistance;
@@ -942,6 +975,7 @@ async function loadModule(scene) {
       } catch (e) {
         /* noop */
       }
+      setupAdaptiveResolution(app);
       // Movimiento de cámara para el recorrido (dolly o swing).
       setupModuleAerial(app, scene.tourMode || 'dolly', {
         speed: scene.tourSpeed,
