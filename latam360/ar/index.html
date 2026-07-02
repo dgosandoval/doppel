@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="robots" content="noindex, nofollow" />
+<title>LATAM 360° — WebAR</title>
+
+<!-- Motor 8th Wall (open source, MIT + binario SLAM gratuito) -->
+<script src="https://cdn.jsdelivr.net/npm/@8thwall/engine-binary@1/dist/xr.js" async crossorigin="anonymous" data-preload-chunks="slam"></script>
+<script src="https://cdn.jsdelivr.net/npm/@8thwall/xrextras@1/dist/xrextras.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@8thwall/landing-page@1/dist/landing-page.js" crossorigin="anonymous"></script>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.183.2/build/three.module.js",
+    "@sparkjsdev/spark": "https://cdn.jsdelivr.net/npm/@sparkjsdev/spark@2.1.0/dist/spark.module.js"
+  }
+}
+</script>
+
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #0d0630;
+    font-family: 'Inter', -apple-system, system-ui, sans-serif; }
+  #camerafeed { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; }
+
+  .arbar { position: fixed; top: 0; left: 0; right: 0; z-index: 20; display: flex; align-items: center;
+    justify-content: space-between; padding: calc(env(safe-area-inset-top, 0px) + 10px) 14px 10px;
+    background: linear-gradient(rgba(13,6,48,.85), rgba(13,6,48,0)); pointer-events: none; }
+  .arbar__left { display: flex; align-items: center; gap: 10px; }
+  .arbar__logo { height: 20px; filter: brightness(0) invert(1); }
+  .arbar__tag { color: #fff; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; opacity: .85; }
+  .arbar a.back { pointer-events: auto; color: #fff; text-decoration: none; font-size: 20px; line-height: 1;
+    padding: 4px 10px; border-radius: 8px; background: rgba(255,255,255,.14); }
+
+  .arhint { position: fixed; left: 50%; transform: translateX(-50%); z-index: 20;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 84px);
+    background: rgba(13,6,48,.78); color: #fff; font-size: 13px; padding: 9px 16px; border-radius: 999px;
+    backdrop-filter: blur(6px); max-width: 82vw; text-align: center; transition: opacity .4s; }
+  .arhint.off { opacity: 0; pointer-events: none; }
+
+  .arctrl { position: fixed; left: 0; right: 0; z-index: 20; display: flex; justify-content: center; gap: 10px;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 22px); }
+  .arctrl button { border: 0; border-radius: 999px; padding: 11px 18px; font-size: 13px; font-weight: 600;
+    color: #fff; background: rgba(42,0,136,.88); box-shadow: 0 4px 18px rgba(0,0,0,.35); cursor: pointer; }
+  .arctrl button.alt { background: rgba(255,255,255,.16); backdrop-filter: blur(6px); }
+
+  .artoast { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 58px); left: 50%; transform: translateX(-50%);
+    z-index: 20; background: rgba(230,0,126,.92); color: #fff; font-size: 12.5px; font-weight: 600;
+    padding: 8px 16px; border-radius: 999px; transition: opacity .4s; }
+  .artoast.off { opacity: 0; pointer-events: none; }
+</style>
+</head>
+<body>
+  <canvas id="camerafeed"></canvas>
+
+  <header class="arbar">
+    <div class="arbar__left">
+      <a class="back" href="/latam360/" title="Volver">‹</a>
+      <img class="arbar__logo" src="/latam360/assets/latam-logo.svg" alt="LATAM" />
+      <span class="arbar__tag">WebAR · Prototipo</span>
+    </div>
+  </header>
+
+  <div class="artoast" id="toast">Cargando maqueta 3D…</div>
+  <div class="arhint" id="hint">Apunta al suelo y toca la pantalla para colocar la maqueta</div>
+
+  <div class="arctrl">
+    <button id="btn-move" class="alt" hidden>Reubicar</button>
+    <button id="btn-recenter" hidden>Recentrar</button>
+  </div>
+
+<script type="module">
+import * as THREE from 'three'
+import { SplatMesh } from '@sparkjsdev/spark'
+
+const SPLAT_URL = '/latam360/assets/splats/prueba.spz'
+
+// Geometría medida del PLY de origen (p2..p98): centro y tamaño para normalizar la maqueta.
+// El splat viene con eje Y invertido (convención Brush) → giro 180° en X, igual que en el visor.
+const FLIPPED_CENTER = new THREE.Vector3(-9.88, 2.16, -18.84)
+const FOOTPRINT = 52          // ancho aprox. de la escena en unidades del splat
+const TARGET_WIDTH = 1.6      // metros: ancho inicial de la maqueta en AR
+const BASE_SCALE = TARGET_WIDTH / FOOTPRINT
+
+const hint = document.getElementById('hint')
+const toast = document.getElementById('toast')
+const btnMove = document.getElementById('btn-move')
+const btnRecenter = document.getElementById('btn-recenter')
+
+let model = null          // grupo colocable (contiene el splat centrado)
+let placing = true        // primer tap = colocar
+let placed = false
+
+const raycaster = new THREE.Raycaster()
+const ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0)
+const tmpVec = new THREE.Vector3()
+
+const scenePipelineModule = () => {
+  const initXrScene = ({ scene, camera }) => {
+    scene.add(new THREE.AmbientLight(0xffffff, 1))
+
+    // Maqueta: splat centrado dentro de un grupo escalable.
+    model = new THREE.Group()
+    const splat = new SplatMesh({ url: SPLAT_URL })
+    splat.quaternion.set(1, 0, 0, 0)                    // flip 180° X (Y-down → Y-up)
+    splat.position.copy(FLIPPED_CENTER).multiplyScalar(-1)
+    model.add(splat)
+    model.scale.setScalar(BASE_SCALE)
+    model.visible = false
+    scene.add(model)
+
+    splat.initialized.then(() => {
+      toast.classList.add('off')
+    }).catch(() => {
+      toast.textContent = 'No se pudo cargar la maqueta'
+    })
+
+    camera.position.set(0, 1.6, 0)
+  }
+
+  const placeFromTouch = (touch, { camera }) => {
+    const x = (touch.clientX / window.innerWidth) * 2 - 1
+    const y = -(touch.clientY / window.innerHeight) * 2 + 1
+    raycaster.setFromCamera({ x, y }, camera)
+    if (raycaster.ray.intersectPlane(ground, tmpVec)) {
+      model.position.set(tmpVec.x, 0.02, tmpVec.z)
+      model.visible = true
+      placed = true
+      placing = false
+      hint.classList.add('off')
+      btnMove.hidden = false
+      btnRecenter.hidden = false
+    }
+  }
+
+  // Gestos: 1 dedo = rotar (o colocar), 2 dedos = escalar (pinch).
+  let lastX = null
+  let lastPinch = null
+  let touchMoved = false
+
+  const onTouchStart = (e) => {
+    touchMoved = false
+    if (e.touches.length === 1) lastX = e.touches[0].clientX
+    if (e.touches.length === 2) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX
+      const dy = e.touches[0].clientY - e.touches[1].clientY
+      lastPinch = Math.hypot(dx, dy)
+    }
+  }
+  const onTouchMove = (e) => {
+    e.preventDefault()
+    touchMoved = true
+    if (!placed) return
+    if (e.touches.length === 1 && lastX !== null && !placing) {
+      const x = e.touches[0].clientX
+      model.rotation.y += (x - lastX) * 0.008
+      lastX = x
+    } else if (e.touches.length === 2 && lastPinch !== null) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX
+      const dy = e.touches[0].clientY - e.touches[1].clientY
+      const pinch = Math.hypot(dx, dy)
+      const s = THREE.MathUtils.clamp(model.scale.x * (pinch / lastPinch), BASE_SCALE * 0.15, BASE_SCALE * 12)
+      model.scale.setScalar(s)
+      lastPinch = pinch
+    }
+  }
+  const onTouchEnd = (e) => {
+    if (placing && !touchMoved && e.changedTouches.length === 1) {
+      placeFromTouch(e.changedTouches[0], XR8.Threejs.xrScene())
+    }
+    lastX = null
+    lastPinch = null
+  }
+
+  return {
+    name: 'latam360-ar',
+    onStart: ({ canvas }) => {
+      const { scene, camera } = XR8.Threejs.xrScene()
+      initXrScene({ scene, camera })
+
+      canvas.addEventListener('touchstart', onTouchStart)
+      canvas.addEventListener('touchmove', onTouchMove, { passive: false })
+      canvas.addEventListener('touchend', onTouchEnd)
+
+      XR8.XrController.updateCameraProjectionMatrix({
+        origin: camera.position,
+        facing: camera.quaternion,
+      })
+    },
+  }
+}
+
+btnMove.addEventListener('click', () => {
+  placing = true
+  hint.textContent = 'Toca el suelo donde quieras la maqueta'
+  hint.classList.remove('off')
+})
+btnRecenter.addEventListener('click', () => {
+  XR8.XrController.recenter()
+})
+
+const onxrloaded = () => {
+  XR8.addCameraPipelineModules([
+    XR8.GlTextureRenderer.pipelineModule(),
+    XR8.Threejs.pipelineModule(),
+    XR8.XrController.pipelineModule(),
+    LandingPage.pipelineModule(),
+    XRExtras.FullWindowCanvas.pipelineModule(),
+    XRExtras.Loading.pipelineModule(),
+    XRExtras.RuntimeError.pipelineModule(),
+    scenePipelineModule(),
+  ])
+  XR8.run({ canvas: document.getElementById('camerafeed') })
+}
+window.XR8 ? onxrloaded() : window.addEventListener('xrloaded', onxrloaded)
+</script>
+</body>
+</html>
