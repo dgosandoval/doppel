@@ -14,9 +14,7 @@
 <script type="importmap">
 {
   "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.183.2/build/three.module.js",
-    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.183.2/examples/jsm/",
-    "@sparkjsdev/spark": "https://cdn.jsdelivr.net/npm/@sparkjsdev/spark@2.1.0/dist/spark.module.js"
+    "playcanvas": "https://cdn.jsdelivr.net/npm/playcanvas@2.19.6/build/playcanvas.mjs"
   }
 }
 </script>
@@ -49,7 +47,7 @@
 
   .artoast { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 58px); left: 50%; transform: translateX(-50%);
     z-index: 20; background: rgba(230,0,126,.92); color: #fff; font-size: 12.5px; font-weight: 600;
-    padding: 8px 16px; border-radius: 999px; transition: opacity .4s; }
+    padding: 8px 16px; border-radius: 999px; transition: opacity .4s; max-width: 86vw; text-align: center; }
   .artoast.off { opacity: 0; pointer-events: none; }
 </style>
 </head>
@@ -64,15 +62,15 @@
     </div>
   </header>
 
-  <div class="artoast" id="toast">Cargando maqueta 3D…</div>
-  <div class="arhint" id="hint">Apunta al suelo y toca la pantalla para colocar la maqueta</div>
+  <div class="artoast" id="toast">Preparando…</div>
+  <div class="arhint" id="hint">Apunta al suelo y toca la pantalla para colocar la ciudad</div>
 
   <!-- Pantalla de inicio: en iOS la cámara y los sensores DEBEN pedirse desde un tap -->
   <div id="start" style="position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:linear-gradient(160deg,#0d0630,#2a0088);text-align:center;padding:24px">
     <img src="/latam360/assets/latam-logo.svg" alt="LATAM" style="height:34px;filter:brightness(0) invert(1)" />
-    <p style="color:#fff;opacity:.85;font-size:14.5px;max-width:280px;margin:0">Experiencia AR: la maqueta 3D de la ciudad, anclada a tu espacio real.</p>
+    <p style="color:#fff;opacity:.85;font-size:14.5px;max-width:280px;margin:0">Experiencia AR: el centro histórico del demo, anclado a tu espacio real como maqueta.</p>
     <button id="btn-start" style="border:0;border-radius:999px;padding:15px 34px;font-size:16px;font-weight:700;color:#2a0088;background:#fff;box-shadow:0 8px 30px rgba(0,0,0,.4)">▶ Iniciar AR</button>
-    <p id="start-note" style="color:#fff;opacity:.6;font-size:12px;margin:0">Se pedirá acceso a la cámara y sensores de movimiento</p>
+    <p style="color:#fff;opacity:.6;font-size:12px;margin:0">Se pedirá acceso a la cámara y sensores de movimiento</p>
   </div>
 
   <div class="arctrl">
@@ -81,219 +79,254 @@
   </div>
 
 <script type="module">
-import * as THREE from 'three'
-import { SplatMesh, SparkRenderer } from '@sparkjsdev/spark'
+import * as pc from 'playcanvas'
 
-window.THREE = THREE   // el pipeline Threejs de 8th Wall lo exige como global
-
-// OJO: NO usar .spz de splat-transform@2.5.2 — escribe SPZ v4 y Spark 2.1 solo lee v1-3.
-const SPLAT_URL = '/latam360/assets/splats/prueba-lite.compressed.ply'
-
-// Geometría medida del PLY de origen (p2..p98): centro y tamaño para normalizar la maqueta.
-// El splat viene con eje Y invertido (convención Brush) → giro 180° en X, igual que en el visor.
-const FLIPPED_CENTER = new THREE.Vector3(-9.88, 2.16, -18.84)
-const FOOTPRINT = 52          // ancho aprox. de la escena en unidades del splat
+// La ciudad del demo: downtown (Lublin) en streaming LOD/SOG — mismos assets que /latam360/demo/
+const URLS = [
+  'https://code.playcanvas.com/examples_data/downtown_01/ssog0/lod-meta.json',
+  'https://code.playcanvas.com/examples_data/downtown_01/ssog1/lod-meta.json',
+  'https://code.playcanvas.com/examples_data/downtown_01/ssog2/lod-meta.json',
+  'https://code.playcanvas.com/examples_data/downtown_01/ssog3/lod-meta.json',
+]
 const TARGET_WIDTH = 1.6      // metros: ancho inicial de la maqueta en AR
-const BASE_SCALE = TARGET_WIDTH / FOOTPRINT
 
 const hint = document.getElementById('hint')
 const toast = document.getElementById('toast')
 const btnMove = document.getElementById('btn-move')
 const btnRecenter = document.getElementById('btn-recenter')
 
-let model = null          // grupo colocable (contiene el splat centrado)
-let placing = true        // primer tap = colocar
-let placed = false
+const FLAT = new URLSearchParams(location.search).has('flat')
+const setStage = (s) => { toast.textContent = s; toast.classList.remove('off') }
 
 // Errores a la vista (para depurar en el teléfono sin consola).
-window.addEventListener('error', (e) => {
-  toast.textContent = 'Error: ' + (e.message || 'desconocido')
-  toast.classList.remove('off')
-})
-window.addEventListener('unhandledrejection', (e) => {
-  toast.textContent = 'Error async: ' + (e.reason && e.reason.message || e.reason || '?')
-  toast.classList.remove('off')
-})
+window.addEventListener('error', (e) => setStage('Error: ' + (e.message || 'desconocido')))
+window.addEventListener('unhandledrejection', (e) =>
+  setStage('Error async: ' + (e.reason && e.reason.message || e.reason || '?')))
 
-// ?flat=1 = visor plano sin AR (para aislar problemas de Spark vs motor 8th Wall)
-const FLAT = new URLSearchParams(location.search).has('flat')
+let model = null          // entity colocable/escalable (contiene la ciudad centrada)
+let baseScale = 0.01
+let pcCam = null
+let placing = true
+let placed = false
+let cityReady = false
 
-const setStage = (s) => { toast.textContent = s; toast.classList.remove('off') }
-let splatState = 'sin crear'
+async function makeApp(canvas) {
+  const device = await pc.createGraphicsDevice(canvas, {
+    deviceTypes: ['webgl2'],   // XR8 dibuja el feed de cámara vía WebGL — no usar WebGPU aquí
+    antialias: false,
+  })
+  const dpr = window.devicePixelRatio || 1
+  device.maxPixelRatio = dpr >= 2 ? dpr * 0.5 : dpr
 
-// La descarga del splat parte DE INMEDIATO, en paralelo con el motor AR y la cámara.
-// (No se usa SplatMesh({url}) directo: el gate manda no-cache y Spark no muestra progreso.)
-const splatBytes = (async () => {
-  const res = await fetch(SPLAT_URL)
-  if (!res.ok) throw new Error('HTTP ' + res.status)
-  const total = Number(res.headers.get('Content-Length')) || 3682514
-  const reader = res.body.getReader()
-  const chunks = []
-  let got = 0
-  for (;;) {
-    const { done, value } = await reader.read()
-    if (done) break
-    chunks.push(value)
-    got += value.length
-    toast.textContent = `Descargando maqueta… ${Math.min(99, Math.round((got / total) * 100))}%`
-  }
-  const buf = new Uint8Array(got)
-  let o = 0
-  for (const c of chunks) { buf.set(c, o); o += c.length }
-  setStage(FLAT ? 'Maqueta descargada…' : 'Maqueta descargada · esperando cámara…')
-  return buf
-})()
-splatBytes.catch((e) => { toast.textContent = 'No se pudo descargar la maqueta (' + e.message + ')' })
+  const opts = new pc.AppOptions()
+  opts.graphicsDevice = device
+  opts.mouse = new pc.Mouse(canvas)
+  opts.touch = new pc.TouchDevice(canvas)
+  opts.componentSystems = [
+    pc.RenderComponentSystem, pc.CameraComponentSystem, pc.LightComponentSystem,
+    pc.ScriptComponentSystem, pc.GSplatComponentSystem,
+  ]
+  opts.resourceHandlers = [pc.TextureHandler, pc.ContainerHandler, pc.ScriptHandler, pc.GSplatHandler]
 
-const raycaster = new THREE.Raycaster()
-const ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0)
-const tmpVec = new THREE.Vector3()
-
-// Construye el SplatMesh dentro de `model` (compartido por modo AR y modo flat).
-const attachSplat = () => splatBytes.then((bytes) => {
-  setStage('Construyendo maqueta…')
-  splatState = 'construyendo'
-  const splat = new SplatMesh({ fileBytes: bytes, fileName: 'prueba-lite.compressed.ply' })
-  splat.quaternion.set(1, 0, 0, 0)                    // flip 180° X (Y-down → Y-up)
-  splat.position.copy(FLIPPED_CENTER).multiplyScalar(-1)
-  model.add(splat)
-  setStage('Procesando splats…')
-  splatState = 'procesando'
-  return splat.initialized
-}).then(() => {
-  splatState = 'listo'
-  toast.classList.add('off')
-}).catch((e) => {
-  splatState = 'error'
-  setStage('No se pudo cargar la maqueta (' + (e && e.message || e) + ')')
-})
-
-const scenePipelineModule = () => {
-  const initXrScene = ({ scene, camera, renderer }) => {
-    scene.add(new SparkRenderer({ renderer }))   // requerido: sin él los SplatMesh no se pintan
-    scene.add(new THREE.AmbientLight(0xffffff, 1))
-
-    // Maqueta: splat centrado dentro de un grupo escalable.
-    model = new THREE.Group()
-    model.scale.setScalar(BASE_SCALE)
-    model.visible = false
-    scene.add(model)
-
-    attachSplat()
-
-    camera.position.set(0, 1.6, 0)
-  }
-
-  const placeFromTouch = (touch, { camera }) => {
-    const x = (touch.clientX / window.innerWidth) * 2 - 1
-    const y = -(touch.clientY / window.innerHeight) * 2 + 1
-    raycaster.setFromCamera({ x, y }, camera)
-    if (raycaster.ray.intersectPlane(ground, tmpVec)) {
-      model.position.set(tmpVec.x, 0.02, tmpVec.z)
-      model.visible = true
-      placed = true
-      placing = false
-      hint.classList.add('off')
-      btnMove.hidden = false
-      btnRecenter.hidden = false
-    }
-  }
-
-  // Gestos: 1 dedo = rotar (o colocar), 2 dedos = escalar (pinch).
-  let lastX = null
-  let lastPinch = null
-  let touchMoved = false
-
-  const onTouchStart = (e) => {
-    touchMoved = false
-    if (e.touches.length === 1) lastX = e.touches[0].clientX
-    if (e.touches.length === 2) {
-      const dx = e.touches[0].clientX - e.touches[1].clientX
-      const dy = e.touches[0].clientY - e.touches[1].clientY
-      lastPinch = Math.hypot(dx, dy)
-    }
-  }
-  const onTouchMove = (e) => {
-    e.preventDefault()
-    touchMoved = true
-    if (!placed) return
-    if (e.touches.length === 1 && lastX !== null && !placing) {
-      const x = e.touches[0].clientX
-      model.rotation.y += (x - lastX) * 0.008
-      lastX = x
-    } else if (e.touches.length === 2 && lastPinch !== null) {
-      const dx = e.touches[0].clientX - e.touches[1].clientX
-      const dy = e.touches[0].clientY - e.touches[1].clientY
-      const pinch = Math.hypot(dx, dy)
-      const s = THREE.MathUtils.clamp(model.scale.x * (pinch / lastPinch), BASE_SCALE * 0.15, BASE_SCALE * 12)
-      model.scale.setScalar(s)
-      lastPinch = pinch
-    }
-  }
-  const onTouchEnd = (e) => {
-    if (placing && !touchMoved && e.changedTouches.length === 1) {
-      placeFromTouch(e.changedTouches[0], XR8.Threejs.xrScene())
-    }
-    lastX = null
-    lastPinch = null
-  }
-
-  return {
-    name: 'latam360-ar',
-    onStart: ({ canvas }) => {
-      const { scene, camera, renderer } = XR8.Threejs.xrScene()
-      initXrScene({ scene, camera, renderer })
-
-      canvas.addEventListener('touchstart', onTouchStart)
-      canvas.addEventListener('touchmove', onTouchMove, { passive: false })
-      canvas.addEventListener('touchend', onTouchEnd)
-
-      XR8.XrController.updateCameraProjectionMatrix({
-        origin: camera.position,
-        facing: camera.quaternion,
-      })
-    },
-  }
+  const app = new pc.AppBase(canvas)
+  app.init(opts)
+  app.setCanvasFillMode(pc.FILLMODE_FILL_WINDOW)
+  app.setCanvasResolution(pc.RESOLUTION_AUTO)
+  window.addEventListener('resize', () => app.resizeCanvas())
+  return { app, device }
 }
 
-btnMove.addEventListener('click', () => {
-  placing = true
-  hint.textContent = 'Toca el suelo donde quieras la maqueta'
-  hint.classList.remove('off')
-})
-btnRecenter.addEventListener('click', () => {
-  XR8.XrController.recenter()
-})
+// Carga downtown en streaming y lo deja centrado como maqueta dentro de `model`.
+async function buildCity(app) {
+  setStage('Cargando ciudad (streaming)…')
+  const assets = URLS.map((u, i) => new pc.Asset('ssog' + i, 'gsplat', { url: u }))
+  const loader = new pc.AssetListLoader(assets, app.assets)
+  await new Promise((res, rej) => loader.load((e) => (e ? rej(new Error(String(e))) : res())))
+
+  const g = app.scene.gsplat
+  g.lodUpdateAngle = 90
+  g.lodBehindPenalty = 3
+  g.radialSorting = true
+  g.lodUpdateDistance = 4
+  g.lodUnderfillLimit = 5
+  g.minPixelSize = 1
+  g.alphaClipForward = 1 / 255
+  g.minContribution = 3
+  g.dataFormat = pc.GSPLATDATA_COMPACT
+  g.renderer = pc.GSPLAT_RENDERER_RASTER_CPU_SORT
+  g.splatBudget = 1500000
+
+  model = new pc.Entity('model')
+  const offset = new pc.Entity('offset')
+  const root = new pc.Entity('city')
+  root.setLocalEulerAngles(-90, 0, 0)   // misma rotación que la escena del demo
+  offset.addChild(root)
+  model.addChild(offset)
+  app.root.addChild(model)
+
+  let lodLevels = 1
+  assets.forEach((a, i) => {
+    const e = new pc.Entity('chunk' + i)
+    e.addComponent('gsplat', { asset: a })
+    root.addChild(e)
+    lodLevels = Math.max(lodLevels, a.resource.octree?.lodLevels ?? 1)
+  })
+
+  // AABB en mundo con model en identidad → centrar XZ y apoyar el piso en y=0
+  const aabb = new pc.BoundingBox()
+  root.children.forEach((e, i) => {
+    const b = new pc.BoundingBox()
+    b.setFromTransformedAabb(assets[i].resource.aabb, e.getWorldTransform())
+    i === 0 ? aabb.copy(b) : aabb.add(b)
+  })
+  const c = aabb.center, he = aabb.halfExtents
+  offset.setLocalPosition(-c.x, -(c.y - he.y), -c.z)
+  baseScale = TARGET_WIDTH / (2 * Math.max(he.x, he.z))
+  model.setLocalScale(baseScale, baseScale, baseScale)
+  model.enabled = FLAT   // en AR aparece recién al colocarla
+
+  // Apertura progresiva de LOD (patrón del demo): primero los niveles gruesos
+  const worst = lodLevels - 1
+  g.lodRangeMin = Math.max(0, worst - 3)
+  g.lodRangeMax = worst
+  const sys = app.systems.gsplat
+  const onReady = (cam, layer, ready, loading) => {
+    if (ready && loading === 0) {
+      sys.off('frame:ready', onReady)
+      g.lodRangeMin = 0
+      g.lodRangeMax = worst
+      cityReady = true
+      toast.classList.add('off')
+    }
+  }
+  sys.on('frame:ready', onReady)
+}
+
+// ---- colocación y gestos ----
+const placeFromTouch = (touch) => {
+  if (!model || !pcCam) return
+  const cam = pcCam.camera
+  const from = cam.screenToWorld(touch.clientX, touch.clientY, cam.nearClip)
+  const to = cam.screenToWorld(touch.clientX, touch.clientY, cam.farClip)
+  const dir = new pc.Vec3().sub2(to, from)
+  if (Math.abs(dir.y) < 1e-6) return
+  const t = -from.y / dir.y
+  if (t <= 0) return
+  const hit = new pc.Vec3().copy(dir).mulScalar(t).add(from)
+  model.setPosition(hit.x, 0.02, hit.z)
+  model.enabled = true
+  placed = true
+  placing = false
+  hint.classList.add('off')
+  btnMove.hidden = false
+  btnRecenter.hidden = false
+}
+
+let lastX = null, lastPinch = null, touchMoved = false, rotY = 0
+const attachGestures = (canvas) => {
+  canvas.addEventListener('touchstart', (e) => {
+    touchMoved = false
+    if (e.touches.length === 1) lastX = e.touches[0].clientX
+    if (e.touches.length === 2) lastPinch = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY)
+  })
+  canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault()
+    touchMoved = true
+    if (!placed || !model) return
+    if (e.touches.length === 1 && lastX !== null && !placing) {
+      rotY += (e.touches[0].clientX - lastX) * 0.45
+      model.setLocalEulerAngles(0, rotY, 0)
+      lastX = e.touches[0].clientX
+    } else if (e.touches.length === 2 && lastPinch !== null) {
+      const p = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY)
+      const s = pc.math.clamp(model.getLocalScale().x * (p / lastPinch), baseScale * 0.15, baseScale * 12)
+      model.setLocalScale(s, s, s)
+      lastPinch = p
+    }
+  }, { passive: false })
+  canvas.addEventListener('touchend', (e) => {
+    if (placing && !touchMoved && e.changedTouches.length === 1) placeFromTouch(e.changedTouches[0])
+    lastX = null
+    lastPinch = null
+  })
+  canvas.addEventListener('mousemove', (e) => {
+    if (e.buttons === 1 && placed && model) { rotY += e.movementX * 0.45; model.setLocalEulerAngles(0, rotY, 0) }
+  })
+  canvas.addEventListener('click', (e) => { if (placing) placeFromTouch(e) })
+}
 
 // Estado de la cámara a la vista (para saber si iOS la pide/deniega)
 const cameraStatusModule = () => ({
   name: 'latam360-camstatus',
   onCameraStatusChange: ({ status }) => {
     if (status === 'requesting') setStage('Pidiendo acceso a la cámara…')
-    else if (status === 'hasStream') setStage('Cámara OK · iniciando AR…')
-    else if (status === 'failed') setStage('Cámara DENEGADA — habilítala en Ajustes > Safari > Cámara')
+    else if (status === 'hasStream') setStage(cityReady ? 'Cámara OK' : 'Cámara OK · cargando ciudad…')
+    else if (status === 'failed') setStage('Cámara DENEGADA — habilítala en Ajustes > Apps > Safari > Cámara')
   },
 })
 
-const startAR = () => {
-  XR8.addCameraPipelineModules([
-    XR8.GlTextureRenderer.pipelineModule(),
-    XR8.Threejs.pipelineModule(),
+// ---- arranque AR ----
+const startAR = async () => {
+  setStage('Iniciando motor…')
+  const canvas = document.getElementById('camerafeed')
+  const { app } = await makeApp(canvas)
+
+  pcCam = new pc.Entity('camera')
+  pcCam.addComponent('camera', {
+    clearColor: new pc.Color(0, 0, 0, 0),   // transparente: detrás va el feed de la cámara
+    nearClip: 0.01,
+    farClip: 500,
+  })
+  app.root.addChild(pcCam)
+  pcCam.setPosition(0, 1.6, 0)
+  app.start()
+
+  XR8.PlayCanvas.run({ pcCamera: pcCam, pcApp: app }, [
     XR8.XrController.pipelineModule(),
     LandingPage.pipelineModule(),
-    XRExtras.FullWindowCanvas.pipelineModule(),
-    XRExtras.Loading.pipelineModule(),
     XRExtras.RuntimeError.pipelineModule(),
     cameraStatusModule(),
-    scenePipelineModule(),
-  ])
-  XR8.run({ canvas: document.getElementById('camerafeed') })
+  ], { canvas })
+
+  attachGestures(canvas)
+  buildCity(app).catch((e) => setStage('No se pudo cargar la ciudad (' + (e && e.message || e) + ')'))
 }
 
-// El tap del usuario ES el gesto que iOS exige para pedir sensores de movimiento + cámara.
+// ---- modo visor plano (?flat=1): sin cámara ni SLAM, para aislar problemas ----
+const runFlat = async () => {
+  hint.textContent = 'Visor sin AR — un dedo rota, pinch escala'
+  const canvas = document.getElementById('camerafeed')
+  const { app } = await makeApp(canvas)
+  pcCam = new pc.Entity('camera')
+  pcCam.addComponent('camera', { clearColor: new pc.Color(0.05, 0.02, 0.19), nearClip: 0.01, farClip: 500 })
+  app.root.addChild(pcCam)
+  pcCam.setPosition(0, 1.1, 2.1)
+  pcCam.lookAt(0, 0.25, 0)
+  app.start()
+  attachGestures(canvas)
+  placed = true
+  placing = false
+  await buildCity(app)
+  window.__ar = { app, pcCam, get model() { return model } }
+}
+
+// Watchdog: si a los 25s sigue pegado, muestra diagnóstico compacto.
+setTimeout(() => {
+  if (document.getElementById('start')) return
+  if (toast.classList.contains('off')) return
+  setStage(`Pegado en: ${toast.textContent} · XR8=${window.XR8 ? 'ok' : 'NO'} · ciudad=${cityReady ? 'ok' : 'cargando'}`)
+}, 25000)
+
+btnMove.addEventListener('click', () => {
+  placing = true
+  hint.textContent = 'Toca el suelo donde quieras la ciudad'
+  hint.classList.remove('off')
+})
+btnRecenter.addEventListener('click', () => XR8.XrController.recenter())
+
 const startEl = document.getElementById('start')
-const btnStart = document.getElementById('btn-start')
-btnStart.addEventListener('click', async () => {
+document.getElementById('btn-start').addEventListener('click', async () => {
   startEl.remove()
   setStage('Iniciando…')
   try {
@@ -301,77 +334,13 @@ btnStart.addEventListener('click', async () => {
       const p = await DeviceMotionEvent.requestPermission()
       if (p !== 'granted') setStage('Sensores de movimiento denegados — el tracking no funcionará')
     }
-  } catch (e) { /* prompt de sensores puede fallar fuera de iOS; seguimos */ }
+  } catch (e) { /* fuera de iOS el prompt no existe; seguimos */ }
   if (window.XR8) startAR()
   else {
     setStage('Cargando motor AR…')
     window.addEventListener('xrloaded', startAR)
   }
 })
-
-// Modo visor plano (?flat=1): three.js puro, sin cámara ni SLAM — aísla Spark del motor AR.
-const runFlat = async () => {
-  hint.textContent = 'Visor sin AR — un dedo rota, pinch escala'
-  const canvas = document.getElementById('camerafeed')
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: false })
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-  const scene = new THREE.Scene()
-  scene.background = new THREE.Color(0x0d0630)
-  const camera = new THREE.PerspectiveCamera(60, 1, 0.01, 100)
-  camera.position.set(0, 1.1, 2.1)
-  camera.lookAt(0, 0.25, 0)
-  const resize = () => {
-    renderer.setSize(window.innerWidth, window.innerHeight)
-    camera.aspect = window.innerWidth / window.innerHeight
-    camera.updateProjectionMatrix()
-  }
-  resize()
-  window.addEventListener('resize', resize)
-
-  scene.add(new SparkRenderer({ renderer }))
-  model = new THREE.Group()
-  model.scale.setScalar(BASE_SCALE)
-  scene.add(model)
-  placed = true
-  placing = false
-
-  // Gestos básicos del visor plano
-  let lastX = null, lastPinch = null
-  canvas.addEventListener('touchstart', (e) => {
-    if (e.touches.length === 1) lastX = e.touches[0].clientX
-    if (e.touches.length === 2) lastPinch = Math.hypot(
-      e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY)
-  })
-  canvas.addEventListener('touchmove', (e) => {
-    e.preventDefault()
-    if (e.touches.length === 1 && lastX !== null) {
-      model.rotation.y += (e.touches[0].clientX - lastX) * 0.008
-      lastX = e.touches[0].clientX
-    } else if (e.touches.length === 2 && lastPinch !== null) {
-      const p = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY)
-      model.scale.setScalar(THREE.MathUtils.clamp(model.scale.x * (p / lastPinch), BASE_SCALE * 0.15, BASE_SCALE * 12))
-      lastPinch = p
-    }
-  }, { passive: false })
-  canvas.addEventListener('touchend', () => { lastX = null; lastPinch = null })
-  canvas.addEventListener('mousemove', (e) => { if (e.buttons === 1) model.rotation.y += e.movementX * 0.008 })
-
-  await attachSplat()
-  renderer.setAnimationLoop(() => renderer.render(scene, camera))
-  window.__ar = { renderer, scene, camera, model }
-}
-
-// Watchdog: si a los 18s la carga sigue pegada, muestra diagnóstico compacto.
-setTimeout(() => {
-  if (document.getElementById('start')) return   // aún en la pantalla de inicio, no está pegado
-  if (toast.classList.contains('off') || splatState === 'error') return
-  let gl2 = '?'
-  try {
-    const xr3 = !FLAT && window.XR8 && XR8.Threejs.xrScene()
-    if (xr3 && xr3.renderer) gl2 = xr3.renderer.getContext() instanceof WebGL2RenderingContext ? 'sí' : 'NO'
-  } catch (e) {}
-  setStage(`Pegado en: ${toast.textContent} · splat=${splatState} · XR8=${window.XR8 ? 'ok' : 'NO'} · gl2=${gl2}`)
-}, 18000)
 
 if (FLAT) {
   startEl.remove()
