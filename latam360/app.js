@@ -300,7 +300,7 @@ const HOTSPOTS = {
       testi: true, // en la página producto, este punto destaca la tarjeta de testimonio
       avatar: 'C',
       avatarImg: 'https://img.youtube.com/vi/0YZuhi6PXZ8/default.jpg',
-      label: 'Camila',
+      label: '▶ Camila · su testimonio',
       title: 'Camila · Técnica de Mantenimiento',
       subtitle: 'Centro de Mantenimiento · Santiago',
       body:
@@ -441,6 +441,12 @@ const callouts = {
     this._raf = requestAnimationFrame(() => this._loop());
   },
   openCard(hs, m) {
+    // En la página producto, el punto de la persona abre/reproduce la tarjeta de
+    // testimonio propia de esa página (definida por el huésped), no el callout genérico.
+    if (hs.testi && typeof window !== 'undefined' && typeof window.__l360PlayTesti === 'function') {
+      window.__l360PlayTesti();
+      return;
+    }
     const card = document.getElementById('callout');
     const media = document.getElementById('callout-media');
     const body = document.getElementById('callout-body');

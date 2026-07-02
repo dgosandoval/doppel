@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/latam360/style.css?v=614c" />
+<link rel="stylesheet" href="/latam360/style.css?v=614e" />
 <script type="importmap">
 {
   "imports": {
@@ -214,8 +214,9 @@
     </div>
   </header>
 
-  <!-- Tarjeta de testimonio con video embebido -->
-  <div class="testi" id="testi">
+  <!-- Tarjeta de testimonio con video embebido (parte minimizada: se abre al tocar
+       a la persona en el splat, o esta pastilla) -->
+  <div class="testi min" id="testi">
     <button class="testi__min" id="testi-min" aria-label="Minimizar">–</button>
     <div class="testi__video" id="testi-video">
       <img src="https://img.youtube.com/vi/0YZuhi6PXZ8/hqdefault.jpg" alt="Testimonio" />
@@ -343,25 +344,18 @@
       });
       document.getElementById('testi-restore').addEventListener('click', function () {
         testi.classList.remove('min');
+        playTesti();
       });
-      // El hotspot de la persona (data-testi) REPRODUCE su testimonio en la tarjeta
-      // (además de restaurarla y destacarla); los demás puntos abren su tarjeta normal.
-      document.getElementById('callout-markers').addEventListener(
-        'click',
-        function (e) {
-          var hs = e.target.closest('.hotspot');
-          if (!hs || hs.dataset.testi !== '1') return;
-          e.stopPropagation();
-          e.preventDefault();
-          testi.classList.remove('min');
-          playTesti();
-          testi.classList.add('flash');
-          setTimeout(function () { testi.classList.remove('flash'); }, 900);
-        },
-        true
-      );
+      // Tocar a la persona en el splat abre esta tarjeta con su video (app.js llama
+      // esta función cuando el hotspot tiene `testi: true`).
+      window.__l360PlayTesti = function () {
+        testi.classList.remove('min');
+        playTesti();
+        testi.classList.add('flash');
+        setTimeout(function () { testi.classList.remove('flash'); }, 900);
+      };
     })();
   </script>
-  <script type="module" src="/latam360/app.js?v=614c"></script>
+  <script type="module" src="/latam360/app.js?v=614e"></script>
 </body>
 </html>
