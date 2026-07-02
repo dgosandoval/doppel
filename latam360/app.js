@@ -140,14 +140,16 @@ const TOUR_MESSAGES = {
 
 // Locución del recorrido: clips por escena, con su instante de inicio (ms) dentro
 // del turno de 30 s. El cierre (06) suena en el turno del portal, tras su clip.
+// OJO: rutas ABSOLUTAS — el demo vive en /latam360/demo/, así que una ruta relativa
+// "assets/…" apuntaría dentro de /demo/ y la locución quedaría muda (404).
 const TOUR_VOICES = {
-  downtown: [{ src: 'assets/voice/voice-01.mp3', at: 1500 }],
-  'lod-streaming': [{ src: 'assets/voice/voice-02.mp3', at: 1500 }],
-  'first-person': [{ src: 'assets/voice/voice-03.mp3', at: 1500 }],
-  reveal: [{ src: 'assets/voice/voice-04.mp3', at: 1500 }],
+  downtown: [{ src: '/latam360/assets/voice/voice-01.mp3', at: 1500 }],
+  'lod-streaming': [{ src: '/latam360/assets/voice/voice-02.mp3', at: 1500 }],
+  'first-person': [{ src: '/latam360/assets/voice/voice-03.mp3', at: 1500 }],
+  reveal: [{ src: '/latam360/assets/voice/voice-04.mp3', at: 1500 }],
   'splat-portal': [
-    { src: 'assets/voice/voice-05.mp3', at: 1500 },
-    { src: 'assets/voice/voice-06.mp3', at: 10000 }
+    { src: '/latam360/assets/voice/voice-05.mp3', at: 1500 },
+    { src: '/latam360/assets/voice/voice-06.mp3', at: 10000 }
   ]
 };
 
@@ -445,17 +447,31 @@ const callouts = {
         (this._readyAt && nowMs - this._readyAt > 600) || nowMs - this._camSeenAt > 8000;
       for (const m of this._markers) {
         if (!m.placed && m.hs.aabbOff && autoOk && this._box) {
-          // Ancla el punto AL OBJETO: fracciones del aabb local del splat (-1..1 por
-          // eje respecto del centro), transformadas al mundo por la entidad. Así el
-          // punto queda sobre el splat sin importar cámara ni escala de la escena.
+          // Ancla el punto AL OBJETO: fracciones del aabb del splat (-1..1 por eje
+          // respecto del centro). OJO: instance.aabb ya está en coordenadas de MUNDO
+          // (la cámara del tour lo usa tal cual) — NO volver a transformar por la
+          // entidad, o el punto termina bajo el suelo/detrás de cámara (invisible).
           const o = m.hs.aabbOff;
           const bx = this._box;
-          const local = new pc.Vec3(
+          m.pos.set(
             bx.c.x + bx.h.x * o[0],
             bx.c.y + bx.h.y * o[1],
             bx.c.z + bx.h.z * o[2]
           );
-          bx.ent.getWorldTransform().transformPoint(local, m.pos);
+          m.placed = true;
+        } else if (!m.placed && m.hs.aabbOff && autoOk && !this._box) {
+          // Fallback sin caja detectada: frente a la cámara, repartidos según las
+          // fracciones (puntos aproximados es mejor que puntos ausentes).
+          const f = cam.forward;
+          const r = cam.right;
+          const u = cam.up;
+          const p = cam.getPosition();
+          const o = m.hs.aabbOff;
+          m.pos.set(
+            p.x + f.x * 10 + r.x * o[0] * 6 + u.x * o[1] * 4,
+            p.y + f.y * 10 + r.y * o[0] * 6 + u.y * o[1] * 4,
+            p.z + f.z * 10 + r.z * o[0] * 6 + u.z * o[1] * 4
+          );
           m.placed = true;
         } else if (!m.placed && m.hs.auto && autoOk) {
           // Ancla el punto N unidades frente a la cámara inicial, con desvíos
