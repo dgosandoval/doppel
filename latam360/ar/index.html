@@ -15,6 +15,7 @@
 {
   "imports": {
     "three": "https://cdn.jsdelivr.net/npm/three@0.183.2/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.183.2/examples/jsm/",
     "@sparkjsdev/spark": "https://cdn.jsdelivr.net/npm/@sparkjsdev/spark@2.1.0/dist/spark.module.js"
   }
 }
@@ -75,7 +76,7 @@
 import * as THREE from 'three'
 import { SplatMesh } from '@sparkjsdev/spark'
 
-const SPLAT_URL = '/latam360/assets/splats/prueba.spz'
+const SPLAT_URL = '/latam360/assets/splats/prueba-lite.spz'
 
 // Geometría medida del PLY de origen (p2..p98): centro y tamaño para normalizar la maqueta.
 // El splat viene con eje Y invertido (convención Brush) → giro 180° en X, igual que en el visor.
@@ -93,6 +94,36 @@ let model = null          // grupo colocable (contiene el splat centrado)
 let placing = true        // primer tap = colocar
 let placed = false
 
+// Errores a la vista (para depurar en el teléfono sin consola).
+window.addEventListener('error', (e) => {
+  toast.textContent = 'Error: ' + (e.message || 'desconocido')
+  toast.classList.remove('off')
+})
+
+// La descarga del splat parte DE INMEDIATO, en paralelo con el motor AR y la cámara.
+// (No se usa SplatMesh({url}) directo: el gate manda no-cache y Spark no muestra progreso.)
+const splatBytes = (async () => {
+  const res = await fetch(SPLAT_URL)
+  if (!res.ok) throw new Error('HTTP ' + res.status)
+  const total = Number(res.headers.get('Content-Length')) || 4033112
+  const reader = res.body.getReader()
+  const chunks = []
+  let got = 0
+  for (;;) {
+    const { done, value } = await reader.read()
+    if (done) break
+    chunks.push(value)
+    got += value.length
+    toast.textContent = `Descargando maqueta… ${Math.min(99, Math.round((got / total) * 100))}%`
+  }
+  const buf = new Uint8Array(got)
+  let o = 0
+  for (const c of chunks) { buf.set(c, o); o += c.length }
+  toast.textContent = 'Preparando maqueta…'
+  return buf
+})()
+splatBytes.catch((e) => { toast.textContent = 'No se pudo descargar la maqueta (' + e.message + ')' })
+
 const raycaster = new THREE.Raycaster()
 const ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0)
 const tmpVec = new THREE.Vector3()
@@ -103,18 +134,20 @@ const scenePipelineModule = () => {
 
     // Maqueta: splat centrado dentro de un grupo escalable.
     model = new THREE.Group()
-    const splat = new SplatMesh({ url: SPLAT_URL })
-    splat.quaternion.set(1, 0, 0, 0)                    // flip 180° X (Y-down → Y-up)
-    splat.position.copy(FLIPPED_CENTER).multiplyScalar(-1)
-    model.add(splat)
     model.scale.setScalar(BASE_SCALE)
     model.visible = false
     scene.add(model)
 
-    splat.initialized.then(() => {
+    splatBytes.then((bytes) => {
+      const splat = new SplatMesh({ fileBytes: bytes, fileName: 'prueba-lite.spz' })
+      splat.quaternion.set(1, 0, 0, 0)                  // flip 180° X (Y-down → Y-up)
+      splat.position.copy(FLIPPED_CENTER).multiplyScalar(-1)
+      model.add(splat)
+      return splat.initialized
+    }).then(() => {
       toast.classList.add('off')
-    }).catch(() => {
-      toast.textContent = 'No se pudo cargar la maqueta'
+    }).catch((e) => {
+      toast.textContent = 'No se pudo cargar la maqueta (' + (e.message || e) + ')'
     })
 
     camera.position.set(0, 1.6, 0)
