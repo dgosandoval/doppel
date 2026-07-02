@@ -58,6 +58,11 @@
 </script>
 </head>
 <body>
+  <script>
+    // Si el demo corre EMBEBIDO (iframe), oculta el volver-al-proyecto (navegaría dentro del marco).
+    if (window.self !== window.top) document.documentElement.classList.add('embedded');
+  </script>
+  <style>.embedded .lnav__back { display: none; }</style>
   <canvas id="application-canvas"></canvas>
 
   <!-- Navbar LATAM (mismo diseño que el embebido de producto) -->
