@@ -107,9 +107,11 @@
   .testi__body b { font: 700 13.5px 'Latam Sans', 'Inter', sans-serif; }
   .testi__body p { margin: 3px 0 0; font: 400 11.5px 'Inter', sans-serif; color: #6a6482; }
   .testi__min {
-    position: absolute; top: 8px; right: 8px; width: 24px; height: 24px; border: none; border-radius: 50%;
-    background: rgba(12, 8, 28, 0.55); color: #fff; cursor: pointer; font-size: 13px; line-height: 1;
+    position: absolute; top: 8px; right: 8px; width: 26px; height: 26px; border: none; border-radius: 50%;
+    background: rgba(12, 8, 28, 0.65); color: #fff; cursor: pointer; font-size: 14px; line-height: 1;
+    z-index: 3; /* sobre el video/iframe (si no, queda tapado y "no hay botón") */
   }
+  .testi__min:hover { background: rgba(12, 8, 28, 0.85); }
   .testi.min .testi__video, .testi.min .testi__body { display: none; }
   .testi.min { width: auto; border-radius: 999px; background: rgba(255,255,255,0.92); }
   .testi.min .testi__restore { display: block; }
@@ -217,9 +219,9 @@
   <!-- Tarjeta de testimonio con video embebido (parte minimizada: se abre al tocar
        a la persona en el splat, o esta pastilla) -->
   <div class="testi min" id="testi">
-    <button class="testi__min" id="testi-min" aria-label="Minimizar">–</button>
+    <button class="testi__min" id="testi-min" aria-label="Cerrar">×</button>
     <div class="testi__video" id="testi-video">
-      <img src="https://img.youtube.com/vi/0YZuhi6PXZ8/hqdefault.jpg" alt="Testimonio" />
+      <img id="testi-thumb" src="" alt="Testimonio" />
       <button class="testi__play" aria-label="Reproducir">▶</button>
     </div>
     <div class="testi__body">
@@ -326,14 +328,20 @@
       document.getElementById('mm-city').textContent = p[2];
       document.getElementById('mm-chile').style.display = scene === 'reveal' ? '' : 'none';
 
-      // Testimonio: reproducir al tocar (cambia miniatura por iframe).
+      // ===== VIDEO DEL TESTIMONIO — cambiar AQUÍ al pasarlo a Vimeo =====
+      // Vimeo:   EMBED = 'https://player.vimeo.com/video/ID_DEL_VIDEO'
+      //          THUMB = 'https://vumbnail.com/ID_DEL_VIDEO.jpg'
+      var TESTI_EMBED = 'https://www.youtube.com/embed/0YZuhi6PXZ8';
+      var TESTI_THUMB = 'https://img.youtube.com/vi/0YZuhi6PXZ8/hqdefault.jpg';
+      // ==================================================================
+      document.getElementById('testi-thumb').src = TESTI_THUMB;
       var video = document.getElementById('testi-video');
       var playing = false;
       function playTesti() {
         if (playing) return;
         playing = true;
         video.innerHTML =
-          '<iframe src="https://www.youtube.com/embed/0YZuhi6PXZ8?autoplay=1" title="Testimonio" ' +
+          '<iframe src="' + TESTI_EMBED + (TESTI_EMBED.indexOf('?') > -1 ? '&' : '?') + 'autoplay=1" title="Testimonio" ' +
           'allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
       }
       video.addEventListener('click', playTesti);
