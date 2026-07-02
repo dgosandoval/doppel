@@ -67,6 +67,14 @@
   <div class="artoast" id="toast">Cargando maqueta 3D…</div>
   <div class="arhint" id="hint">Apunta al suelo y toca la pantalla para colocar la maqueta</div>
 
+  <!-- Pantalla de inicio: en iOS la cámara y los sensores DEBEN pedirse desde un tap -->
+  <div id="start" style="position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:linear-gradient(160deg,#0d0630,#2a0088);text-align:center;padding:24px">
+    <img src="/latam360/assets/latam-logo.svg" alt="LATAM" style="height:34px;filter:brightness(0) invert(1)" />
+    <p style="color:#fff;opacity:.85;font-size:14.5px;max-width:280px;margin:0">Experiencia AR: la maqueta 3D de la ciudad, anclada a tu espacio real.</p>
+    <button id="btn-start" style="border:0;border-radius:999px;padding:15px 34px;font-size:16px;font-weight:700;color:#2a0088;background:#fff;box-shadow:0 8px 30px rgba(0,0,0,.4)">▶ Iniciar AR</button>
+    <p id="start-note" style="color:#fff;opacity:.6;font-size:12px;margin:0">Se pedirá acceso a la cámara y sensores de movimiento</p>
+  </div>
+
   <div class="arctrl">
     <button id="btn-move" class="alt" hidden>Reubicar</button>
     <button id="btn-recenter" hidden>Recentrar</button>
@@ -75,6 +83,8 @@
 <script type="module">
 import * as THREE from 'three'
 import { SplatMesh, SparkRenderer } from '@sparkjsdev/spark'
+
+window.THREE = THREE   // el pipeline Threejs de 8th Wall lo exige como global
 
 // OJO: NO usar .spz de splat-transform@2.5.2 — escribe SPZ v4 y Spark 2.1 solo lee v1-3.
 const SPLAT_URL = '/latam360/assets/splats/prueba-lite.compressed.ply'
@@ -255,7 +265,17 @@ btnRecenter.addEventListener('click', () => {
   XR8.XrController.recenter()
 })
 
-const onxrloaded = () => {
+// Estado de la cámara a la vista (para saber si iOS la pide/deniega)
+const cameraStatusModule = () => ({
+  name: 'latam360-camstatus',
+  onCameraStatusChange: ({ status }) => {
+    if (status === 'requesting') setStage('Pidiendo acceso a la cámara…')
+    else if (status === 'hasStream') setStage('Cámara OK · iniciando AR…')
+    else if (status === 'failed') setStage('Cámara DENEGADA — habilítala en Ajustes > Safari > Cámara')
+  },
+})
+
+const startAR = () => {
   XR8.addCameraPipelineModules([
     XR8.GlTextureRenderer.pipelineModule(),
     XR8.Threejs.pipelineModule(),
@@ -264,10 +284,30 @@ const onxrloaded = () => {
     XRExtras.FullWindowCanvas.pipelineModule(),
     XRExtras.Loading.pipelineModule(),
     XRExtras.RuntimeError.pipelineModule(),
+    cameraStatusModule(),
     scenePipelineModule(),
   ])
   XR8.run({ canvas: document.getElementById('camerafeed') })
 }
+
+// El tap del usuario ES el gesto que iOS exige para pedir sensores de movimiento + cámara.
+const startEl = document.getElementById('start')
+const btnStart = document.getElementById('btn-start')
+btnStart.addEventListener('click', async () => {
+  startEl.remove()
+  setStage('Iniciando…')
+  try {
+    if (window.DeviceMotionEvent && typeof DeviceMotionEvent.requestPermission === 'function') {
+      const p = await DeviceMotionEvent.requestPermission()
+      if (p !== 'granted') setStage('Sensores de movimiento denegados — el tracking no funcionará')
+    }
+  } catch (e) { /* prompt de sensores puede fallar fuera de iOS; seguimos */ }
+  if (window.XR8) startAR()
+  else {
+    setStage('Cargando motor AR…')
+    window.addEventListener('xrloaded', startAR)
+  }
+})
 
 // Modo visor plano (?flat=1): three.js puro, sin cámara ni SLAM — aísla Spark del motor AR.
 const runFlat = async () => {
@@ -323,6 +363,7 @@ const runFlat = async () => {
 
 // Watchdog: si a los 18s la carga sigue pegada, muestra diagnóstico compacto.
 setTimeout(() => {
+  if (document.getElementById('start')) return   // aún en la pantalla de inicio, no está pegado
   if (toast.classList.contains('off') || splatState === 'error') return
   let gl2 = '?'
   try {
@@ -333,9 +374,8 @@ setTimeout(() => {
 }, 18000)
 
 if (FLAT) {
+  startEl.remove()
   runFlat()
-} else {
-  window.XR8 ? onxrloaded() : window.addEventListener('xrloaded', onxrloaded)
 }
 </script>
 </body>
