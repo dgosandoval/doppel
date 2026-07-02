@@ -298,6 +298,7 @@ const HOTSPOTS = {
     {
       auto: 5,
       avatar: 'C',
+      avatarImg: 'https://img.youtube.com/vi/0YZuhi6PXZ8/default.jpg',
       label: 'Camila',
       title: 'Camila · Técnica de Mantenimiento',
       subtitle: 'Centro de Mantenimiento · Santiago',
@@ -348,9 +349,12 @@ const callouts = {
     (HOTSPOTS[sceneId] || []).forEach((hs) => {
       const el = document.createElement('button');
       el.className = 'hotspot';
-      // `avatar`: marcador estilo persona (círculo grande con iniciales) — producto.
+      // `avatar`: marcador estilo persona (círculo con foto o iniciales) — producto.
+      const avStyle = hs.avatarImg
+        ? ` style="background-image:url('${hs.avatarImg}');background-size:cover;background-position:center"`
+        : '';
       el.innerHTML = hs.avatar
-        ? `<span class="hotspot__dot hotspot__dot--avatar">${hs.avatar}</span><span class="hotspot__label">${hs.label || ''}</span>`
+        ? `<span class="hotspot__dot hotspot__dot--avatar"${avStyle}>${hs.avatarImg ? '' : hs.avatar}</span><span class="hotspot__label">${hs.label || ''}</span>`
         : `<span class="hotspot__dot"></span><span class="hotspot__label">${hs.label || ''}</span>`;
       el.style.display = 'none';
       layer.appendChild(el);
@@ -1439,17 +1443,25 @@ const grandTour = {
   _startProgress() {
     const box = document.getElementById('visit');
     const fill = document.getElementById('visit-fill');
+    const pin = document.getElementById('visit-pin');
     const label = document.getElementById('visit-label');
     if (!box || !fill) return;
     const scene = SCENES.find((s) => s.id === currentSceneId);
-    if (label) label.textContent = `Visita virtual · ${(scene && scene.place) || ''}`;
+    // La página producto puede fijar el rótulo (ej. "Visita virtual del Centro de
+    // Mantenimiento"); se le suma "Punto X de 10" según el avance, como el mockup.
+    const base =
+      (typeof window !== 'undefined' && window.__L360_VISIT_LABEL) ||
+      `Visita virtual · ${(scene && scene.place) || ''}`;
     box.hidden = false;
     fill.style.width = '0%';
     const total = dwellFor(currentSceneId);
     const t0 = performance.now();
     clearInterval(this._progressTick);
     this._progressTick = setInterval(() => {
-      fill.style.width = `${Math.min(100, ((performance.now() - t0) / total) * 100)}%`;
+      const p = Math.min(100, ((performance.now() - t0) / total) * 100);
+      fill.style.width = `${p}%`;
+      if (pin) pin.style.left = `${p}%`;
+      if (label) label.textContent = `${base} · Punto ${Math.max(1, Math.ceil(p / 10))} de 10`;
     }, 250);
   },
   _stopProgress() {
