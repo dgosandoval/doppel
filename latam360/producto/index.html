@@ -328,13 +328,14 @@
       // Testimonio: reproducir al tocar (cambia miniatura por iframe).
       var video = document.getElementById('testi-video');
       var playing = false;
-      video.addEventListener('click', function () {
+      function playTesti() {
         if (playing) return;
         playing = true;
         video.innerHTML =
           '<iframe src="https://www.youtube.com/embed/0YZuhi6PXZ8?autoplay=1" title="Testimonio" ' +
           'allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
-      });
+      }
+      video.addEventListener('click', playTesti);
       var testi = document.getElementById('testi');
       document.getElementById('testi-min').addEventListener('click', function (e) {
         e.stopPropagation();
@@ -343,8 +344,8 @@
       document.getElementById('testi-restore').addEventListener('click', function () {
         testi.classList.remove('min');
       });
-      // Solo el hotspot de la persona (data-testi) destaca la tarjeta de testimonio;
-      // los demás puntos abren su tarjeta de información normal.
+      // El hotspot de la persona (data-testi) REPRODUCE su testimonio en la tarjeta
+      // (además de restaurarla y destacarla); los demás puntos abren su tarjeta normal.
       document.getElementById('callout-markers').addEventListener(
         'click',
         function (e) {
@@ -353,6 +354,7 @@
           e.stopPropagation();
           e.preventDefault();
           testi.classList.remove('min');
+          playTesti();
           testi.classList.add('flash');
           setTimeout(function () { testi.classList.remove('flash'); }, 900);
         },
