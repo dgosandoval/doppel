@@ -724,14 +724,19 @@ function freshCanvas() {
   return c;
 }
 
-// Elimina el DOM que inyectan los ejemplos (paneles, stats, etc.) al salir de la escena.
+// Elimina el DOM que inyectan los ejemplos (paneles, stats, etc.) al salir de la
+// escena. En vez de una lista blanca (frágil: cada elemento nuevo de una página se
+// borraba por accidente), se FOTOGRAFÍA el DOM inicial de la página al arrancar y
+// solo se elimina lo agregado después (lo inyectado por los módulos de ejemplo).
+const _initialDom = new WeakSet();
+function snapshotInitialDom() {
+  Array.from(document.body.children).forEach((el) => _initialDom.add(el));
+}
 function cleanInjectedDom() {
-  const keepClass = ['topbar', 'sidebar', 'info', 'hint'];
-  const keepId = ['application-canvas', 'loader', 'scene-transition', 'controls', 'tour-audio', 'tour-voice', 'ambient-audio', 'tour-caption', 'callout-markers', 'callout', 'callout-editor'];
   Array.from(document.body.children).forEach((el) => {
     if (el.tagName === 'SCRIPT') return;
-    if (keepId.includes(el.id)) return;
-    if (keepClass.some((c) => el.classList.contains(c))) return;
+    if (_initialDom.has(el)) return;
+    if (el.id === 'scene-transition') return; // overlay propio creado en runtime
     el.remove();
   });
 }
@@ -1826,6 +1831,7 @@ function setupAmbientUnlock() {
 }
 
 function boot() {
+  snapshotInitialDom(); // ANTES de cargar nada: todo lo que trae la página se conserva
   buildSceneMenu();
   setupTourButton();
   setupGyroButton();
