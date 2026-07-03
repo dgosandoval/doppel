@@ -242,7 +242,7 @@ const musicPlayer = {
 // música). Suena siempre, mezclado bajo la música y la locución. iOS ignora
 // `volume`, así que el nivel real va horneado en el archivo. Arranca en el primer
 // gesto del usuario (igual que la música).
-const AMBIENT_V = '3'; // subir cuando se re-rendericen las pistas (evita caché vieja)
+const AMBIENT_V = '4'; // subir cuando se re-rendericen las pistas (evita caché vieja)
 const AMBIENT = {
   downtown: 'assets/ambient/city.mp3',
   'lod-streaming': 'assets/ambient/courtyard.mp3',
