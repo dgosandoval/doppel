@@ -325,10 +325,17 @@ const ambientPlayer = {
 // página huésped (producto/index.html) antes de cargar este módulo.
 const L360_MODE = (typeof window !== 'undefined' && window.__L360_MODE) || '';
 
+// NOTA sobre el anclaje de puntos en cf100: este splat NO es solo el avión — es toda
+// la plaza del memorial (~1.5M splats: pasto, postes, árboles) con el CF-100 montado en
+// un pedestal. Por eso NO se puede anclar por fracciones del aabb del splat (`aabbOff`):
+// cualquier caja (instance/resource) abarca la plaza entera y hasta trae outliers, dando
+// posiciones enormes y dependientes de la vista. Los 3 puntos usan COORDENADAS FIJAS de
+// MUNDO (`pos`), medidas sobre el avión real en producción y verificadas visualmente
+// (avión centrado ~[-8.5, 3.4, -18.2]; eje Z = envergadura, Y = vertical).
 const HOTSPOTS = {
   cf100: [
     {
-      aabbOff: [0.1, 0.05, 0.15], // sobre el avión (fracciones del aabb del splat)
+      pos: [-8.5, 5.5, -17], // fuselaje / cabina
       testi: true, // en la página producto, este punto abre la tarjeta de testimonio
       avatar: 'C',
       avatarImg:
@@ -344,14 +351,14 @@ const HOTSPOTS = {
       video: 'https://player.vimeo.com/video/1206534909?h=e572ee7fb2'
     },
     {
-      aabbOff: [-0.35, 0.3, -0.3],
+      pos: [-8.5, 8, -15.5], // cola / aleta vertical
       label: 'Estructura de cola',
       title: 'Estructura de cola',
       subtitle: 'Cápsula · mantenimiento',
       body: '<p>Cada punto de interés despliega información de la operación: qué se revisa aquí y quién lo hace.</p>'
     },
     {
-      aabbOff: [0.3, -0.25, 0.1],
+      pos: [-8.5, 1.5, -15], // tren / panza
       label: 'Tren de aterrizaje',
       title: 'Tren de aterrizaje',
       subtitle: 'Cápsula · mantenimiento',
@@ -434,75 +441,26 @@ const callouts = {
     const cam = this._findCam();
     if (cam && cam.camera && this._markers.length) {
       const hidden = document.body.classList.contains('touring'); // ocultar en el recorrido
-      // Los anclajes `auto` esperan a que el splat sea VISIBLE (aabb listo) + un
-      // margen, para tomar la cámara ya encuadrada (si no, anclan en el vacío).
       if (!this._camSeenAt) this._camSeenAt = performance.now();
-      if (
-        !this._readyAt &&
-        this._markers.some((mm) => !mm.placed && (mm.hs.auto || mm.hs.aabbOff)) &&
-        currentApp
-      ) {
-        // Busca la entidad del splat y su aabb LOCAL (del RECURSO). OJO: NO usar
-        // `instance.aabb` — ese es el bounding de RENDER en mundo y PlayCanvas lo
-        // recorta a los splats VISIBLES según la cámara, así que capturarlo daba
-        // puntos que quedaban en distinto lugar según hacia dónde mirabas al cargar
-        // (el bug reportado). El aabb del recurso es local, completo y estable —
-        // mismo patrón que downtown (res.aabb + setFromTransformedAabb).
-        let found = null;
+      // Señal "splat visible": cuando algún gsplat ya tiene aabb con volumen. Se usa solo
+      // para TEMPORIZAR (no para posicionar): (a) los anclajes `auto` se colocan recién
+      // cuando la escena está encuadrada, y (b) los puntos `pos` no se muestran flotando
+      // antes de que aparezca el splat. Los `pos` son COORDENADAS FIJAS de mundo y los
+      // `auto` son relativos a la cámara — ninguno depende del aabb del splat.
+      if (!this._readyAt && currentApp) {
+        let visible = false;
         currentApp.root.forEach((e) => {
-          if (found || !(e.gsplat && e.gsplat.instance)) return;
-          const inst = e.gsplat.instance;
-          let localAabb =
-            (inst.resource && inst.resource.aabb) ||
-            (inst.splat && inst.splat.aabb) ||
-            null;
-          if (!localAabb && e.gsplat.asset != null) {
-            const a =
-              typeof e.gsplat.asset === 'object'
-                ? e.gsplat.asset
-                : currentApp.assets.get(e.gsplat.asset);
-            if (a && a.resource && a.resource.aabb) localAabb = a.resource.aabb;
-          }
-          if (localAabb && localAabb.halfExtents.length() > 0) found = { ent: e, localAabb };
+          const b = e.gsplat && e.gsplat.instance && e.gsplat.instance.aabb;
+          if (b && b.halfExtents.length() > 0) visible = true;
         });
-        if (found) {
-          this._readyAt = performance.now();
-          // Guarda el aabb LOCAL + la entidad. Los puntos se transforman a mundo con
-          // el world transform de la entidad EN CADA FRAME (maneja la rotación 180°
-          // del avión y es independiente de la cámara).
-          this._box = {
-            ent: found.ent,
-            cLocal: found.localAabb.center.clone(),
-            hLocal: found.localAabb.halfExtents.clone(),
-            _wp: new pc.Vec3()
-          };
-        }
+        if (visible) this._readyAt = performance.now();
       }
-      // Coloca los anclajes `auto` cuando el splat es visible (+margen). Fallback:
-      // si en 8 s no se detectó el aabb, colócalos igual (mejor puntos aproximados
-      // que puntos ausentes).
       const nowMs = performance.now();
+      const ready = !!this._readyAt || nowMs - this._camSeenAt > 8000; // aparición de puntos
       const autoOk =
         (this._readyAt && nowMs - this._readyAt > 600) || nowMs - this._camSeenAt > 8000;
       for (const m of this._markers) {
-        if (m.hs.aabbOff) {
-          // Ancla AL OBJETO: fracción del aabb LOCAL del splat (-1..1 por eje respecto
-          // del centro) → transformada a mundo con el world transform de la entidad,
-          // RECALCULADA cada frame. Independiente de la cámara y correcta ante la
-          // rotación 180° del avión. Sin la caja aún, m.placed queda false y el punto
-          // permanece OCULTO — nunca se ancla relativo a la cámara.
-          if (this._box) {
-            const o = m.hs.aabbOff;
-            const bx = this._box;
-            bx._wp.set(
-              bx.cLocal.x + bx.hLocal.x * o[0],
-              bx.cLocal.y + bx.hLocal.y * o[1],
-              bx.cLocal.z + bx.hLocal.z * o[2]
-            );
-            bx.ent.getWorldTransform().transformPoint(bx._wp, m.pos);
-            m.placed = true;
-          }
-        } else if (!m.placed && m.hs.auto && autoOk) {
+        if (!m.placed && m.hs.auto && autoOk) {
           // Ancla el punto N unidades frente a la cámara inicial, con desvíos
           // laterales/verticales opcionales (autoRight/autoUp) para repartir puntos.
           const f = cam.forward;
@@ -518,7 +476,7 @@ const callouts = {
           );
           m.placed = true;
         }
-        if (!m.placed || hidden) {
+        if (!m.placed || hidden || !ready) {
           m.el.style.display = 'none';
           continue;
         }
