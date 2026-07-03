@@ -441,24 +441,14 @@ const callouts = {
     const cam = this._findCam();
     if (cam && cam.camera && this._markers.length) {
       const hidden = document.body.classList.contains('touring'); // ocultar en el recorrido
-      if (!this._camSeenAt) this._camSeenAt = performance.now();
-      // Señal "splat visible": cuando algún gsplat ya tiene aabb con volumen. Se usa solo
-      // para TEMPORIZAR (no para posicionar): (a) los anclajes `auto` se colocan recién
-      // cuando la escena está encuadrada, y (b) los puntos `pos` no se muestran flotando
-      // antes de que aparezca el splat. Los `pos` son COORDENADAS FIJAS de mundo y los
-      // `auto` son relativos a la cámara — ninguno depende del aabb del splat.
-      if (!this._readyAt && currentApp) {
-        let visible = false;
-        currentApp.root.forEach((e) => {
-          const b = e.gsplat && e.gsplat.instance && e.gsplat.instance.aabb;
-          if (b && b.halfExtents.length() > 0) visible = true;
-        });
-        if (visible) this._readyAt = performance.now();
-      }
-      const nowMs = performance.now();
-      const ready = !!this._readyAt || nowMs - this._camSeenAt > 8000; // aparición de puntos
-      const autoOk =
-        (this._readyAt && nowMs - this._readyAt > 600) || nowMs - this._camSeenAt > 8000;
+      // Los puntos aparecen cuando la escena YA se reveló (loader oculto). Señal simple y
+      // fiable — NO dependemos del aabb del splat: el getter `gsplat.instance` puede
+      // devolver null aunque el splat renderice (vive en `_instance`), y además su aabb
+      // va ligado a la cámara. Los `pos` son coordenadas FIJAS de mundo; los `auto`
+      // (relativos a la cámara) se colocan al revelarse, con la cámara ya encuadrada.
+      const loaderEl = document.getElementById('loader');
+      const ready = !loaderEl || loaderEl.classList.contains('hidden');
+      const autoOk = ready;
       for (const m of this._markers) {
         if (!m.placed && m.hs.auto && autoOk) {
           // Ancla el punto N unidades frente a la cámara inicial, con desvíos
