@@ -461,37 +461,28 @@ const callouts = {
       const nowMs = performance.now();
       const autoOk =
         (this._readyAt && nowMs - this._readyAt > 600) || nowMs - this._camSeenAt > 8000;
-      // Los anclajes al OBJETO (aabbOff) no dependen del encuadre de la cámara:
-      // se colocan apenas existe la caja del splat, sin el margen de 600 ms.
-      const aabbOk = !!this._readyAt || nowMs - this._camSeenAt > 8000;
       for (const m of this._markers) {
-        if (!m.placed && m.hs.aabbOff && aabbOk && this._box) {
+        if (!m.placed && m.hs.aabbOff) {
           // Ancla el punto AL OBJETO: fracciones del aabb del splat (-1..1 por eje
           // respecto del centro). OJO: instance.aabb ya está en coordenadas de MUNDO
           // (la cámara del tour lo usa tal cual) — NO volver a transformar por la
           // entidad, o el punto termina bajo el suelo/detrás de cámara (invisible).
-          const o = m.hs.aabbOff;
-          const bx = this._box;
-          m.pos.set(
-            bx.c.x + bx.h.x * o[0],
-            bx.c.y + bx.h.y * o[1],
-            bx.c.z + bx.h.z * o[2]
-          );
-          m.placed = true;
-        } else if (!m.placed && m.hs.aabbOff && autoOk && !this._box) {
-          // Fallback sin caja detectada: frente a la cámara, repartidos según las
-          // fracciones (puntos aproximados es mejor que puntos ausentes).
-          const f = cam.forward;
-          const r = cam.right;
-          const u = cam.up;
-          const p = cam.getPosition();
-          const o = m.hs.aabbOff;
-          m.pos.set(
-            p.x + f.x * 10 + r.x * o[0] * 6 + u.x * o[1] * 4,
-            p.y + f.y * 10 + r.y * o[0] * 6 + u.y * o[1] * 4,
-            p.z + f.z * 10 + r.z * o[0] * 6 + u.z * o[1] * 4
-          );
-          m.placed = true;
+          // SOLO se coloca cuando la caja del splat existe: NO hay fallback relativo
+          // a la cámara. El fallback hacía que, si el splat tardaba en cargar (SOG
+          // pesado), los puntos aparecieran a "10u frente a la cámara" → en distinto
+          // lugar según hacia dónde estuvieras mirando en ese instante. Mejor esperar
+          // a la caja (la misma con que la escena encuadra la cámara) y que queden
+          // SIEMPRE clavados al avión.
+          if (this._box) {
+            const o = m.hs.aabbOff;
+            const bx = this._box;
+            m.pos.set(
+              bx.c.x + bx.h.x * o[0],
+              bx.c.y + bx.h.y * o[1],
+              bx.c.z + bx.h.z * o[2]
+            );
+            m.placed = true;
+          }
         } else if (!m.placed && m.hs.auto && autoOk) {
           // Ancla el punto N unidades frente a la cámara inicial, con desvíos
           // laterales/verticales opcionales (autoRight/autoUp) para repartir puntos.
