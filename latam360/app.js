@@ -442,17 +442,40 @@ const callouts = {
         this._markers.some((mm) => !mm.placed && (mm.hs.auto || mm.hs.aabbOff)) &&
         currentApp
       ) {
-        let ent = null;
+        // Busca la entidad del splat y su aabb LOCAL (del RECURSO). OJO: NO usar
+        // `instance.aabb` — ese es el bounding de RENDER en mundo y PlayCanvas lo
+        // recorta a los splats VISIBLES según la cámara, así que capturarlo daba
+        // puntos que quedaban en distinto lugar según hacia dónde mirabas al cargar
+        // (el bug reportado). El aabb del recurso es local, completo y estable —
+        // mismo patrón que downtown (res.aabb + setFromTransformedAabb).
+        let found = null;
         currentApp.root.forEach((e) => {
-          const b = e.gsplat && e.gsplat.instance && e.gsplat.instance.aabb;
-          if (b && b.halfExtents.length() > 0 && !ent) ent = e;
+          if (found || !(e.gsplat && e.gsplat.instance)) return;
+          const inst = e.gsplat.instance;
+          let localAabb =
+            (inst.resource && inst.resource.aabb) ||
+            (inst.splat && inst.splat.aabb) ||
+            null;
+          if (!localAabb && e.gsplat.asset != null) {
+            const a =
+              typeof e.gsplat.asset === 'object'
+                ? e.gsplat.asset
+                : currentApp.assets.get(e.gsplat.asset);
+            if (a && a.resource && a.resource.aabb) localAabb = a.resource.aabb;
+          }
+          if (localAabb && localAabb.halfExtents.length() > 0) found = { ent: e, localAabb };
         });
-        if (ent) {
+        if (found) {
           this._readyAt = performance.now();
-          // Guarda la caja LOCAL del splat + su entidad, para anclar puntos AL objeto
-          // (fracciones del aabb) transformados al mundo.
-          const b = ent.gsplat.instance.aabb;
-          this._box = { ent, c: b.center.clone(), h: b.halfExtents.clone() };
+          // Guarda el aabb LOCAL + la entidad. Los puntos se transforman a mundo con
+          // el world transform de la entidad EN CADA FRAME (maneja la rotación 180°
+          // del avión y es independiente de la cámara).
+          this._box = {
+            ent: found.ent,
+            cLocal: found.localAabb.center.clone(),
+            hLocal: found.localAabb.halfExtents.clone(),
+            _wp: new pc.Vec3()
+          };
         }
       }
       // Coloca los anclajes `auto` cuando el splat es visible (+margen). Fallback:
@@ -462,25 +485,21 @@ const callouts = {
       const autoOk =
         (this._readyAt && nowMs - this._readyAt > 600) || nowMs - this._camSeenAt > 8000;
       for (const m of this._markers) {
-        if (!m.placed && m.hs.aabbOff) {
-          // Ancla el punto AL OBJETO: fracciones del aabb del splat (-1..1 por eje
-          // respecto del centro). OJO: instance.aabb ya está en coordenadas de MUNDO
-          // (la cámara del tour lo usa tal cual) — NO volver a transformar por la
-          // entidad, o el punto termina bajo el suelo/detrás de cámara (invisible).
-          // SOLO se coloca cuando la caja del splat existe: NO hay fallback relativo
-          // a la cámara. El fallback hacía que, si el splat tardaba en cargar (SOG
-          // pesado), los puntos aparecieran a "10u frente a la cámara" → en distinto
-          // lugar según hacia dónde estuvieras mirando en ese instante. Mejor esperar
-          // a la caja (la misma con que la escena encuadra la cámara) y que queden
-          // SIEMPRE clavados al avión.
+        if (m.hs.aabbOff) {
+          // Ancla AL OBJETO: fracción del aabb LOCAL del splat (-1..1 por eje respecto
+          // del centro) → transformada a mundo con el world transform de la entidad,
+          // RECALCULADA cada frame. Independiente de la cámara y correcta ante la
+          // rotación 180° del avión. Sin la caja aún, m.placed queda false y el punto
+          // permanece OCULTO — nunca se ancla relativo a la cámara.
           if (this._box) {
             const o = m.hs.aabbOff;
             const bx = this._box;
-            m.pos.set(
-              bx.c.x + bx.h.x * o[0],
-              bx.c.y + bx.h.y * o[1],
-              bx.c.z + bx.h.z * o[2]
+            bx._wp.set(
+              bx.cLocal.x + bx.hLocal.x * o[0],
+              bx.cLocal.y + bx.hLocal.y * o[1],
+              bx.cLocal.z + bx.hLocal.z * o[2]
             );
+            bx.ent.getWorldTransform().transformPoint(bx._wp, m.pos);
             m.placed = true;
           }
         } else if (!m.placed && m.hs.auto && autoOk) {
