@@ -67,7 +67,11 @@ assetListLoader.load(() => {
         sceneSize: 10,
         enableOrbit: true,
         enablePan: true,
-        enableFly: true // habilita WASD (el teclado de CameraControls solo actúa en fly)
+        // En móvil/touch: enableFly:false → orbitar con un dedo + pellizcar para acercar,
+        // IGUAL que las demás escenas orbitales (p.ej. reveal). Con enableFly:true el touch
+        // cae en los joysticks virtuales (DualGestureSource), que se sentían distintos.
+        // En escritorio: enableFly:true para conservar WASD (el teclado solo actúa en fly).
+        enableFly: !pc.platform.mobile
     });
 
     // Encuadre automático: cuando el aabb del splat está listo, posiciona la cámara

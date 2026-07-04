@@ -67,7 +67,9 @@ assetListLoader.load(() => {
         sceneSize: 10,
         enableOrbit: true,
         enablePan: true,
-        enableFly: true // habilita WASD (el teclado de CameraControls solo actúa en fly)
+        // Móvil: orbit puro (un dedo orbita, pellizco acerca) como las demás escenas;
+        // escritorio: fly para conservar WASD. Ver nota en cf100.mjs.
+        enableFly: !pc.platform.mobile
     });
 
     // Encuadre automático: cuando el aabb del splat está listo, posiciona la cámara
