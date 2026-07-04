@@ -64,14 +64,16 @@ assetListLoader.load(() => {
     camera.addComponent('script');
     const cc = /** @type {any} */ (camera.script.create(CameraControls));
     Object.assign(cc, {
-        sceneSize: 10,
-        enableOrbit: true,
-        enablePan: true,
-        // En móvil/touch: enableFly:false → orbitar con un dedo + pellizcar para acercar,
-        // IGUAL que las demás escenas orbitales (p.ej. reveal). Con enableFly:true el touch
-        // cae en los joysticks virtuales (DualGestureSource), que se sentían distintos.
-        // En escritorio: enableFly:true para conservar WASD (el teclado solo actúa en fly).
-        enableFly: !pc.platform.mobile
+        sceneSize: 10,        // se reajusta en el auto-encuadre según el aabb
+        moveSpeed: 4,
+        moveFastSpeed: 15,
+        // Navegación de DOBLE GESTO (igual que lod-streaming / splat-portal / first-person):
+        // enableOrbit:false fuerza el modo "fly" de CameraControls → en móvil el dedo
+        // IZQUIERDO avanza/retrocede (y desplaza) y el DERECHO controla la dirección/mirada;
+        // en escritorio se conserva WASD + arrastrar el mouse para mirar. (enableFly queda
+        // en su default true; era el enableOrbit:true previo lo que metía el orbitar+pellizcar.)
+        enableOrbit: false,
+        enablePan: false
     });
 
     // Encuadre automático: cuando el aabb del splat está listo, posiciona la cámara

@@ -721,9 +721,10 @@ function setActiveScene(scene) {
   $('#info-credit').textContent = scene.credit;
   const touch = IS_TOUCH;
   let hint;
-  if (scene.id === 'first-person') {
+  if (scene.id === 'first-person' || scene.id === 'cf100' || scene.id === 'prueba') {
+    // navegación de doble gesto (dedo izq avanza/retrocede, der controla la dirección)
     hint = touch
-      ? 'Desliza un dedo para avanzar · otro para mirar'
+      ? 'Dedo izquierdo para avanzar · derecho para la dirección'
       : 'Arrastra para mirar · WASD para moverte';
   } else if (scene.type === 'lod') {
     hint = touch ? 'Desliza para explorar la ciudad' : 'Arrastra para mirar · WASD para moverte';

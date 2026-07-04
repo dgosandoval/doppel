@@ -64,12 +64,13 @@ assetListLoader.load(() => {
     camera.addComponent('script');
     const cc = /** @type {any} */ (camera.script.create(CameraControls));
     Object.assign(cc, {
-        sceneSize: 10,
-        enableOrbit: true,
-        enablePan: true,
-        // Móvil: orbit puro (un dedo orbita, pellizco acerca) como las demás escenas;
-        // escritorio: fly para conservar WASD. Ver nota en cf100.mjs.
-        enableFly: !pc.platform.mobile
+        sceneSize: 10,        // se reajusta en el auto-encuadre según el aabb
+        moveSpeed: 4,
+        moveFastSpeed: 15,
+        // Doble gesto (dedo izq avanza/retrocede, der controla dirección) como
+        // lod-streaming/splat-portal. Ver nota en cf100.mjs.
+        enableOrbit: false,
+        enablePan: false
     });
 
     // Encuadre automático: cuando el aabb del splat está listo, posiciona la cámara
