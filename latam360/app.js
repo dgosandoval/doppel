@@ -1696,6 +1696,17 @@ const gyroMode = {
     document.body.classList.add('gyro-on');
     showHint('AR: mueve el teléfono · desliza izq. para avanzar · der. para girar la vista');
     this._updateBtn(true);
+    // Diagnóstico opcional (?gyrodebug=1): lee los valores reales del dispositivo para
+    // afinar la orientación en un device que no puedo probar directamente.
+    if (new URLSearchParams(location.search).has('gyrodebug') && !this._dbg) {
+      const d = document.createElement('div');
+      d.id = 'gyro-debug';
+      d.style.cssText =
+        'position:fixed;left:8px;bottom:8px;z-index:9999;background:rgba(0,0,0,.8);color:#0f0;' +
+        'font:11px/1.5 monospace;padding:8px 10px;border-radius:8px;white-space:pre;pointer-events:none';
+      document.body.appendChild(d);
+      this._dbg = d;
+    }
     this._loop();
   },
   disable() {
@@ -1711,6 +1722,7 @@ const gyroMode = {
     this._onTS = this._onTM = this._onTE = null;
     this._moveX = this._moveZ = 0;
     this._leftId = this._rightId = null;
+    if (this._dbg) { this._dbg.remove(); this._dbg = null; }
     cancelAnimationFrame(this._raf);
     this._restore();
     this._cam = null;
@@ -1841,6 +1853,16 @@ const gyroMode = {
         this._scale = this._sceneScale();
       }
       if (this._have) this._apply(cam);
+      if (this._dbg) {
+        const so = screen.orientation || {};
+        const e = cam.getEulerAngles();
+        this._dbg.textContent =
+          `screen.angle: ${so.angle != null ? so.angle : 'null'}  type: ${so.type || 'null'}\n` +
+          `window.orientation: ${window.orientation != null ? window.orientation : 'null'}\n` +
+          `viewport: ${window.innerWidth}x${window.innerHeight} (${window.innerWidth > window.innerHeight ? 'landscape' : 'portrait'})\n` +
+          `α ${this._alpha.toFixed(0)}  β ${this._beta.toFixed(0)}  γ ${this._gamma.toFixed(0)}\n` +
+          `cam euler: ${e.x.toFixed(0)}, ${e.y.toFixed(0)}, ${e.z.toFixed(0)}`;
+      }
       // Movimiento horizontal (joystick izq.) a lo largo de la vista, altura fija.
       if (this._moveX || this._moveZ) {
         const f = cam.forward;
