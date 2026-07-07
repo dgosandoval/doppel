@@ -1757,20 +1757,20 @@ const gyroMode = {
   },
   // Devuelve el ángulo de rotación de pantalla en convención `window.orientation`
   // (0 vertical, ±90 horizontal, 180 invertido) — la que espera la fórmula de THREE.
+  // ESTRATEGIA: el VIEWPORT (innerWidth vs innerHeight) decide vertical/horizontal — nunca
+  // miente. El API (window.orientation / screen.orientation.angle) se usa SOLO para elegir
+  // la dirección del landscape, con -90 por defecto. Esto evita el bug del iPad, que puede
+  // reportar window.orientation=0 o screen.angle=0 estando en horizontal (orientación
+  // "natural" landscape) → antes no se compensaba y la imagen salía girada 90°.
   _screenAngle() {
-    // 1) window.orientation: FIABLE en iPhone (refleja la orientación percibida).
     const wo = window.orientation;
-    if (typeof wo === 'number') return wo;
-    // 2) screen.orientation.angle (convención opuesta en landscape: 90↔-90, 270↔90).
     const so = screen.orientation && screen.orientation.angle;
-    if (so === 90) return -90;
+    const landscape = window.innerWidth > window.innerHeight;
+    if (!landscape) return wo === 180 || so === 180 ? 180 : 0; // vertical
+    if (wo === 90 || wo === -90) return wo; // horizontal, dirección por window.orientation
+    if (so === 90) return -90; // screen.orientation: signo opuesto
     if (so === 270) return 90;
-    if (so === 180) return 180;
-    // 3) so es 0/null pero el iPad puede estar en HORIZONTAL con orientación "natural"
-    //    landscape (no reporta rotación). Lo inferimos del viewport. -90 = un lado del
-    //    landscape; si quedara al revés (180°/patas arriba) se cambia a 90.
-    if (window.innerWidth > window.innerHeight) return -90;
-    return 0;
+    return -90; // horizontal sin dato de dirección → default (si sale al revés, usar 90)
   },
   _apply(cam) {
     // Port de DeviceOrientationControls (THREE) a pc.Quat: q = qy*qx*qz * q1 * q0.
@@ -1868,6 +1868,7 @@ const gyroMode = {
           `screen.angle: ${so.angle != null ? so.angle : 'null'}  type: ${so.type || 'null'}\n` +
           `window.orientation: ${window.orientation != null ? window.orientation : 'null'}\n` +
           `viewport: ${window.innerWidth}x${window.innerHeight} (${window.innerWidth > window.innerHeight ? 'landscape' : 'portrait'})\n` +
+          `_screenAngle(): ${this._screenAngle()}\n` +
           `α ${this._alpha.toFixed(0)}  β ${this._beta.toFixed(0)}  γ ${this._gamma.toFixed(0)}\n` +
           `cam euler: ${e.x.toFixed(0)}, ${e.y.toFixed(0)}, ${e.z.toFixed(0)}`;
       }
