@@ -1875,13 +1875,19 @@ const gyroMode = {
       // Movimiento horizontal (joystick izq.) a lo largo de la vista, altura fija.
       if (this._moveX || this._moveZ) {
         const f = cam.forward;
-        const r = cam.right;
         const fl = Math.hypot(f.x, f.z) || 1;
-        const rl = Math.hypot(r.x, r.z) || 1;
+        const fx = f.x / fl; // adelante horizontal (normalizado)
+        const fz = f.z / fl;
+        // Derecha horizontal = perpendicular a "adelante" (viewer's right = (-fz, fx)).
+        // NO usamos cam.right: en horizontal la compensación de orientación rota (roll) la
+        // cámara, y su eje derecha se invertía → el strafe salía al revés en el iPad. Esta
+        // derecha derivada de la MIRADA es independiente del roll (correcto en vertical y horizontal).
+        const rx = -fz;
+        const rz = fx;
         const speed = this._scale * 0.6;
         const p = cam.getPosition();
-        const nx = p.x + ((f.x / fl) * this._moveZ + (r.x / rl) * this._moveX) * speed * dt;
-        const nz = p.z + ((f.z / fl) * this._moveZ + (r.z / rl) * this._moveX) * speed * dt;
+        const nx = p.x + (fx * this._moveZ + rx * this._moveX) * speed * dt;
+        const nz = p.z + (fz * this._moveZ + rz * this._moveX) * speed * dt;
         cam.setPosition(nx, p.y, nz);
       }
     }
