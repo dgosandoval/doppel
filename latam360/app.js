@@ -1755,14 +1755,22 @@ const gyroMode = {
     });
     this._disabled = [];
   },
+  // Devuelve el ángulo de rotación de pantalla en convención `window.orientation`
+  // (0 vertical, ±90 horizontal, 180 invertido) — la que espera la fórmula de THREE.
   _screenAngle() {
-    // Convención screen.orientation: 0/90/180/270. OJO: `window.orientation` (API vieja)
-    // usa el signo OPUESTO en landscape (angle 90 ↔ window.orientation -90), así que el
-    // fallback se convierte a esta convención para que el compensador tenga un signo único.
-    const so = screen.orientation && screen.orientation.angle;
-    if (so != null) return so;
+    // 1) window.orientation: FIABLE en iPhone (refleja la orientación percibida).
     const wo = window.orientation;
-    return wo != null ? (360 - wo) % 360 : 0;
+    if (typeof wo === 'number') return wo;
+    // 2) screen.orientation.angle (convención opuesta en landscape: 90↔-90, 270↔90).
+    const so = screen.orientation && screen.orientation.angle;
+    if (so === 90) return -90;
+    if (so === 270) return 90;
+    if (so === 180) return 180;
+    // 3) so es 0/null pero el iPad puede estar en HORIZONTAL con orientación "natural"
+    //    landscape (no reporta rotación). Lo inferimos del viewport. -90 = un lado del
+    //    landscape; si quedara al revés (180°/patas arriba) se cambia a 90.
+    if (window.innerWidth > window.innerHeight) return -90;
+    return 0;
   },
   _apply(cam) {
     // Port de DeviceOrientationControls (THREE) a pc.Quat: q = qy*qx*qz * q1 * q0.
@@ -1771,11 +1779,11 @@ const gyroMode = {
     this._qy.setFromAxisAngle(this._axY, this._alpha);
     this._q.copy(this._qy).mul(this._qx).mul(this._qz);
     this._q1.setFromAxisAngle(this._axX, -90); // mirar al horizonte (no al suelo)
-    // Compensación por rotación de pantalla. SIGNO POSITIVO con screen.orientation.angle:
-    // el port de THREE usaba `-window.orientation`, y como angle = -window.orientation en
-    // landscape, +angle equivale a -window.orientation. Antes iba `-screenAngle()` → en
-    // landscape (iPad) la imagen salía girada 90° ("vertical"). En portrait (angle 0) no cambia.
-    this._q0.setFromAxisAngle(this._axZ, this._screenAngle());
+    // Compensación por rotación de pantalla (fórmula THREE: -orient, con orient en
+    // convención window.orientation que devuelve _screenAngle). El problema del iPad no
+    // era el signo sino que screen.orientation.angle daba 0 en horizontal → ahora
+    // _screenAngle infiere ±90 del viewport cuando el API no reporta la rotación.
+    this._q0.setFromAxisAngle(this._axZ, -this._screenAngle());
     this._q.mul(this._q1).mul(this._q0);
     // Giro táctil: rota TODA la vista alrededor del eje vertical del mundo (premultiplica).
     this._qOff.setFromAxisAngle(this._axY, this._yawOffset);
