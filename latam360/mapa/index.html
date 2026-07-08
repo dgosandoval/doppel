@@ -4,205 +4,200 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="robots" content="noindex, nofollow" />
-<title>La red LATAM · Atlas 360</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<title>La red LATAM · Atlas 3D</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
   @font-face{font-family:'Latam Sans';src:url('/latam360/assets/LatamSans-Bold.otf') format('opentype');font-weight:700;font-display:swap}
-  :root{
-    --indigo:#2a0088;--indigo-deep:#1a0058;--coral:#ff4f6d;--coral-soft:#ff7a90;
-    --bg:#0a0716;--panel:rgba(255,255,255,.045);--line:rgba(255,255,255,.10);
-    --txt:#f3f1f7;--dim:rgba(243,241,247,.6);--mono:ui-monospace,'SFMono-Regular',Menlo,monospace;
-  }
+  :root{--indigo:#2a0088;--indigo-deep:#1a0058;--coral:#ff4f6d;--coral-soft:#ff7a90;--txt:#f3f1f7;--dim:rgba(243,241,247,.62);--line:rgba(255,255,255,.10);--mono:ui-monospace,Menlo,monospace}
   *{box-sizing:border-box;margin:0}
-  html,body{height:100%}
-  body{
-    background:radial-gradient(130% 100% at 68% -8%,#241056 0%,#140a34 40%,var(--bg) 78%);
-    color:var(--txt);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden;position:relative}
+  html,body{height:100%;overflow:hidden}
+  body{background:radial-gradient(130% 100% at 60% -10%,#241056 0%,#140a34 42%,#0a0716 80%);color:var(--txt);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
   a{color:inherit;text-decoration:none}
-  /* atmósfera / survey grid */
-  .atmos{position:fixed;inset:0;z-index:0;pointer-events:none;
-    background:
-      radial-gradient(40% 30% at 78% 66%,rgba(255,79,109,.10),transparent 70%),
-      radial-gradient(50% 40% at 30% 20%,rgba(120,80,255,.10),transparent 70%);}
-  .atmos::before{content:'';position:absolute;inset:0;opacity:.5;
-    background-image:linear-gradient(rgba(140,120,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(140,120,255,.05) 1px,transparent 1px);
-    background-size:46px 46px;mask:radial-gradient(120% 90% at 60% 40%,#000 45%,transparent 85%)}
-  .top{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;justify-content:space-between;
-    padding:15px 4vw;background:linear-gradient(to bottom,rgba(10,7,22,.9),rgba(10,7,22,0))}
+  #stage{position:fixed;inset:0;z-index:1}
+  #stage canvas{display:block}
+  .top{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:15px 4vw;background:linear-gradient(to bottom,rgba(10,7,22,.85),transparent)}
   .top .b{display:flex;align-items:center;gap:13px}
   .top img{height:19px;filter:brightness(0) invert(1)}
   .top .sep{width:1px;height:17px;background:rgba(255,255,255,.3)}
   .top .t{font:600 10px/1 var(--mono);letter-spacing:.24em;opacity:.72}
   .back{font-size:13px;color:var(--dim);padding:8px 14px;border:1px solid var(--line);border-radius:999px;background:rgba(10,7,22,.5)}
   .back:hover{color:var(--txt);border-color:var(--coral)}
-
-  .wrap{position:relative;z-index:2;display:grid;grid-template-columns:minmax(300px,400px) 1fr;gap:2vw;align-items:center;
-    max-width:1320px;margin:0 auto;padding:92px 4vw 32px;height:100vh}
-  .eyebrow{font:700 10px/1 var(--mono);letter-spacing:.28em;color:var(--coral-soft);margin-bottom:14px;display:flex;align-items:center;gap:9px}
-  .eyebrow::before{content:'';width:22px;height:1px;background:var(--coral)}
-  h1{font-family:'Latam Sans',sans-serif;font-size:clamp(28px,3.3vw,42px);line-height:1.08}
-  .lead{margin-top:12px;color:var(--dim);font-size:14.5px;max-width:38ch}
-  .lista{margin-top:22px;display:grid;gap:2px}
-  .fil{display:flex;align-items:center;gap:13px;width:100%;text-align:left;padding:11px 13px;border:1px solid transparent;
-    border-top-color:var(--line);border-radius:10px;cursor:pointer;background:none;color:inherit;font-family:inherit;transition:.15s}
-  .fil:hover,.fil.hl{background:var(--panel);border-color:rgba(255,79,109,.45)}
-  .fil .dot{width:9px;height:9px;border-radius:50%;background:var(--coral);box-shadow:0 0 12px rgba(255,79,109,.85);flex:0 0 auto}
-  .fil b{font-family:'Latam Sans',sans-serif;font-size:14.5px;min-width:92px}
-  .fil span{color:var(--dim);font-size:12.5px;flex:1}
-  .fil em{font-style:normal;font:700 11px var(--mono);letter-spacing:.06em;color:var(--coral-soft)}
-  .fil.soon{opacity:.5;cursor:default}
-  .fil.soon .dot{background:rgba(255,255,255,.3);box-shadow:none}
-  .fil.soon em{color:var(--dim)}
-  .note{margin-top:18px;font-size:11.5px;color:var(--dim);max-width:40ch}
-
-  .stage{position:relative;height:100%;display:flex;align-items:center;justify-content:center;perspective:1400px}
-  .stage svg{width:auto;height:min(88vh,900px);display:block;filter:drop-shadow(0 40px 60px rgba(0,0,0,.55));
-    transform:rotateX(7deg) rotateZ(-1deg);transform-origin:center 46%}
-  .countries path{fill:#1a1140;stroke:rgba(150,120,255,.28);stroke-width:.7;stroke-linejoin:round}
-  .coast{fill:none;stroke:var(--coral);stroke-width:.5;opacity:0}/* reserved */
-  .arc{fill:none;stroke:url(#arcgrad);stroke-width:1.7;opacity:.8;stroke-dasharray:5 8;animation:flow 2.8s linear infinite}
-  @keyframes flow{to{stroke-dashoffset:-13}}
-  .city{cursor:pointer}
-  .city .glow{fill:var(--coral);opacity:.7}
-  .city .core{fill:#fff;stroke:var(--coral);stroke-width:2;transition:r .16s ease}
-  .city:hover .core,.city.hl .core{r:8;fill:var(--coral)}
-  .city .pulse{fill:none;stroke:var(--coral);stroke-width:1.6;opacity:0;animation:pulse 2.6s ease-out infinite}
-  @keyframes pulse{0%{opacity:.75}100%{opacity:0}}
-  .city text{fill:#fff;font:700 18px 'Inter',sans-serif;paint-order:stroke;stroke:rgba(10,7,22,.85);stroke-width:5px}
-  .city .rol{fill:var(--coral-soft);font:600 12px var(--mono);letter-spacing:.04em;stroke:rgba(10,7,22,.85);stroke-width:4px}
-  .city .enter{fill:var(--coral);font:800 11px var(--mono);letter-spacing:.1em;opacity:0}
-  .city:hover .enter,.city.hl .enter{opacity:1}
-
-  /* HUD */
-  .hud{position:absolute;inset:0;pointer-events:none;z-index:3}
-  .brk{position:absolute;width:34px;height:34px;border:2px solid rgba(255,255,255,.35)}
-  .brk.tl{top:78px;left:2vw;border-right:0;border-bottom:0}
-  .brk.tr{top:78px;right:2vw;border-left:0;border-bottom:0}
-  .brk.bl{bottom:20px;left:2vw;border-right:0;border-top:0}
-  .brk.br{bottom:20px;right:2vw;border-left:0;border-top:0}
-  .rd{position:absolute;top:82px;right:calc(2vw + 44px);text-align:right}
-  .rd .k{font:600 9px var(--mono);letter-spacing:.2em;color:var(--dim)}
-  .rd .v{font:700 13px var(--mono);letter-spacing:.08em;color:var(--coral-soft);margin-top:3px}
-  .cnt{position:absolute;bottom:24px;left:calc(2vw + 44px);font:700 10px var(--mono);letter-spacing:.16em;color:var(--dim)}
-  .cnt b{color:var(--txt)}
-  .prompt{position:absolute;bottom:24px;right:calc(2vw + 44px);font:700 10px var(--mono);letter-spacing:.18em;color:var(--dim)}
+  .panel{position:fixed;z-index:15;top:82px;left:4vw;width:330px;max-width:82vw}
+  .eyebrow{font:700 10px/1 var(--mono);letter-spacing:.26em;color:var(--coral-soft);margin-bottom:12px;display:flex;align-items:center;gap:9px}
+  .eyebrow::before{content:'';width:20px;height:1px;background:var(--coral)}
+  h1{font-family:'Latam Sans',sans-serif;font-size:clamp(26px,2.9vw,38px);line-height:1.07}
+  .lead{margin-top:10px;color:var(--dim);font-size:13.5px;max-width:34ch}
+  .lista{margin-top:18px;display:grid;gap:2px}
+  .fil{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:10px 12px;border:1px solid transparent;border-top-color:var(--line);border-radius:9px;cursor:pointer;background:rgba(12,9,26,.35);color:inherit;font-family:inherit;transition:.15s;backdrop-filter:blur(3px)}
+  .fil:hover,.fil.hl{background:rgba(30,20,60,.7);border-color:rgba(255,79,109,.5)}
+  .fil .dot{width:8px;height:8px;border-radius:50%;background:var(--coral);box-shadow:0 0 12px rgba(255,79,109,.85);flex:0 0 auto}
+  .fil b{font-family:'Latam Sans',sans-serif;font-size:14px;min-width:88px}
+  .fil span{color:var(--dim);font-size:12px;flex:1}
+  .fil em{font-style:normal;font:700 10px var(--mono);letter-spacing:.06em;color:var(--coral-soft)}
+  .fil.soon{opacity:.5;cursor:default}.fil.soon .dot{background:rgba(255,255,255,.3);box-shadow:none}.fil.soon em{color:var(--dim)}
+  .hint{margin-top:14px;font:600 10px var(--mono);letter-spacing:.1em;color:var(--dim)}
+  .lbl{position:fixed;z-index:12;transform:translate(-50%,-140%);pointer-events:none;text-align:center;white-space:nowrap;transition:opacity .2s}
+  .lbl .nm{font:700 15px 'Inter',sans-serif;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.85)}
+  .lbl .rl{font:600 10px var(--mono);letter-spacing:.05em;color:var(--coral-soft);text-shadow:0 2px 6px rgba(0,0,0,.9)}
+  .lbl.soon .nm{color:rgba(255,255,255,.62)} .lbl.soon .rl{color:var(--dim)}
+  .hud{position:fixed;inset:0;z-index:10;pointer-events:none}
+  .brk{position:absolute;width:32px;height:32px;border:2px solid rgba(255,255,255,.32)}
+  .brk.tr{top:78px;right:2vw;border-left:0;border-bottom:0}.brk.br{bottom:20px;right:2vw;border-left:0;border-top:0}.brk.bl{bottom:20px;left:2vw;border-right:0;border-top:0}
+  .cnt{position:absolute;bottom:24px;left:calc(2vw + 44px);font:700 10px var(--mono);letter-spacing:.16em;color:var(--dim)}.cnt b{color:var(--txt)}
+  .prompt{position:absolute;bottom:24px;right:calc(2vw + 44px);font:700 10px var(--mono);letter-spacing:.16em;color:var(--dim)}
   .prompt .bk{color:var(--coral);animation:bk 1.3s steps(1) infinite}@keyframes bk{50%{opacity:.2}}
-
-  /* fade a indigo (misma transición del demo) */
-  .fade{position:fixed;inset:0;z-index:60;background:radial-gradient(120% 120% at 50% 0%,var(--indigo) 0%,var(--indigo-deep) 72%);
-    opacity:0;visibility:hidden;transition:opacity .5s ease;display:flex;align-items:center;justify-content:center;flex-direction:column}
+  .loading{position:fixed;inset:0;z-index:8;display:flex;align-items:center;justify-content:center;font:700 12px var(--mono);letter-spacing:.24em;color:var(--dim)}
+  .fade{position:fixed;inset:0;z-index:60;background:radial-gradient(120% 120% at 50% 0%,var(--indigo) 0%,var(--indigo-deep) 72%);opacity:0;visibility:hidden;transition:opacity .5s;display:flex;align-items:center;justify-content:center;flex-direction:column}
   .fade.on{opacity:1;visibility:visible}
-  .fade .spin{width:38px;height:38px;border:3px solid rgba(255,255,255,.2);border-top-color:var(--coral);border-radius:50%;animation:spin .9s linear infinite}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  .fade .lab{margin-top:16px;font:700 12px var(--mono);letter-spacing:.24em;color:#fff}
-
-  @media(max-width:900px){
-    .wrap{grid-template-columns:1fr;height:auto;min-height:100vh;padding-top:78px}
-    .stage{order:-1;height:auto} .stage svg{height:46vh;transform:none}
-    .brk,.rd,.cnt,.prompt{display:none}
-  }
+  .fade .spin{width:38px;height:38px;border:3px solid rgba(255,255,255,.2);border-top-color:var(--coral);border-radius:50%;animation:spin .9s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+  .fade .lab{margin-top:16px;font:700 12px var(--mono);letter-spacing:.22em;color:#fff}
+  @media(max-width:900px){.panel{width:auto;left:4vw;right:4vw;top:74px}.lead{display:none}.brk{display:none}}
 </style>
 </head>
 <body>
-<div class="atmos"></div>
 <header class="top">
   <a class="back" href="/latam360/">‹ Proyecto</a>
-  <div class="b"><img src="/latam360/assets/latam-logo.svg" alt="LATAM" /><span class="sep"></span><span class="t">LA RED · ATLAS 360</span></div>
+  <div class="b"><img src="/latam360/assets/latam-logo.svg" alt="LATAM" /><span class="sep"></span><span class="t">LA RED · ATLAS 3D</span></div>
 </header>
-
-<div class="wrap">
-  <div>
-    <div class="eyebrow">RED CONTINENTAL · 6 LOCACIONES</div>
-    <h1>Una sola red:<br />6 países, 6 locaciones.</h1>
-    <p class="lead">Cada filial es una cápsula independiente. Elige una en el mapa y entra a su espacio 3D.</p>
-    <div class="lista" id="lista">
-      <button class="fil" data-city="santiago"><span class="dot"></span><b>CHILE</b><span>Santiago · casa matriz</span><em>Entrar →</em></button>
-      <button class="fil" data-city="saopaulo"><span class="dot"></span><b>BRASIL</b><span>São Paulo · hub de mantenimiento</span><em>Entrar →</em></button>
-      <button class="fil" data-city="bogota"><span class="dot"></span><b>COLOMBIA</b><span>Bogotá</span><em>Entrar →</em></button>
-      <button class="fil" data-city="quito"><span class="dot"></span><b>ECUADOR</b><span>Quito</span><em>Entrar →</em></button>
-      <button class="fil" data-city="lima"><span class="dot"></span><b>PERÚ</b><span>Lima · bodega</span><em>Entrar →</em></button>
-      <div class="fil soon"><span class="dot"></span><b>USA</b><span>Miami · hub CARGO</span><em>EN CAPTURA</em></div>
-    </div>
-    <p class="note">Escaneos de demostración: en el proyecto real cada cápsula es la locación LATAM capturada por Doppel.</p>
+<div id="stage"></div>
+<div class="loading" id="loading">◈ CARGANDO ATLAS…</div>
+<div class="panel">
+  <div class="eyebrow">RED CONTINENTAL · 6 LOCACIONES</div>
+  <h1>Una sola red:<br />6 países, 6 locaciones.</h1>
+  <p class="lead">Gira el mapa y elige una filial para entrar a su espacio 3D.</p>
+  <div class="lista" id="lista">
+    <button class="fil" data-city="santiago"><span class="dot"></span><b>CHILE</b><span>Santiago · casa matriz</span><em>Entrar →</em></button>
+    <button class="fil" data-city="saopaulo"><span class="dot"></span><b>BRASIL</b><span>São Paulo · mantenimiento</span><em>Entrar →</em></button>
+    <button class="fil" data-city="bogota"><span class="dot"></span><b>COLOMBIA</b><span>Bogotá</span><em>Entrar →</em></button>
+    <button class="fil" data-city="quito"><span class="dot"></span><b>ECUADOR</b><span>Quito</span><em>Entrar →</em></button>
+    <button class="fil" data-city="lima"><span class="dot"></span><b>PERÚ</b><span>Lima · bodega</span><em>Entrar →</em></button>
+    <div class="fil soon" data-city="miami"><span class="dot"></span><b>USA</b><span>Miami · hub CARGO</span><em>EN CAPTURA</em></div>
   </div>
-
-  <div class="stage">
-    <svg viewBox="0 0 760 1212" xmlns="http://www.w3.org/2000/svg" id="mapa">
-      <defs>
-        <filter id="g1" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="8" /></filter>
-        <linearGradient id="arcgrad" x1="0" y1="1" x2="0" y2="0">
-          <stop offset="0" stop-color="#ff4f6d" stop-opacity="0.95" /><stop offset="1" stop-color="#ff7a90" stop-opacity="0.3" />
-        </linearGradient>
-      </defs>
-      <g class="countries"><path d="M270.4,1178.3L256.5,1179.6L249.0,1170.6L240.2,1169.9L224.6,1169.9L224.6,1114.7L230.2,1125.9L237.5,1144.3L256.5,1159.3L277.0,1165.6L270.4,1178.3Z"/><path d="M278.2,537.6L286.8,549.0L292.5,536.3L309.2,537.0L311.5,540.4L338.4,566.3L350.3,568.7L368.2,580.6L383.3,586.9L385.4,594.0L371.0,618.8L385.7,623.3L402.1,625.8L413.7,623.1L426.9,610.6L429.3,596.2L436.6,593.1L443.9,602.5L443.6,615.5L431.3,624.6L421.5,631.3L405.0,647.4L385.5,670.3L381.8,683.9L377.9,701.5L378.1,718.8L374.9,722.7L373.8,734.0L372.8,743.3L391.3,758.5L389.3,770.9L398.5,778.8L397.7,787.7L383.7,811.3L362.0,821.3L332.7,825.3L316.6,823.4L319.7,834.6L316.7,848.8L319.4,858.5L310.6,865.3L295.7,868.0L281.6,860.9L276.0,866.0L278.0,885.4L287.9,891.4L295.9,885.1L300.2,895.4L286.8,901.6L275.0,914.0L272.9,934.5L269.4,945.5L255.6,945.6L244.2,956.2L240.0,972.0L254.4,987.6L268.3,991.9L263.3,1011.4L246.0,1023.8L236.5,1050.1L223.2,1059.1L217.2,1069.8L221.9,1094.1L231.7,1107.8L225.5,1106.6L211.9,1102.9L176.6,1099.7L170.6,1085.9L170.9,1068.5L161.1,1070.0L156.0,1061.7L154.7,1037.6L165.9,1027.8L170.5,1013.8L168.8,1002.8L176.6,984.4L181.9,956.4L180.4,944.2L186.7,940.3L185.2,932.6L178.4,928.5L183.2,919.9L176.6,912.3L173.2,889.3L179.1,885.3L176.6,861.5L180.1,841.9L184.0,825.0L192.7,818.2L188.3,800.1L188.2,783.3L199.3,771.4L198.9,756.4L207.3,739.0L207.3,722.9L203.5,719.7L196.8,689.9L205.8,672.4L204.4,656.0L209.6,640.9L219.2,625.3L229.5,615.1L225.2,608.7L228.2,603.4L227.7,576.5L243.7,568.6L248.7,552.0L246.9,548.1L259.1,533.8L278.2,537.6Z"/><path d="M309.2,537.0L292.5,536.3L286.8,549.0L278.2,537.6L259.1,533.8L246.9,548.1L236.4,550.2L230.6,528.5L222.8,510.9L227.4,495.9L219.7,489.3L217.8,478.2L210.6,467.8L219.8,451.3L213.5,438.5L216.9,433.4L214.3,427.8L220.0,420.2L220.3,407.4L221.0,396.8L224.1,391.8L211.5,367.7L222.4,369.0L229.9,368.7L233.1,364.2L245.9,358.1L253.6,352.6L272.7,350.1L271.2,361.2L273.0,366.9L271.8,376.9L287.7,390.3L304.1,392.7L309.8,398.3L319.7,401.3L325.7,405.7L334.9,405.5L343.4,410.0L344.1,418.7L346.9,423.1L347.1,429.6L342.8,429.9L348.5,447.6L376.5,448.2L374.3,457.0L375.9,463.0L383.9,467.3L387.3,476.9L384.7,489.0L380.7,495.8L382.1,504.6L377.6,507.9L377.3,503.1L363.7,495.1L350.1,494.9L324.7,499.4L317.7,513.1L317.3,521.5L311.5,540.4L309.2,537.0Z"/><path d="M385.5,670.3L405.0,647.4L421.5,631.3L431.3,624.6L443.6,615.5L443.9,602.5L436.6,593.1L429.3,596.2L432.2,586.9L434.2,577.3L434.2,568.5L428.9,565.6L423.4,568.2L418.0,567.5L416.3,561.3L414.9,546.8L412.2,542.1L402.3,537.8L396.3,540.9L380.9,537.8L381.9,516.5L377.6,507.9L382.1,504.6L380.7,495.8L384.7,489.0L387.3,476.9L383.9,467.3L375.9,463.0L374.3,457.0L376.5,448.2L348.5,447.6L342.8,429.9L347.1,429.6L346.9,423.1L344.1,418.7L343.4,410.0L334.9,405.5L325.7,405.7L319.7,401.3L309.8,398.3L304.1,392.7L287.7,390.3L271.8,376.9L273.0,366.9L271.2,361.2L272.7,350.1L253.6,352.6L245.9,358.1L233.1,364.2L229.9,368.7L222.4,369.0L211.5,367.7L203.2,370.3L196.6,368.6L197.6,346.0L185.6,354.8L172.7,354.4L167.2,346.5L157.5,345.6L160.5,339.3L152.4,330.3L146.3,317.0L150.2,314.3L150.2,308.0L159.0,303.8L157.6,295.8L161.3,290.7L162.3,283.9L179.1,273.9L191.0,271.1L193.0,268.9L206.2,269.6L212.7,229.4L213.1,223.1L210.8,214.7L204.3,209.4L204.4,198.8L212.6,196.4L215.5,197.9L216.0,192.3L207.5,190.8L207.3,181.6L235.8,181.9L240.6,176.9L244.7,181.5L247.5,190.2L250.3,188.4L258.3,196.1L269.7,195.1L272.5,190.7L283.4,187.3L289.4,184.9L291.1,178.7L301.5,174.5L300.7,171.4L288.4,170.2L286.3,161.0L286.9,151.1L280.4,147.3L283.1,146.0L293.9,147.9L305.6,151.5L309.8,148.1L320.3,145.8L336.6,140.3L342.0,134.7L340.0,130.6L347.6,129.9L351.0,133.3L349.1,139.7L354.2,142.0L357.5,148.8L353.5,153.9L351.1,166.4L354.9,173.8L355.9,180.6L364.9,187.4L372.1,188.1L373.7,185.3L378.3,184.7L385.0,182.1L389.7,178.2L397.8,179.4L401.3,178.9L409.3,180.1L410.6,177.1L408.2,174.2L409.6,170.0L415.5,171.3L422.4,169.8L430.8,172.9L437.2,175.9L441.7,171.9L445.0,172.5L447.0,176.7L454.0,175.6L459.6,170.1L464.0,159.3L472.7,145.9L477.7,145.2L481.3,153.3L489.5,178.9L497.3,181.3L497.7,191.4L486.7,203.4L491.2,207.8L517.1,210.1L517.6,224.8L528.7,215.2L547.1,220.4L571.4,229.4L578.5,237.9L576.1,246.0L593.1,241.5L621.6,249.3L643.4,248.7L665.0,260.8L683.7,277.2L694.9,281.5L707.4,282.0L712.7,286.7L717.7,305.4L720.1,314.3L714.3,338.7L706.8,348.4L686.2,369.1L676.9,385.9L666.1,398.9L662.5,399.2L658.4,410.3L659.4,438.6L655.3,462.1L653.8,472.2L649.2,478.2L646.6,498.9L631.8,519.2L629.3,535.4L617.4,542.3L614.0,551.8L598.1,551.7L575.1,557.8L564.9,564.9L548.5,569.6L531.3,582.4L518.9,598.4L516.8,610.6L519.2,619.7L516.5,636.3L513.2,644.4L503.0,653.6L486.7,683.4L473.9,696.9L463.9,705.0L457.3,721.5L447.6,731.6L443.6,721.6L450.0,713.4L441.6,701.6L430.1,692.1L415.1,681.1L409.6,681.6L395.0,668.5L385.5,670.3Z"/><path d="M224.6,1114.7L224.6,1169.9L240.2,1169.9L249.0,1170.6L244.2,1180.9L231.7,1188.9L224.5,1188.1L215.8,1186.0L205.2,1178.3L189.9,1174.6L171.5,1160.5L156.6,1147.0L136.5,1119.6L148.5,1124.6L169.0,1141.0L188.4,1149.9L196.0,1138.6L200.7,1121.8L214.2,1111.9L224.6,1114.7Z"/><path d="M230.6,528.5L236.4,550.2L246.9,548.1L248.7,552.0L243.7,568.6L227.7,576.5L228.2,603.4L225.2,608.7L229.5,615.1L219.2,625.3L209.6,640.9L204.4,656.0L205.8,672.4L196.8,689.9L203.5,719.7L207.3,722.9L207.3,739.0L198.9,756.4L199.3,771.4L188.2,783.3L188.3,800.1L192.7,818.2L184.0,825.0L180.1,841.9L176.6,861.5L179.1,885.3L173.2,889.3L176.6,912.3L183.2,919.9L178.4,928.5L185.2,932.6L186.7,940.3L180.4,944.2L181.9,956.4L176.6,984.4L168.8,1002.8L170.5,1013.8L165.9,1027.8L154.7,1037.6L156.0,1061.7L161.1,1070.0L170.9,1068.5L170.6,1085.9L176.6,1099.7L211.9,1102.9L225.5,1106.6L212.5,1106.4L205.5,1112.3L192.3,1121.1L189.9,1143.9L183.7,1144.5L167.2,1136.5L150.5,1119.5L150.5,1119.5L132.3,1105.7L127.7,1090.7L131.9,1077.0L124.5,1061.7L122.7,1023.3L128.9,1002.2L144.3,985.5L122.1,979.3L136.0,960.6L141.0,926.3L157.3,933.5L164.9,891.8L155.1,886.6L150.5,911.4L141.3,908.6L145.9,880.3L150.9,844.4L157.6,831.5L153.4,813.2L152.2,792.4L158.3,791.8L167.3,762.5L177.4,734.0L183.6,708.0L180.2,682.3L184.6,668.3L182.8,647.6L191.4,627.3L194.0,595.7L198.7,562.3L203.3,526.9L202.2,501.3L199.2,479.5L206.7,475.6L210.6,467.8L217.8,478.2L219.7,489.3L227.4,495.9L222.8,510.9L230.6,528.5Z"/><path d="M126.1,208.9L119.8,205.4L112.7,200.6L108.5,202.9L96.1,200.9L92.5,194.6L89.8,194.8L75.2,186.5L73.2,182.0L78.7,180.9L78.0,173.5L81.4,168.2L88.7,167.3L94.8,158.1L100.4,150.4L95.1,146.9L97.8,138.4L94.5,125.0L97.6,121.1L95.3,108.7L89.4,100.8L91.3,93.7L96.0,94.7L98.8,90.3L95.4,81.6L97.1,79.5L104.7,79.9L115.7,69.6L121.7,68.0L121.8,63.1L124.5,50.6L132.9,43.7L142.1,43.4L143.3,40.3L154.7,41.5L166.2,34.0L171.9,30.7L179.0,23.5L184.2,24.4L188.0,28.3L185.2,33.3L175.8,35.8L172.1,43.3L166.4,47.6L162.2,53.1L160.4,63.7L156.3,72.3L163.9,73.3L165.7,80.1L169.0,83.4L170.1,89.3L168.4,94.8L168.9,97.9L172.5,99.1L176.0,104.2L194.8,102.8L203.3,104.7L213.5,117.4L219.4,115.8L230.0,116.6L238.3,114.9L243.5,117.4L240.8,125.3L237.6,130.3L236.4,140.8L239.4,150.5L243.5,154.9L244.0,158.2L236.6,165.4L241.9,168.7L245.8,173.8L250.3,188.4L247.5,190.2L244.7,181.5L240.6,176.9L235.8,181.9L207.3,181.6L207.5,190.8L216.0,192.3L215.5,197.9L212.6,196.4L204.4,198.8L204.3,209.4L210.8,214.7L213.1,223.1L212.7,229.4L206.2,269.6L198.9,261.8L194.5,261.4L203.9,246.5L192.7,239.7L184.0,240.9L178.7,238.4L170.6,242.3L159.7,240.4L151.1,225.1L144.4,221.3L139.7,214.4L130.0,207.5L126.1,208.9Z"/><path d="M54.0,256.5L61.8,245.5L58.7,239.1L53.1,245.9L44.3,239.5L47.3,235.4L44.8,222.1L49.9,219.9L52.6,210.8L58.2,201.4L57.1,195.5L65.1,192.3L75.2,186.5L89.8,194.8L92.5,194.6L96.1,200.9L108.5,202.9L112.7,200.6L119.8,205.4L126.1,208.9L128.1,220.0L123.6,229.5L107.6,244.8L90.1,250.6L81.1,263.3L78.3,273.2L70.1,279.3L63.9,271.8L58.0,270.3L52.0,271.4L51.6,266.1L55.8,262.6L54.0,256.5Z"/><path d="M333.2,1095.9L350.8,1081.8L363.2,1087.7L372.0,1078.3L383.7,1088.9L379.3,1097.1L359.5,1104.2L353.0,1095.9L340.5,1106.6L333.2,1095.9Z"/><path d="M354.3,84.0L363.9,89.4L372.9,99.0L373.4,106.6L378.9,106.9L386.7,114.1L392.5,119.2L390.1,132.4L381.3,136.3L382.0,139.7L379.3,147.3L385.8,157.9L390.5,157.9L392.4,166.2L401.3,178.9L397.8,179.4L389.7,178.2L385.0,182.1L378.3,184.7L373.7,185.3L372.1,188.1L364.9,187.4L355.9,180.6L354.9,173.8L351.1,166.4L353.5,153.9L357.5,148.8L354.2,142.0L349.1,139.7L351.0,133.3L347.6,129.9L340.0,130.6L330.2,119.4L334.1,115.4L333.8,108.6L342.8,106.2L346.4,103.5L341.4,98.0L342.7,92.6L354.3,84.0Z"/><path d="M89.4,100.8L84.6,96.6L81.4,88.6L85.0,84.7L81.3,83.7L78.6,78.8L71.3,74.7L64.9,75.6L62.0,80.7L56.1,84.5L52.9,85.0L51.4,88.0L58.4,96.1L54.4,97.9L52.3,100.1L45.5,100.9L43.0,92.1L41.1,94.6L36.3,93.7L33.3,87.8L27.3,86.8L23.5,85.1L17.2,85.1L16.8,88.3L15.1,86.1L15.9,83.1L17.1,80.1L16.5,77.5L18.7,75.7L15.7,73.5L15.6,67.5L21.2,66.2L26.5,71.5L26.2,74.7L32.0,75.3L33.4,74.1L37.4,77.8L44.6,76.7L50.8,73.0L59.7,70.0L64.7,65.5L72.8,66.4L72.2,67.9L80.4,68.4L86.9,70.9L91.6,75.4L97.1,79.5L95.4,81.6L98.8,90.3L96.0,94.7L91.3,93.7L89.4,100.8Z"/><path d="M210.6,467.8L206.7,475.6L199.2,479.5L184.5,470.7L183.2,464.4L154.3,449.1L128.1,432.5L116.8,423.2L110.7,410.7L113.1,406.4L100.8,386.7L86.3,359.2L72.5,329.7L66.6,323.0L62.0,312.1L50.6,302.5L40.2,296.5L44.9,290.0L37.8,276.0L42.4,265.7L54.0,256.5L55.8,262.6L51.6,266.1L52.0,271.4L58.0,270.3L63.9,271.8L70.1,279.3L78.3,273.2L81.1,263.3L90.1,250.6L107.6,244.8L123.6,229.5L128.1,220.0L126.1,208.9L130.0,207.5L139.7,214.4L144.4,221.3L151.1,225.1L159.7,240.4L170.6,242.3L178.7,238.4L184.0,240.9L192.7,239.7L203.9,246.5L194.5,261.4L198.9,261.8L206.2,269.6L193.0,268.9L191.0,271.1L179.1,273.9L162.3,283.9L161.3,290.7L157.6,295.8L159.0,303.8L150.2,308.0L150.2,314.3L146.3,317.0L152.4,330.3L160.5,339.3L157.5,345.6L167.2,346.5L172.7,354.4L185.6,354.8L197.6,346.0L196.6,368.6L203.2,370.3L211.5,367.7L224.1,391.8L221.0,396.8L220.3,407.4L220.0,420.2L214.3,427.8L216.9,433.4L213.5,438.5L219.8,451.3L210.6,467.8Z"/><path d="M311.5,540.4L317.3,521.5L317.7,513.1L324.7,499.4L350.1,494.9L363.7,495.1L377.3,503.1L377.6,507.9L381.9,516.5L380.9,537.8L396.3,540.9L402.3,537.8L412.2,542.1L414.9,546.8L416.3,561.3L418.0,567.5L423.4,568.2L428.9,565.6L434.2,568.5L434.2,577.3L432.2,586.9L429.3,596.2L426.9,610.6L413.7,623.1L402.1,625.8L385.7,623.3L371.0,618.8L385.4,594.0L383.3,586.9L368.2,580.6L350.3,568.7L338.4,566.3L311.5,540.4Z"/><path d="M392.5,119.2L410.0,122.2L411.5,119.5L423.4,118.5L439.1,122.4L431.5,135.0L432.6,145.1L438.4,153.7L435.8,160.0L434.5,166.7L430.8,172.9L422.4,169.8L415.5,171.3L409.6,170.0L408.2,174.2L410.6,177.1L409.3,180.1L401.3,178.9L392.4,166.2L390.5,157.9L385.8,157.9L379.3,147.3L382.0,139.7L381.3,136.3L390.1,132.4L392.5,119.2Z"/><path d="M385.5,670.3L395.0,668.5L409.6,681.6L415.1,681.1L430.1,692.1L441.6,701.6L450.0,713.4L443.6,721.6L447.6,731.6L441.3,742.6L424.8,752.5L414.0,749.0L406.1,750.9L392.6,743.2L382.7,743.8L373.8,734.0L374.9,722.7L378.1,718.8L377.9,701.5L381.8,683.9L385.5,670.3Z"/><path d="M185.2,33.3L184.7,36.9L176.2,38.6L180.9,45.4L180.7,53.1L174.3,61.8L179.8,73.5L186.1,72.6L189.4,61.9L184.9,56.6L184.1,45.4L202.3,39.3L200.3,32.3L205.4,27.6L210.7,38.1L220.9,38.3L230.4,46.6L231.0,51.5L244.1,51.7L259.7,50.1L268.1,56.8L279.3,58.6L287.5,54.0L287.7,50.3L305.8,49.4L323.3,49.1L310.9,53.5L315.9,60.5L327.5,61.7L338.6,69.0L341.0,80.8L348.6,80.5L354.3,84.0L342.7,92.6L341.4,98.0L346.4,103.5L342.8,106.2L333.8,108.6L334.1,115.4L330.2,119.4L340.0,130.6L342.0,134.7L336.6,140.3L320.3,145.8L309.8,148.1L305.6,151.5L293.9,147.9L283.1,146.0L280.4,147.3L286.9,151.1L286.3,161.0L288.4,170.2L300.7,171.4L301.5,174.5L291.1,178.7L289.4,184.9L283.4,187.3L272.5,190.7L269.7,195.1L258.3,196.1L250.3,188.4L245.8,173.8L241.9,168.7L236.6,165.4L244.0,158.2L243.5,154.9L239.4,150.5L236.4,140.8L237.6,130.3L240.8,125.3L243.5,117.4L238.3,114.9L230.0,116.6L219.4,115.8L213.5,117.4L203.3,104.7L194.8,102.8L176.0,104.2L172.5,99.1L168.9,97.9L168.4,94.8L170.1,89.3L169.0,83.4L165.7,80.1L163.9,73.3L156.3,72.3L160.4,63.7L162.2,53.1L166.4,47.6L172.1,43.3L175.8,35.8L185.2,33.3Z"/></g>
-      <g id="arcs">
-        <path class="arc" d="M195,726 Q60,570 102,384" />
-        <path class="arc" d="M195,726 Q-8,470 81,209" />
-        <path class="arc" d="M195,726 Q10,430 145,138" />
-        <path class="arc" d="M195,726 Q430,710 546,561" />
-      </g>
-      <g id="cities">
-        <g class="city" data-city="santiago" transform="translate(195,726)" data-rd="33.4°S 70.7°W">
-          <circle class="glow" r="14" filter="url(#g1)" /><circle class="pulse" r="16" /><circle class="core" r="6" />
-          <text x="17" y="6">Santiago</text><text class="rol" x="17" y="24">casa matriz</text><text class="enter" x="17" y="42">▶ ENTRAR</text>
-        </g>
-        <g class="city" data-city="saopaulo" transform="translate(546,561)" data-rd="23.5°S 46.6°W">
-          <circle class="glow" r="12" filter="url(#g1)" /><circle class="pulse" r="14" style="animation-delay:.5s" /><circle class="core" r="5.5" />
-          <text x="16" y="6">São Paulo</text><text class="rol" x="16" y="24">hub mantenimiento</text><text class="enter" x="16" y="42">▶ ENTRAR</text>
-        </g>
-        <g class="city" data-city="lima" transform="translate(102,384)" data-rd="12.1°S 77.0°W">
-          <circle class="glow" r="12" filter="url(#g1)" /><circle class="pulse" r="14" style="animation-delay:1s" /><circle class="core" r="5.5" />
-          <text x="-16" y="6" text-anchor="end">Lima</text><text class="rol" x="-16" y="24" text-anchor="end">bodega</text><text class="enter" x="-16" y="42" text-anchor="end">ENTRAR ◀</text>
-        </g>
-        <g class="city" data-city="bogota" transform="translate(145,138)" data-rd="4.7°N 74.1°W">
-          <circle class="glow" r="12" filter="url(#g1)" /><circle class="pulse" r="14" style="animation-delay:1.5s" /><circle class="core" r="5.5" />
-          <text x="16" y="6">Bogotá</text><text class="enter" x="16" y="24">▶ ENTRAR</text>
-        </g>
-        <g class="city" data-city="quito" transform="translate(81,209)" data-rd="0.2°S 78.5°W">
-          <circle class="glow" r="12" filter="url(#g1)" /><circle class="pulse" r="14" style="animation-delay:2s" /><circle class="core" r="5.5" />
-          <text x="-16" y="-10" text-anchor="end">Quito</text><text class="enter" x="-16" y="8" text-anchor="end">ENTRAR ◀</text>
-        </g>
-      </g>
-    </svg>
-    <div class="hud">
-      <span class="brk tl"></span><span class="brk tr"></span><span class="brk bl"></span><span class="brk br"></span>
-      <div class="rd"><div class="k">COORD</div><div class="v" id="rdv">— · —</div></div>
-      <div class="cnt">LOCACIONES <b>06</b> · ACTIVAS <b>05</b></div>
-      <div class="prompt"><span class="bk">◈</span> <span id="pv">SELECCIONA UN DESTINO</span></div>
-    </div>
-  </div>
+  <div class="hint">◈ arrastra para girar · scroll para acercar</div>
 </div>
-
+<div class="hud"><span class="brk tr"></span><span class="brk br"></span><span class="brk bl"></span>
+  <div class="cnt">LOCACIONES <b>06</b> · ACTIVAS <b>05</b></div>
+  <div class="prompt"><span class="bk">◈</span> SELECCIONA UN DESTINO</div>
+</div>
 <div class="fade" id="fade"><div class="spin"></div><div class="lab" id="fadelab">ENTRANDO…</div></div>
 
-<script>
-  var DESTINOS={
-    santiago:'/latam360/demo/?scene=cf100',
-    saopaulo:'/latam360/demo/?scene=lod-streaming',
-    lima:'/latam360/demo/?scene=first-person',
-    bogota:'/latam360/demo/?scene=downtown',
-    quito:'/latam360/demo/?scene=splat-portal'
-  };
-  var NOMBRES={santiago:'SANTIAGO',saopaulo:'SÃO PAULO',lima:'LIMA',bogota:'BOGOTÁ',quito:'QUITO'};
-  var rdv=document.getElementById('rdv'), pv=document.getElementById('pv'), fade=document.getElementById('fade'), fadelab=document.getElementById('fadelab');
-  function go(city){
-    if(!DESTINOS[city]) return;
-    fadelab.textContent='ENTRANDO A '+NOMBRES[city]+'…';
-    fade.classList.add('on');
-    setTimeout(function(){ window.location.href=DESTINOS[city]; }, 620);
-  }
-  function sync(city,on){
-    document.querySelectorAll('[data-city="'+city+'"]').forEach(function(el){ el.classList.toggle('hl',on); });
-    if(on && NOMBRES[city]){ var g=document.querySelector('.city[data-city="'+city+'"]'); rdv.textContent=NOMBRES[city]+' · '+(g?g.dataset.rd:''); pv.innerHTML='<span class="bk">◈</span> '+NOMBRES[city]+' — CLICK PARA ENTRAR'; }
-    else { rdv.textContent='— · —'; pv.innerHTML='<span class="bk">◈</span> SELECCIONA UN DESTINO'; }
-  }
-  document.querySelectorAll('.city, .fil[data-city]').forEach(function(el){
-    el.addEventListener('click',function(){ go(el.dataset.city); });
-    el.addEventListener('mouseenter',function(){ sync(el.dataset.city,true); });
-    el.addEventListener('mouseleave',function(){ sync(el.dataset.city,false); });
+<script id="geodata" type="application/json">[[[-55.6,51.317],[-56.134,50.687],[-56.796,49.812],[-56.143,50.15],[-55.471,49.936],[-55.822,49.587],[-54.935,49.313],[-54.474,49.557],[-53.477,49.249],[-53.786,48.517],[-53.086,48.688],[-52.959,48.157],[-52.648,47.536],[-53.069,46.655],[-53.521,46.618],[-54.179,46.807],[-53.962,47.625],[-54.24,47.752],[-55.401,46.885],[-55.997,46.92],[-55.291,47.39],[-56.251,47.633],[-57.325,47.573],[-59.266,47.603],[-59.419,47.899],[-58.797,48.252],[-59.232,48.523],[-58.392,49.126],[-57.359,50.718],[-56.739,51.287],[-55.871,51.632],[-55.407,51.588]],[[-123.51,48.51],[-124.013,48.371],[-125.655,48.825],[-125.955,49.18],[-126.85,49.53],[-127.03,49.815],[-128.059,49.995],[-128.445,50.539],[-128.358,50.771],[-127.309,50.553],[-126.695,50.401],[-125.755,50.295],[-125.415,49.95],[-124.921,49.475],[-123.923,49.062]],[[-64.519,49.873],[-64.173,49.957],[-62.858,49.706],[-61.836,49.289],[-61.806,49.105],[-62.293,49.087],[-63.589,49.401]],[[-64.015,47.036],[-63.664,46.55],[-62.939,46.416],[-62.012,46.443],[-62.504,46.033],[-62.874,45.968],[-64.143,46.393],[-64.393,46.727]],[[-122.84,49],[-120,49],[-117.031,49],[-116.048,49],[-113,49],[-110.05,49],[-107.05,49],[-104.048,49],[-100.65,49],[-97.229,49.001],[-95.159,49],[-95.156,49.384],[-94.818,49.389],[-94.64,48.84],[-94.329,48.671],[-93.631,48.609],[-92.61,48.45],[-91.64,48.14],[-90.83,48.27],[-89.6,48.01],[-89.273,48.02],[-88.378,48.303],[-87.44,47.94],[-86.462,47.553],[-85.652,47.22],[-84.876,46.9],[-84.779,46.637],[-84.544,46.539],[-84.605,46.44],[-84.337,46.409],[-84.142,46.512],[-84.092,46.275],[-83.891,46.117],[-83.616,46.117],[-83.47,45.995],[-83.593,45.817],[-82.551,45.348],[-82.338,44.44],[-82.138,43.571],[-82.43,42.98],[-82.9,42.43],[-83.12,42.08],[-83.142,41.976],[-83.03,41.833],[-82.69,41.675],[-82.439,41.675],[-81.278,42.209],[-80.247,42.366],[-78.939,42.864],[-78.92,42.965],[-79.01,43.27],[-79.172,43.466],[-78.72,43.625],[-77.738,43.629],[-76.82,43.629],[-76.5,44.018],[-76.375,44.096],[-75.318,44.816],[-74.867,45],[-73.348,45.007],[-71.505,45.008],[-71.405,45.255],[-71.085,45.305],[-70.66,45.46],[-70.305,45.915],[-70,46.693],[-69.237,47.448],[-68.905,47.185],[-68.234,47.355],[-67.79,47.066],[-67.791,45.703],[-67.137,45.138],[-66.965,44.81],[-68.033,44.325],[-69.06,43.98],[-70.116,43.684],[-70.645,43.09],[-70.815,42.865],[-70.825,42.335],[-70.495,41.805],[-70.08,41.78],[-70.185,42.145],[-69.885,41.923],[-69.965,41.637],[-70.64,41.475],[-71.12,41.494],[-71.86,41.32],[-72.295,41.27],[-72.876,41.221],[-73.71,40.931],[-72.241,41.119],[-71.945,40.93],[-73.345,40.63],[-73.982,40.628],[-73.952,40.751],[-74.257,40.474],[-73.962,40.428],[-74.178,39.709],[-74.906,38.94],[-74.98,39.196],[-75.2,39.248],[-75.528,39.499],[-75.32,38.96],[-75.072,38.782],[-75.057,38.404],[-75.377,38.016],[-75.94,37.217],[-76.031,37.257],[-75.722,37.937],[-76.233,38.319],[-76.35,39.15],[-76.543,38.718],[-76.329,38.083],[-76.99,38.24],[-76.302,37.918],[-76.259,36.966],[-75.972,36.897],[-75.868,36.551],[-75.727,35.551],[-76.363,34.809],[-77.398,34.512],[-78.055,33.925],[-78.554,33.861],[-79.061,33.494],[-79.204,33.158],[-80.301,32.509],[-80.865,32.033],[-81.336,31.44],[-81.49,30.73],[-81.314,30.036],[-80.98,29.18],[-80.536,28.472],[-80.53,28.04],[-80.057,26.88],[-80.088,26.206],[-80.132,25.817],[-80.381,25.206],[-80.68,25.08],[-81.172,25.201],[-81.33,25.64],[-81.71,25.87],[-82.24,26.73],[-82.705,27.495],[-82.855,27.886],[-82.65,28.55],[-82.93,29.1],[-83.71,29.937],[-84.1,30.09],[-85.109,29.636],[-85.288,29.686],[-85.773,30.153],[-86.4,30.4],[-87.53,30.274],[-88.418,30.385],[-89.18,30.316],[-89.594,30.16],[-89.414,29.894],[-89.43,29.489],[-89.218,29.291],[-89.408,29.16],[-89.779,29.307],[-90.155,29.117],[-90.88,29.149],[-91.627,29.677],[-92.499,29.552],[-93.226,29.784],[-93.848,29.714],[-94.69,29.48],[-95.6,28.739],[-96.594,28.307],[-97.14,27.83],[-97.37,27.38],[-97.38,26.69],[-97.33,26.21],[-97.14,25.87],[-97.53,25.84],[-98.24,26.06],[-99.02,26.37],[-99.3,26.84],[-99.52,27.54],[-100.11,28.11],[-100.456,28.696],[-100.958,29.381],[-101.662,29.779],[-102.48,29.76],[-103.11,28.97],[-103.94,29.27],[-104.457,29.572],[-104.706,30.122],[-105.037,30.644],[-105.632,31.084],[-106.143,31.4],[-106.508,31.755],[-108.24,31.755],[-108.242,31.342],[-109.035,31.342],[-111.024,31.335],[-113.305,32.039],[-114.815,32.525],[-114.721,32.721],[-115.991,32.612],[-117.128,32.535],[-117.296,33.046],[-117.944,33.621],[-118.411,33.741],[-118.52,34.028],[-119.081,34.078],[-119.439,34.348],[-120.368,34.447],[-120.623,34.609],[-120.744,35.157],[-121.715,36.162],[-122.547,37.552],[-122.512,37.783],[-122.953,38.114],[-123.727,38.952],[-123.865,39.767],[-124.398,40.313],[-124.179,41.142],[-124.214,42],[-124.533,42.766],[-124.142,43.708],[-124.021,44.616],[-123.899,45.523],[-124.08,46.865],[-124.396,47.72],[-124.687,48.184],[-124.566,48.38],[-123.12,48.04],[-122.587,47.096],[-122.34,47.36],[-122.5,48.18]],[[-68.634,-52.636],[-68.25,-53.1],[-67.75,-53.85],[-66.45,-54.45],[-65.05,-54.7],[-65.5,-55.2],[-66.45,-55.25],[-66.96,-54.897],[-67.562,-54.87],[-68.633,-54.869]],[[-57.625,-30.216],[-57.875,-31.017],[-58.142,-32.045],[-58.133,-33.041],[-58.35,-33.263],[-58.427,-33.909],[-58.495,-34.431],[-57.226,-35.288],[-57.362,-35.977],[-56.737,-36.413],[-56.788,-36.902],[-57.749,-38.184],[-59.232,-38.72],[-61.237,-38.928],[-62.336,-38.828],[-62.126,-39.424],[-62.331,-40.173],[-62.146,-40.677],[-62.746,-41.029],[-63.77,-41.167],[-64.732,-40.803],[-65.118,-41.064],[-64.979,-42.058],[-64.303,-42.359],[-63.756,-42.044],[-63.458,-42.563],[-64.379,-42.874],[-65.182,-43.495],[-65.329,-44.501],[-65.565,-45.037],[-66.51,-45.04],[-67.294,-45.552],[-67.581,-46.302],[-66.597,-47.034],[-65.641,-47.236],[-65.985,-48.133],[-67.166,-48.697],[-67.816,-49.87],[-68.729,-50.264],[-69.139,-50.733],[-68.816,-51.771],[-68.15,-52.35],[-68.572,-52.299],[-69.498,-52.143],[-71.915,-52.009],[-72.329,-51.426],[-72.31,-50.677],[-72.976,-50.741],[-73.328,-50.379],[-73.415,-49.318],[-72.648,-48.879],[-72.331,-48.244],[-72.447,-47.739],[-71.917,-46.885],[-71.552,-45.561],[-71.659,-44.974],[-71.223,-44.784],[-71.33,-44.408],[-71.794,-44.207],[-71.464,-43.788],[-71.915,-43.409],[-72.149,-42.255],[-71.747,-42.051],[-71.916,-40.832],[-71.681,-39.808],[-71.414,-38.916],[-70.815,-38.553],[-71.119,-37.577],[-71.122,-36.658],[-70.365,-36.005],[-70.388,-35.17],[-69.817,-34.194],[-69.815,-33.274],[-70.074,-33.091],[-70.535,-31.365],[-69.919,-30.336],[-70.014,-29.368],[-69.656,-28.459],[-69.001,-27.521],[-68.296,-26.899],[-68.595,-26.507],[-68.386,-26.185],[-68.418,-24.519],[-67.328,-24.025],[-66.985,-22.986],[-67.107,-22.736],[-66.273,-21.832],[-64.965,-22.076],[-64.377,-22.798],[-63.987,-21.994],[-62.846,-22.035],[-62.685,-22.249],[-60.847,-23.881],[-60.029,-24.033],[-58.807,-24.771],[-57.777,-25.162],[-57.634,-25.604],[-58.618,-27.124],[-57.61,-27.396],[-56.487,-27.548],[-55.696,-27.388],[-54.789,-26.622],[-54.625,-25.739],[-54.13,-25.548],[-53.628,-26.125],[-53.649,-26.923],[-54.491,-27.475],[-55.162,-27.882],[-56.291,-28.853]],[[-68.634,-52.636],[-68.633,-54.869],[-67.562,-54.87],[-66.96,-54.897],[-67.291,-55.301],[-68.149,-55.612],[-68.64,-55.58],[-69.232,-55.499],[-69.958,-55.198],[-71.006,-55.054],[-72.264,-54.495],[-73.285,-53.958],[-74.663,-52.837],[-73.838,-53.047],[-72.434,-53.715],[-71.108,-54.074],[-70.592,-53.616],[-70.267,-52.931],[-69.346,-52.518]],[[-69.59,-17.58],[-69.1,-18.26],[-68.967,-18.982],[-68.442,-19.405],[-68.757,-20.373],[-68.22,-21.494],[-67.828,-22.873],[-67.107,-22.736],[-66.985,-22.986],[-67.328,-24.025],[-68.418,-24.519],[-68.386,-26.185],[-68.595,-26.507],[-68.296,-26.899],[-69.001,-27.521],[-69.656,-28.459],[-70.014,-29.368],[-69.919,-30.336],[-70.535,-31.365],[-70.074,-33.091],[-69.815,-33.274],[-69.817,-34.194],[-70.388,-35.17],[-70.365,-36.005],[-71.122,-36.658],[-71.119,-37.577],[-70.815,-38.553],[-71.414,-38.916],[-71.681,-39.808],[-71.916,-40.832],[-71.747,-42.051],[-72.149,-42.255],[-71.915,-43.409],[-71.464,-43.788],[-71.794,-44.207],[-71.33,-44.408],[-71.223,-44.784],[-71.659,-44.974],[-71.552,-45.561],[-71.917,-46.885],[-72.447,-47.739],[-72.331,-48.244],[-72.648,-48.879],[-73.415,-49.318],[-73.328,-50.379],[-72.976,-50.741],[-72.31,-50.677],[-72.329,-51.426],[-71.915,-52.009],[-69.498,-52.143],[-68.572,-52.299],[-69.461,-52.292],[-69.943,-52.538],[-70.845,-52.899],[-71.006,-53.833],[-71.43,-53.856],[-72.558,-53.531],[-73.703,-52.835],[-74.947,-52.263],[-75.26,-51.629],[-74.977,-51.043],[-75.48,-50.378],[-75.608,-48.674],[-75.183,-47.712],[-74.127,-46.939],[-75.644,-46.648],[-74.692,-45.764],[-74.352,-44.103],[-73.24,-44.455],[-72.718,-42.383],[-73.389,-42.118],[-73.701,-43.366],[-74.332,-43.225],[-74.018,-41.795],[-73.677,-39.942],[-73.218,-39.259],[-73.506,-38.283],[-73.588,-37.156],[-73.167,-37.124],[-72.553,-35.509],[-71.862,-33.909],[-71.438,-32.419],[-71.669,-30.921],[-71.37,-30.096],[-71.49,-28.861],[-70.905,-27.64],[-70.725,-25.706],[-70.404,-23.629],[-70.091,-21.393],[-70.164,-19.756],[-70.373,-18.348],[-69.858,-18.093]],[[-71.712,19.714],[-71.625,19.17],[-71.701,18.785],[-71.945,18.617],[-71.688,18.317],[-71.708,18.045],[-72.372,18.215],[-72.844,18.146],[-73.455,18.218],[-73.922,18.031],[-74.458,18.343],[-74.37,18.665],[-73.45,18.526],[-72.695,18.446],[-72.335,18.668],[-72.792,19.102],[-72.784,19.484],[-73.415,19.64],[-73.19,19.916],[-72.58,19.872]],[[-71.708,18.045],[-71.688,18.317],[-71.945,18.617],[-71.701,18.785],[-71.625,19.17],[-71.712,19.714],[-71.587,19.885],[-70.807,19.88],[-70.214,19.623],[-69.951,19.648],[-69.769,19.293],[-69.222,19.313],[-69.254,19.015],[-68.809,18.979],[-68.318,18.612],[-68.689,18.205],[-69.165,18.423],[-69.624,18.381],[-69.953,18.428],[-70.133,18.246],[-70.517,18.184],[-70.669,18.427],[-71,18.283],[-71.4,17.599],[-71.658,17.758]],[[-78.98,26.79],[-78.51,26.87],[-77.85,26.84],[-77.82,26.58],[-78.91,26.42]],[[-77.79,27.04],[-77,26.59],[-77.173,25.879],[-77.356,26.007],[-77.34,26.53],[-77.788,26.925]],[[-78.191,25.21],[-77.89,25.17],[-77.54,24.34],[-77.535,23.76],[-77.78,23.71],[-78.034,24.286],[-78.408,24.576]],[[-61.2,-51.85],[-60,-51.25],[-59.15,-51.5],[-58.55,-51.1],[-57.75,-51.55],[-58.05,-51.9],[-59.4,-52.2],[-59.85,-51.85],[-60.7,-52.3]],[[-117.128,32.535],[-115.991,32.612],[-114.721,32.721],[-114.815,32.525],[-113.305,32.039],[-111.024,31.335],[-109.035,31.342],[-108.242,31.342],[-108.24,31.755],[-106.508,31.755],[-106.143,31.4],[-105.632,31.084],[-105.037,30.644],[-104.706,30.122],[-104.457,29.572],[-103.94,29.27],[-103.11,28.97],[-102.48,29.76],[-101.662,29.779],[-100.958,29.381],[-100.456,28.696],[-100.11,28.11],[-99.52,27.54],[-99.3,26.84],[-99.02,26.37],[-98.24,26.06],[-97.53,25.84],[-97.14,25.87],[-97.528,24.992],[-97.703,24.272],[-97.776,22.933],[-97.872,22.444],[-97.699,21.899],[-97.389,21.411],[-97.189,20.635],[-96.526,19.891],[-96.292,19.32],[-95.901,18.828],[-94.839,18.563],[-94.426,18.144],[-93.549,18.424],[-92.786,18.525],[-92.037,18.705],[-91.408,18.876],[-90.772,19.284],[-90.534,19.867],[-90.451,20.708],[-90.279,21],[-89.601,21.262],[-88.544,21.494],[-87.658,21.459],[-87.052,21.544],[-86.812,21.332],[-86.846,20.85],[-87.383,20.255],[-87.621,19.647],[-87.437,19.472],[-87.587,19.04],[-87.837,18.26],[-88.091,18.517],[-88.3,18.5],[-88.49,18.487],[-88.848,17.883],[-89.03,18.002],[-89.151,17.955],[-89.143,17.808],[-90.068,17.819],[-91.002,17.818],[-91.002,17.255],[-91.454,17.252],[-91.082,16.918],[-90.712,16.687],[-90.601,16.471],[-90.439,16.41],[-90.464,16.07],[-91.748,16.067],[-92.229,15.251],[-92.087,15.065],[-92.203,14.83],[-92.228,14.539],[-93.359,15.615],[-93.875,15.94],[-94.692,16.201],[-95.25,16.128],[-96.053,15.752],[-96.557,15.654],[-97.264,15.917],[-98.013,16.107],[-98.948,16.566],[-99.697,16.706],[-100.829,17.171],[-101.666,17.649],[-101.919,17.916],[-102.478,17.976],[-103.501,18.292],[-103.918,18.749],[-104.992,19.316],[-105.493,19.947],[-105.731,20.434],[-105.398,20.532],[-105.501,20.817],[-105.271,21.076],[-105.266,21.422],[-105.603,21.871],[-105.693,22.269],[-106.029,22.774],[-106.91,23.768],[-107.915,24.549],[-108.402,25.172],[-109.26,25.581],[-109.444,25.825],[-109.292,26.443],[-109.801,26.676],[-110.392,27.162],[-110.641,27.86],[-111.179,27.941],[-111.76,28.468],[-112.228,28.954],[-112.272,29.267],[-112.81,30.021],[-113.164,30.787],[-113.149,31.171],[-113.872,31.568],[-114.206,31.524],[-114.776,31.8],[-114.937,31.393],[-114.771,30.914],[-114.674,30.163],[-114.331,29.75],[-113.589,29.062],[-113.424,28.826],[-113.272,28.755],[-113.14,28.411],[-112.962,28.425],[-112.762,27.78],[-112.458,27.526],[-112.245,27.172],[-111.616,26.663],[-111.285,25.733],[-110.988,25.295],[-110.71,24.826],[-110.655,24.299],[-110.173,24.266],[-109.772,23.811],[-109.409,23.365],[-109.433,23.186],[-109.854,22.818],[-110.031,22.823],[-110.295,23.431],[-110.95,24.001],[-111.671,24.484],[-112.182,24.738],[-112.149,25.47],[-112.301,26.012],[-112.777,26.322],[-113.465,26.768],[-113.597,26.639],[-113.849,26.9],[-114.466,27.142],[-115.055,27.723],[-114.982,27.798],[-114.57,27.741],[-114.199,28.115],[-114.162,28.566],[-114.932,29.279],[-115.519,29.556],[-115.887,30.181],[-116.258,30.836],[-116.722,31.636]],[[-57.625,-30.216],[-56.976,-30.11],[-55.973,-30.883],[-55.602,-30.854],[-54.572,-31.495],[-53.788,-32.047],[-53.21,-32.728],[-53.651,-33.202],[-53.374,-33.768],[-53.806,-34.397],[-54.936,-34.953],[-55.674,-34.753],[-56.215,-34.86],[-57.14,-34.43],[-57.818,-34.463],[-58.427,-33.909],[-58.35,-33.263],[-58.133,-33.041],[-58.142,-32.045],[-57.875,-31.017]],[[-53.374,-33.768],[-53.651,-33.202],[-53.21,-32.728],[-53.788,-32.047],[-54.572,-31.495],[-55.602,-30.854],[-55.973,-30.883],[-56.976,-30.11],[-57.625,-30.216],[-56.291,-28.853],[-55.162,-27.882],[-54.491,-27.475],[-53.649,-26.923],[-53.628,-26.125],[-54.13,-25.548],[-54.625,-25.739],[-54.429,-25.162],[-54.293,-24.571],[-54.293,-24.021],[-54.653,-23.84],[-55.028,-24.001],[-55.401,-23.957],[-55.518,-23.572],[-55.611,-22.656],[-55.798,-22.357],[-56.473,-22.086],[-56.882,-22.282],[-57.937,-22.09],[-57.871,-20.733],[-58.166,-20.177],[-57.854,-19.97],[-57.95,-19.4],[-57.676,-18.962],[-57.498,-18.174],[-57.735,-17.552],[-58.281,-17.272],[-58.388,-16.877],[-58.241,-16.3],[-60.158,-16.258],[-60.543,-15.094],[-60.251,-15.077],[-60.264,-14.646],[-60.459,-14.354],[-60.503,-13.776],[-61.084,-13.479],[-61.713,-13.489],[-62.127,-13.199],[-62.803,-13.001],[-63.196,-12.627],[-64.316,-12.462],[-65.402,-11.566],[-65.322,-10.896],[-65.445,-10.511],[-65.338,-9.762],[-66.647,-9.931],[-67.174,-10.307],[-68.048,-10.712],[-68.271,-11.015],[-68.786,-11.036],[-69.53,-10.952],[-70.094,-11.124],[-70.549,-11.009],[-70.482,-9.49],[-71.302,-10.079],[-72.185,-10.054],[-72.563,-9.52],[-73.227,-9.462],[-73.015,-9.033],[-73.571,-8.424],[-73.987,-7.524],[-73.723,-7.341],[-73.724,-6.919],[-73.12,-6.63],[-73.22,-6.089],[-72.965,-5.741],[-72.892,-5.275],[-71.748,-4.594],[-70.929,-4.402],[-70.795,-4.251],[-69.894,-4.298],[-69.444,-1.556],[-69.42,-1.123],[-69.577,-0.55],[-70.021,-0.185],[-70.016,0.541],[-69.452,0.706],[-69.252,0.603],[-69.219,0.986],[-69.805,1.089],[-69.817,1.715],[-67.869,1.692],[-67.538,2.037],[-67.26,1.72],[-67.065,1.13],[-66.876,1.253],[-66.326,0.724],[-65.548,0.789],[-65.355,1.095],[-64.611,1.329],[-64.199,1.493],[-64.083,1.916],[-63.369,2.201],[-63.423,2.411],[-64.27,2.497],[-64.409,3.127],[-64.368,3.797],[-64.816,4.056],[-64.629,4.148],[-63.888,4.021],[-63.093,3.771],[-62.805,4.007],[-62.085,4.162],[-60.967,4.536],[-60.601,4.918],[-60.734,5.2],[-60.214,5.244],[-59.981,5.014],[-60.111,4.575],[-59.767,4.424],[-59.538,3.959],[-59.815,3.606],[-59.975,2.755],[-59.719,2.25],[-59.646,1.787],[-59.031,1.318],[-58.54,1.268],[-58.429,1.464],[-58.113,1.507],[-57.661,1.683],[-57.336,1.949],[-56.783,1.864],[-56.539,1.9],[-55.996,1.818],[-55.906,2.022],[-56.073,2.221],[-55.973,2.51],[-55.57,2.422],[-55.098,2.524],[-54.525,2.312],[-54.088,2.106],[-53.779,2.377],[-53.555,2.335],[-53.418,2.053],[-52.94,2.125],[-52.556,2.505],[-52.249,3.241],[-51.658,4.156],[-51.317,4.203],[-51.07,3.65],[-50.509,1.902],[-49.974,1.736],[-49.947,1.046],[-50.699,0.223],[-50.388,-0.078],[-48.621,-0.235],[-48.584,-1.238],[-47.825,-0.582],[-46.567,-0.941],[-44.906,-1.552],[-44.418,-2.138],[-44.582,-2.691],[-43.419,-2.383],[-41.473,-2.912],[-39.979,-2.873],[-38.5,-3.701],[-37.223,-4.821],[-36.453,-5.109],[-35.598,-5.15],[-35.235,-5.465],[-34.896,-6.738],[-34.73,-7.343],[-35.128,-8.996],[-35.637,-9.649],[-37.047,-11.041],[-37.684,-12.171],[-38.424,-13.038],[-38.674,-13.058],[-38.953,-13.793],[-38.882,-15.667],[-39.161,-17.208],[-39.267,-17.868],[-39.584,-18.262],[-39.761,-19.599],[-40.775,-20.905],[-40.945,-21.937],[-41.754,-22.371],[-41.988,-22.97],[-43.075,-22.968],[-44.648,-23.352],[-45.352,-23.797],[-46.472,-24.089],[-47.649,-24.885],[-48.495,-25.877],[-48.641,-26.624],[-48.475,-27.176],[-48.662,-28.186],[-48.888,-28.674],[-49.587,-29.224],[-50.697,-30.984],[-51.576,-31.778],[-52.256,-32.245],[-52.712,-33.197]],[[-69.53,-10.952],[-68.786,-11.036],[-68.271,-11.015],[-68.048,-10.712],[-67.174,-10.307],[-66.647,-9.931],[-65.338,-9.762],[-65.445,-10.511],[-65.322,-10.896],[-65.402,-11.566],[-64.316,-12.462],[-63.196,-12.627],[-62.803,-13.001],[-62.127,-13.199],[-61.713,-13.489],[-61.084,-13.479],[-60.503,-13.776],[-60.459,-14.354],[-60.264,-14.646],[-60.251,-15.077],[-60.543,-15.094],[-60.158,-16.258],[-58.241,-16.3],[-58.388,-16.877],[-58.281,-17.272],[-57.735,-17.552],[-57.498,-18.174],[-57.676,-18.962],[-57.95,-19.4],[-57.854,-19.97],[-58.166,-20.177],[-58.183,-19.868],[-59.115,-19.357],[-60.044,-19.343],[-61.786,-19.634],[-62.266,-20.514],[-62.291,-21.052],[-62.685,-22.249],[-62.846,-22.035],[-63.987,-21.994],[-64.377,-22.798],[-64.965,-22.076],[-66.273,-21.832],[-67.107,-22.736],[-67.828,-22.873],[-68.22,-21.494],[-68.757,-20.373],[-68.442,-19.405],[-68.967,-18.982],[-69.1,-18.26],[-69.59,-17.58],[-68.96,-16.501],[-69.39,-15.66],[-69.16,-15.324],[-69.34,-14.953],[-68.949,-14.454],[-68.929,-13.603],[-68.88,-12.9],[-68.665,-12.561]],[[-69.894,-4.298],[-70.795,-4.251],[-70.929,-4.402],[-71.748,-4.594],[-72.892,-5.275],[-72.965,-5.741],[-73.22,-6.089],[-73.12,-6.63],[-73.724,-6.919],[-73.723,-7.341],[-73.987,-7.524],[-73.571,-8.424],[-73.015,-9.033],[-73.227,-9.462],[-72.563,-9.52],[-72.185,-10.054],[-71.302,-10.079],[-70.482,-9.49],[-70.549,-11.009],[-70.094,-11.124],[-69.53,-10.952],[-68.665,-12.561],[-68.88,-12.9],[-68.929,-13.603],[-68.949,-14.454],[-69.34,-14.953],[-69.16,-15.324],[-69.39,-15.66],[-68.96,-16.501],[-69.59,-17.58],[-69.858,-18.093],[-70.373,-18.348],[-71.375,-17.774],[-71.462,-17.363],[-73.445,-16.359],[-75.238,-15.266],[-76.009,-14.649],[-76.423,-13.823],[-76.259,-13.535],[-77.106,-12.223],[-78.092,-10.378],[-79.037,-8.387],[-79.446,-7.931],[-79.761,-7.194],[-80.537,-6.542],[-81.25,-6.137],[-80.926,-5.691],[-81.411,-4.737],[-81.1,-4.036],[-80.303,-3.405],[-80.184,-3.821],[-80.469,-4.059],[-80.442,-4.426],[-80.029,-4.346],[-79.625,-4.454],[-79.205,-4.959],[-78.64,-4.548],[-78.451,-3.873],[-77.838,-3.003],[-76.635,-2.609],[-75.545,-1.562],[-75.234,-0.911],[-75.373,-0.152],[-75.107,-0.057],[-74.442,-0.531],[-74.122,-1.003],[-73.66,-1.26],[-73.07,-2.309],[-72.326,-2.434],[-71.775,-2.17],[-71.414,-2.343],[-70.813,-2.257],[-70.048,-2.725],[-70.693,-3.743],[-70.394,-3.767]],[[-66.876,1.253],[-67.065,1.13],[-67.26,1.72],[-67.538,2.037],[-67.869,1.692],[-69.817,1.715],[-69.805,1.089],[-69.219,0.986],[-69.252,0.603],[-69.452,0.706],[-70.016,0.541],[-70.021,-0.185],[-69.577,-0.55],[-69.42,-1.123],[-69.444,-1.556],[-69.894,-4.298],[-70.394,-3.767],[-70.693,-3.743],[-70.048,-2.725],[-70.813,-2.257],[-71.414,-2.343],[-71.775,-2.17],[-72.326,-2.434],[-73.07,-2.309],[-73.66,-1.26],[-74.122,-1.003],[-74.442,-0.531],[-75.107,-0.057],[-75.373,-0.152],[-75.801,0.085],[-76.292,0.416],[-76.576,0.257],[-77.425,0.396],[-77.669,0.826],[-77.855,0.81],[-78.855,1.381],[-78.991,1.691],[-78.618,1.766],[-78.662,2.267],[-78.428,2.63],[-77.932,2.697],[-77.51,3.325],[-77.128,3.85],[-77.496,4.088],[-77.308,4.668],[-77.533,5.583],[-77.319,5.845],[-77.477,6.691],[-77.882,7.224],[-77.753,7.71],[-77.431,7.638],[-77.243,7.935],[-77.475,8.524],[-77.353,8.671],[-76.837,8.639],[-76.086,9.337],[-75.675,9.443],[-75.665,9.774],[-75.48,10.619],[-74.907,11.083],[-74.277,11.102],[-74.197,11.31],[-73.415,11.227],[-72.628,11.732],[-72.238,11.956],[-71.754,12.437],[-71.4,12.376],[-71.137,12.113],[-71.332,11.776],[-71.974,11.609],[-72.228,11.109],[-72.615,10.822],[-72.905,10.45],[-73.028,9.737],[-73.305,9.152],[-72.789,9.085],[-72.66,8.625],[-72.44,8.405],[-72.361,8.003],[-72.48,7.633],[-72.444,7.424],[-72.198,7.34],[-71.96,6.992],[-70.674,7.088],[-70.093,6.96],[-69.389,6.1],[-68.985,6.207],[-68.265,6.153],[-67.695,6.267],[-67.341,6.095],[-67.522,5.557],[-67.745,5.221],[-67.823,4.504],[-67.622,3.839],[-67.338,3.542],[-67.303,3.318],[-67.81,2.821],[-67.447,2.6],[-67.181,2.251]],[[-77.353,8.671],[-77.475,8.524],[-77.243,7.935],[-77.431,7.638],[-77.753,7.71],[-77.882,7.224],[-78.215,7.512],[-78.429,8.052],[-78.182,8.319],[-78.435,8.388],[-78.622,8.718],[-79.12,8.996],[-79.558,8.932],[-79.761,8.585],[-80.164,8.333],[-80.383,8.298],[-80.481,8.09],[-80.004,7.548],[-80.277,7.42],[-80.421,7.272],[-80.886,7.221],[-81.06,7.818],[-81.19,7.648],[-81.52,7.707],[-81.721,8.109],[-82.131,8.175],[-82.391,8.292],[-82.82,8.291],[-82.851,8.074],[-82.966,8.225],[-82.913,8.424],[-82.83,8.626],[-82.869,8.807],[-82.719,8.926],[-82.927,9.074],[-82.933,9.477],[-82.546,9.566],[-82.187,9.207],[-82.208,8.996],[-81.809,8.951],[-81.714,9.032],[-81.439,8.786],[-80.947,8.859],[-80.522,9.111],[-79.915,9.313],[-79.573,9.612],[-79.021,9.553],[-79.058,9.455],[-78.501,9.42],[-78.056,9.248],[-77.73,8.947]],[[-82.546,9.566],[-82.933,9.477],[-82.927,9.074],[-82.719,8.926],[-82.869,8.807],[-82.83,8.626],[-82.913,8.424],[-82.966,8.225],[-83.508,8.447],[-83.711,8.657],[-83.596,8.83],[-83.633,9.051],[-83.91,9.291],[-84.303,9.487],[-84.648,9.616],[-84.713,9.908],[-84.976,10.087],[-84.911,9.796],[-85.111,9.557],[-85.339,9.835],[-85.661,9.933],[-85.797,10.135],[-85.792,10.439],[-85.659,10.754],[-85.942,10.895],[-85.713,11.088],[-85.562,11.217],[-84.903,10.952],[-84.673,11.083],[-84.356,10.999],[-84.19,10.793],[-83.895,10.727],[-83.656,10.939],[-83.402,10.395],[-83.016,9.993]],[[-83.656,10.939],[-83.895,10.727],[-84.19,10.793],[-84.356,10.999],[-84.673,11.083],[-84.903,10.952],[-85.562,11.217],[-85.713,11.088],[-86.058,11.403],[-86.526,11.807],[-86.746,12.144],[-87.168,12.458],[-87.668,12.91],[-87.557,13.065],[-87.392,12.914],[-87.317,12.985],[-87.006,13.026],[-86.881,13.254],[-86.734,13.263],[-86.755,13.755],[-86.521,13.778],[-86.312,13.771],[-86.096,14.038],[-85.801,13.836],[-85.699,13.96],[-85.514,14.079],[-85.165,14.354],[-85.149,14.56],[-85.053,14.552],[-84.925,14.79],[-84.82,14.82],[-84.65,14.667],[-84.449,14.622],[-84.228,14.749],[-83.976,14.749],[-83.629,14.88],[-83.49,15.016],[-83.147,14.996],[-83.233,14.9],[-83.284,14.677],[-83.182,14.311],[-83.412,13.97],[-83.52,13.568],[-83.552,13.127],[-83.499,12.869],[-83.473,12.419],[-83.626,12.321],[-83.72,11.893],[-83.651,11.629],[-83.855,11.373],[-83.809,11.103]],[[-83.147,14.996],[-83.49,15.016],[-83.629,14.88],[-83.976,14.749],[-84.228,14.749],[-84.449,14.622],[-84.65,14.667],[-84.82,14.82],[-84.925,14.79],[-85.053,14.552],[-85.149,14.56],[-85.165,14.354],[-85.514,14.079],[-85.699,13.96],[-85.801,13.836],[-86.096,14.038],[-86.312,13.771],[-86.521,13.778],[-86.755,13.755],[-86.734,13.263],[-86.881,13.254],[-87.006,13.026],[-87.317,12.985],[-87.489,13.298],[-87.793,13.384],[-87.724,13.785],[-87.86,13.893],[-88.065,13.965],[-88.504,13.845],[-88.541,13.98],[-88.843,14.141],[-89.059,14.34],[-89.353,14.424],[-89.146,14.678],[-89.225,14.874],[-89.155,15.066],[-88.681,15.346],[-88.225,15.728],[-88.121,15.689],[-87.902,15.864],[-87.616,15.879],[-87.523,15.797],[-87.368,15.847],[-86.903,15.757],[-86.441,15.783],[-86.119,15.893],[-86.002,16.005],[-85.683,15.954],[-85.444,15.886],[-85.182,15.909],[-84.984,15.996],[-84.527,15.857],[-84.368,15.835],[-84.063,15.648],[-83.774,15.424],[-83.41,15.271]],[[-89.353,14.424],[-89.059,14.34],[-88.843,14.141],[-88.541,13.98],[-88.504,13.845],[-88.065,13.965],[-87.86,13.893],[-87.724,13.785],[-87.793,13.384],[-87.904,13.149],[-88.483,13.164],[-88.843,13.26],[-89.257,13.459],[-89.812,13.521],[-90.096,13.735],[-90.065,13.882],[-89.722,14.134],[-89.534,14.245],[-89.587,14.363]],[[-92.228,14.539],[-92.203,14.83],[-92.087,15.065],[-92.229,15.251],[-91.748,16.067],[-90.464,16.07],[-90.439,16.41],[-90.601,16.471],[-90.712,16.687],[-91.082,16.918],[-91.454,17.252],[-91.002,17.255],[-91.002,17.818],[-90.068,17.819],[-89.143,17.808],[-89.151,17.016],[-89.229,15.887],[-88.931,15.887],[-88.605,15.706],[-88.518,15.855],[-88.225,15.728],[-88.681,15.346],[-89.155,15.066],[-89.225,14.874],[-89.146,14.678],[-89.353,14.424],[-89.587,14.363],[-89.534,14.245],[-89.722,14.134],[-90.065,13.882],[-90.096,13.735],[-90.609,13.91],[-91.232,13.928],[-91.69,14.126]],[[-89.143,17.808],[-89.151,17.955],[-89.03,18.002],[-88.848,17.883],[-88.49,18.487],[-88.3,18.5],[-88.296,18.353],[-88.107,18.349],[-88.123,18.077],[-88.285,17.644],[-88.198,17.489],[-88.303,17.132],[-88.24,17.036],[-88.355,16.531],[-88.552,16.265],[-88.732,16.234],[-88.931,15.887],[-89.229,15.887],[-89.151,17.016]],[[-60.734,5.2],[-60.601,4.918],[-60.967,4.536],[-62.085,4.162],[-62.805,4.007],[-63.093,3.771],[-63.888,4.021],[-64.629,4.148],[-64.816,4.056],[-64.368,3.797],[-64.409,3.127],[-64.27,2.497],[-63.423,2.411],[-63.369,2.201],[-64.083,1.916],[-64.199,1.493],[-64.611,1.329],[-65.355,1.095],[-65.548,0.789],[-66.326,0.724],[-66.876,1.253],[-67.181,2.251],[-67.447,2.6],[-67.81,2.821],[-67.303,3.318],[-67.338,3.542],[-67.622,3.839],[-67.823,4.504],[-67.745,5.221],[-67.522,5.557],[-67.341,6.095],[-67.695,6.267],[-68.265,6.153],[-68.985,6.207],[-69.389,6.1],[-70.093,6.96],[-70.674,7.088],[-71.96,6.992],[-72.198,7.34],[-72.444,7.424],[-72.48,7.633],[-72.361,8.003],[-72.44,8.405],[-72.66,8.625],[-72.789,9.085],[-73.305,9.152],[-73.028,9.737],[-72.905,10.45],[-72.615,10.822],[-72.228,11.109],[-71.974,11.609],[-71.332,11.776],[-71.36,11.54],[-71.947,11.423],[-71.621,10.969],[-71.633,10.446],[-72.074,9.866],[-71.696,9.072],[-71.265,9.137],[-71.04,9.86],[-71.35,10.212],[-71.401,10.969],[-70.155,11.375],[-70.294,11.847],[-69.943,12.162],[-69.584,11.46],[-68.883,11.443],[-68.233,10.886],[-68.194,10.555],[-67.296,10.546],[-66.228,10.649],[-65.655,10.201],[-64.89,10.077],[-64.329,10.39],[-64.318,10.641],[-63.079,10.702],[-61.881,10.716],[-62.73,10.42],[-62.389,9.948],[-61.589,9.873],[-60.831,9.381],[-60.671,8.58],[-60.15,8.603],[-59.758,8.367],[-60.551,7.78],[-60.638,7.415],[-60.296,7.044],[-60.544,6.857],[-61.159,6.696],[-61.139,6.234],[-61.41,5.959]],[[-56.539,1.9],[-56.783,1.864],[-57.336,1.949],[-57.661,1.683],[-58.113,1.507],[-58.429,1.464],[-58.54,1.268],[-59.031,1.318],[-59.646,1.787],[-59.719,2.25],[-59.975,2.755],[-59.815,3.606],[-59.538,3.959],[-59.767,4.424],[-60.111,4.575],[-59.981,5.014],[-60.214,5.244],[-60.734,5.2],[-61.41,5.959],[-61.139,6.234],[-61.159,6.696],[-60.544,6.857],[-60.296,7.044],[-60.638,7.415],[-60.551,7.78],[-59.758,8.367],[-59.102,7.999],[-58.483,7.348],[-58.455,6.833],[-58.078,6.809],[-57.542,6.321],[-57.147,5.973],[-57.307,5.074],[-57.914,4.813],[-57.86,4.577],[-58.045,4.061],[-57.602,3.335],[-57.281,3.333],[-57.15,2.769]],[[-54.525,2.312],[-55.098,2.524],[-55.57,2.422],[-55.973,2.51],[-56.073,2.221],[-55.906,2.022],[-55.996,1.818],[-56.539,1.9],[-57.15,2.769],[-57.281,3.333],[-57.602,3.335],[-58.045,4.061],[-57.86,4.577],[-57.914,4.813],[-57.307,5.074],[-57.147,5.973],[-55.949,5.773],[-55.842,5.953],[-55.033,6.025],[-53.958,5.757],[-54.479,4.897],[-54.4,4.213],[-54.007,3.62],[-54.182,3.19],[-54.27,2.732]],[[-51.658,4.156],[-52.249,3.241],[-52.556,2.505],[-52.94,2.125],[-53.418,2.053],[-53.555,2.335],[-53.779,2.377],[-54.088,2.106],[-54.525,2.312],[-54.27,2.732],[-54.182,3.19],[-54.007,3.62],[-54.4,4.213],[-54.479,4.897],[-53.958,5.757],[-53.618,5.647],[-52.882,5.41],[-51.823,4.566]],[[-75.373,-0.152],[-75.234,-0.911],[-75.545,-1.562],[-76.635,-2.609],[-77.838,-3.003],[-78.451,-3.873],[-78.64,-4.548],[-79.205,-4.959],[-79.625,-4.454],[-80.029,-4.346],[-80.442,-4.426],[-80.469,-4.059],[-80.184,-3.821],[-80.303,-3.405],[-79.77,-2.658],[-79.987,-2.221],[-80.369,-2.685],[-80.968,-2.247],[-80.765,-1.965],[-80.934,-1.057],[-80.583,-0.907],[-80.399,-0.284],[-80.021,0.36],[-80.091,0.768],[-79.543,0.983],[-78.855,1.381],[-77.855,0.81],[-77.669,0.826],[-77.425,0.396],[-76.576,0.257],[-76.292,0.416],[-75.801,0.085]],[[-66.282,18.515],[-65.771,18.427],[-65.591,18.228],[-65.847,17.976],[-66.6,17.982],[-67.184,17.947],[-67.242,18.374],[-67.101,18.521]],[[-77.57,18.491],[-76.897,18.401],[-76.365,18.161],[-76.2,17.887],[-76.903,17.868],[-77.206,17.701],[-77.766,17.862],[-78.338,18.226],[-78.218,18.455],[-77.797,18.524]],[[-82.268,23.189],[-81.404,23.117],[-80.619,23.106],[-79.68,22.765],[-79.281,22.399],[-78.347,22.512],[-77.993,22.277],[-77.146,21.658],[-76.524,21.207],[-76.195,21.221],[-75.598,21.017],[-75.671,20.735],[-74.934,20.694],[-74.178,20.285],[-74.297,20.05],[-74.962,19.923],[-75.635,19.874],[-76.324,19.953],[-77.755,19.855],[-77.085,20.413],[-77.493,20.673],[-78.137,20.74],[-78.483,21.029],[-78.72,21.598],[-79.285,21.559],[-80.217,21.827],[-80.518,22.037],[-81.821,22.192],[-82.17,22.387],[-81.795,22.637],[-82.776,22.688],[-83.494,22.169],[-83.909,22.155],[-84.052,21.911],[-84.547,21.801],[-84.975,21.896],[-84.447,22.205],[-84.23,22.566],[-83.778,22.788],[-83.268,22.983],[-82.51,23.079]],[[-58.166,-20.177],[-57.871,-20.733],[-57.937,-22.09],[-56.882,-22.282],[-56.473,-22.086],[-55.798,-22.357],[-55.611,-22.656],[-55.518,-23.572],[-55.401,-23.957],[-55.028,-24.001],[-54.653,-23.84],[-54.293,-24.021],[-54.293,-24.571],[-54.429,-25.162],[-54.625,-25.739],[-54.789,-26.622],[-55.696,-27.388],[-56.487,-27.548],[-57.61,-27.396],[-58.618,-27.124],[-57.634,-25.604],[-57.777,-25.162],[-58.807,-24.771],[-60.029,-24.033],[-60.847,-23.881],[-62.685,-22.249],[-62.291,-21.052],[-62.266,-20.514],[-61.786,-19.634],[-60.044,-19.343],[-59.115,-19.357],[-58.183,-19.868]],[[-61.68,10.76],[-61.105,10.89],[-60.895,10.855],[-60.935,10.11],[-61.77,10],[-61.95,10.09],[-61.66,10.365]]]</script>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// ── ciudades por lat/long real (proyección compartida con la geografía) ──
+const CITIES = [
+  { id:'santiago', nm:'Santiago', rl:'casa matriz', lat:-33.45, lon:-70.67, url:'/latam360/demo/?scene=cf100' },
+  { id:'saopaulo', nm:'São Paulo', rl:'mantenimiento', lat:-23.55, lon:-46.63, url:'/latam360/demo/?scene=lod-streaming' },
+  { id:'lima', nm:'Lima', rl:'bodega', lat:-12.05, lon:-77.04, url:'/latam360/demo/?scene=first-person' },
+  { id:'bogota', nm:'Bogotá', rl:'', lat:4.71, lon:-74.07, url:'/latam360/demo/?scene=downtown' },
+  { id:'quito', nm:'Quito', rl:'', lat:-0.18, lon:-78.47, url:'/latam360/demo/?scene=splat-portal' },
+  { id:'miami', nm:'Miami', rl:'en captura', lat:25.76, lon:-80.19, url:null, soon:true }
+];
+const byId = {}; CITIES.forEach(c=>byId[c.id]=c);
+const S = 15;                             // escala de la proyección equirectangular
+const P = (lon,lat)=>[lon*S, lat*S];      // [x,y] en el plano del mapa (norte = +y)
+
+const stage = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(stage.clientWidth, stage.clientHeight);
+stage.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x0a0716, 0.00035);
+const camera = new THREE.PerspectiveCamera(40, stage.clientWidth/stage.clientHeight, 1, 12000);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = 0.08;
+controls.autoRotate = false; controls.autoRotateSpeed = 0.22;
+controls.enablePan = false; controls.minPolarAngle = 0.42; controls.maxPolarAngle = 1.02;
+
+scene.add(new THREE.AmbientLight(0x9a86ff, 0.85));
+scene.add(new THREE.HemisphereLight(0xbfa8ff, 0x1a0a3a, 0.7));
+const key = new THREE.DirectionalLight(0xffffff, 1.15); key.position.set(-500, 900, 500); scene.add(key);
+const rim = new THREE.DirectionalLight(0xff4f6d, 0.9); rim.position.set(600, 240, -500); scene.add(rim);
+const grid = new THREE.GridHelper(6000, 60, 0x7a5bff, 0x2a1d5e); grid.material.transparent=true; grid.material.opacity=0.18; grid.position.y=-40; scene.add(grid);
+
+const map = new THREE.Group(); map.rotation.x = -Math.PI/2; scene.add(map);
+let land, labels = [];
+
+function centroid(ring){ let x=0,y=0; ring.forEach(c=>{x+=c[0];y+=c[1];}); return [x/ring.length, y/ring.length]; }
+
+function build(){
+  // anillos de las Américas pre-filtrados (Patagonia → EE.UU.), inline (carga instantánea, sin fetch)
+  const rings = JSON.parse(document.getElementById('geodata').textContent);
+  const shapes = rings.map(r=>{ const s=new THREE.Shape(); r.forEach((c,i)=>{ const [x,y]=P(c[0],c[1]); i?s.lineTo(x,y):s.moveTo(x,y); }); return s; });
+
+  const DEPTH = 18;
+  const geo = new THREE.ExtrudeGeometry(shapes, { depth:DEPTH, bevelEnabled:false });
+  geo.computeBoundingBox(); const bb=geo.boundingBox;
+  const cx=(bb.min.x+bb.max.x)/2, cy=(bb.min.y+bb.max.y)/2;
+  geo.translate(-cx,-cy,0); geo.computeVertexNormals();
+
+  const mat = new THREE.MeshStandardMaterial({ color:0x463789, metalness:0.15, roughness:0.5, emissive:0x2a1860, emissiveIntensity:0.95, side:THREE.DoubleSide });
+  land = new THREE.Mesh(geo, mat);
+  land.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo, 22), new THREE.LineBasicMaterial({ color:0xff4f6d, transparent:true, opacity:0.6 })));
+  map.add(land);
+
+  // marcadores (proyección idéntica, centrada como la geo)
+  CITIES.forEach(c=>{
+    const [px,py]=P(c.lon,c.lat);
+    const g=new THREE.Group(); g.position.set(px-cx, py-cy, DEPTH);
+    const col = c.soon ? 0xaab2dc : 0xff4f6d; let pick;
+    if(!c.soon){
+      const pillar=new THREE.Mesh(new THREE.CylinderGeometry(2,2,60,10), new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.85})); pillar.rotation.x=Math.PI/2; pillar.position.z=30;
+      const orb=new THREE.Mesh(new THREE.SphereGeometry(9,20,20), new THREE.MeshBasicMaterial({color:0xffffff})); orb.position.z=66;
+      const glow=new THREE.Mesh(new THREE.SphereGeometry(17,20,20), new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.26})); glow.position.z=66;
+      const ring=new THREE.Mesh(new THREE.RingGeometry(12,14.5,32), new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.6,side:THREE.DoubleSide})); ring.position.z=1.5;
+      g.add(pillar,glow,orb,ring); g.userData={ring}; pick=orb;
+    } else {
+      const stem=new THREE.Mesh(new THREE.CylinderGeometry(1,1,58,6), new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.3})); stem.rotation.x=Math.PI/2; stem.position.z=29;
+      const ring=new THREE.Mesh(new THREE.RingGeometry(11,13,32), new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.45,side:THREE.DoubleSide})); ring.position.z=58;
+      const orb=new THREE.Mesh(new THREE.SphereGeometry(7,18,18), new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.55})); orb.position.z=58;
+      g.add(stem,ring,orb); g.userData={}; pick=orb;
+    }
+    land.add(g);
+    const el=document.createElement('div'); el.className='lbl'+(c.soon?' soon':''); el.dataset.city=c.id;
+    el.innerHTML='<div class="nm">'+c.nm+'</div>'+(c.rl?'<div class="rl">'+c.rl+'</div>':'');
+    document.body.appendChild(el); labels.push({el,obj:pick,city:c});
   });
+
+  // encuadre automático 3/4 elevado, mapa a la derecha del panel
+  land.updateWorldMatrix(true,true);
+  const box=new THREE.Box3().setFromObject(land), ctr=box.getCenter(new THREE.Vector3()), sz=box.getSize(new THREE.Vector3());
+  const mdim=Math.max(sz.x,sz.z); controls.target.set(ctr.x - mdim*0.10, ctr.y, ctr.z);
+  const D=mdim*1.28; camera.position.set(ctr.x + D*0.02, ctr.y + D*0.95, ctr.z + D*0.62); camera.lookAt(controls.target);
+  controls.minDistance=D*0.45; controls.maxDistance=D*2.2; controls.update();
+  document.getElementById('loading').style.display='none';
+}
+
+// ── interacción ──
+const fade=document.getElementById('fade'), fadelab=document.getElementById('fadelab'), promptEl=document.querySelector('.prompt');
+function go(id){ const c=byId[id]; if(!c||!c.url) return; fadelab.textContent='ENTRANDO A '+c.nm.toUpperCase()+'…'; fade.classList.add('on'); setTimeout(()=>location.href=c.url,620); }
+function hl(id,on){ document.querySelectorAll('[data-city="'+id+'"]').forEach(e=>e.classList.toggle('hl',on)); const c=byId[id]; promptEl.innerHTML = on&&c&&c.url ? '<span class="bk">◈</span> '+c.nm.toUpperCase()+' — CLICK PARA ENTRAR' : (on&&c&&c.soon ? '<span class="bk">◈</span> MIAMI — EN CAPTURA' : '<span class="bk">◈</span> SELECCIONA UN DESTINO'); }
+document.querySelectorAll('.fil[data-city]').forEach(el=>{ el.addEventListener('click',()=>go(el.dataset.city)); el.addEventListener('mouseenter',()=>hl(el.dataset.city,true)); el.addEventListener('mouseleave',()=>hl(el.dataset.city,false)); });
+const ray=new THREE.Raycaster(), mouse=new THREE.Vector2();
+function pick(ev){ const r=renderer.domElement.getBoundingClientRect(); mouse.x=((ev.clientX-r.left)/r.width)*2-1; mouse.y=-((ev.clientY-r.top)/r.height)*2+1; ray.setFromCamera(mouse,camera); return ray.intersectObjects(labels.map(l=>l.obj))[0]; }
+renderer.domElement.addEventListener('click',e=>{ const h=pick(e); if(h){ const l=labels.find(l=>l.obj===h.object); if(l) go(l.city.id); } });
+renderer.domElement.addEventListener('pointermove',e=>{ const h=pick(e); const l=h&&labels.find(l=>l.obj===h.object); labels.forEach(x=>hl(x.city.id,false)); if(l){ hl(l.city.id,true); renderer.domElement.style.cursor='pointer'; } else renderer.domElement.style.cursor='grab'; });
+addEventListener('resize',()=>{ camera.aspect=stage.clientWidth/stage.clientHeight; camera.updateProjectionMatrix(); renderer.setSize(stage.clientWidth,stage.clientHeight); });
+
+const v=new THREE.Vector3();
+function tick(){
+  requestAnimationFrame(tick); controls.update();
+  const t=Date.now()/600;
+  if(land) land.children.forEach(g=>{ if(g.userData&&g.userData.ring){ const s=1+((Math.sin(t)+1)/2)*0.6; g.userData.ring.scale.set(s,s,s); g.userData.ring.material.opacity=0.55*(1-((Math.sin(t)+1)/2)); } });
+  for(const l of labels){ l.obj.getWorldPosition(v); v.project(camera); const vis=v.z<1; l.el.style.opacity=vis?1:0; l.el.style.left=((v.x*0.5+0.5)*stage.clientWidth)+'px'; l.el.style.top=((-v.y*0.5+0.5)*stage.clientHeight)+'px'; }
+  renderer.render(scene,camera);
+}
+try { build(); tick(); } catch(e){ document.getElementById('loading').textContent='No se pudo cargar la geografía.'; console.error(e); }
 </script>
 </body>
 </html>
