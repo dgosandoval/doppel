@@ -725,9 +725,9 @@ function setActiveScene(scene) {
     // navegación de doble gesto (dedo izq avanza/retrocede, der controla la dirección)
     hint = touch
       ? 'Dedo izquierdo para avanzar · derecho para la dirección'
-      : 'Arrastra para mirar · WASD para moverte';
+      : 'Arrastra para mirar · WASD o flechas para moverte';
   } else if (scene.type === 'lod') {
-    hint = touch ? 'Desliza para explorar la ciudad' : 'Arrastra para mirar · WASD para moverte';
+    hint = touch ? 'Desliza para explorar la ciudad' : 'Arrastra para mirar · WASD o flechas para moverte';
   } else {
     hint = touch ? 'Desliza para orbitar · pellizca para acercar' : 'Arrastra para orbitar · rueda para acercar';
   }
