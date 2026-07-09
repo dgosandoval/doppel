@@ -437,6 +437,146 @@ body.touring .hint {
 #loader.is-error #loader-pct {
   display: none;
 }
+
+/* ---- Lightbox de bienvenida (controles al entrar) -------------------- */
+.welcome {
+  position: fixed;
+  inset: 0;
+  z-index: 60; /* sobre el loader (30) y el chrome */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: radial-gradient(120% 120% at 50% 0%, rgba(42, 0, 136, 0.72) 0%, rgba(12, 10, 18, 0.9) 70%);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  transition: opacity 0.4s ease;
+}
+.welcome--out {
+  opacity: 0;
+  pointer-events: none;
+}
+.welcome__card {
+  width: 420px;
+  max-width: calc(100vw - 40px);
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  background: rgba(20, 12, 40, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 22px;
+  padding: 30px 28px 24px;
+  box-shadow: 0 30px 80px rgba(8, 2, 30, 0.6);
+  text-align: center;
+  color: var(--white);
+  animation: welcomeIn 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes welcomeIn {
+  from {
+    transform: translateY(14px) scale(0.98);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+.welcome__logo {
+  height: 26px;
+  width: auto;
+  filter: brightness(0) invert(1);
+}
+.welcome__eyebrow {
+  margin-top: 12px;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--coral-soft);
+  font-weight: 700;
+}
+.welcome__title {
+  margin: 4px 0 18px;
+  font-size: 22px;
+  font-weight: 700;
+}
+.welcome__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  text-align: left;
+  margin-bottom: 20px;
+}
+.welcome__row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 11px 14px;
+}
+.welcome__ico {
+  font-size: 20px;
+  width: 26px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.welcome__row > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.welcome__row b {
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.welcome__row span {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.66);
+  line-height: 1.5;
+}
+.welcome__kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  padding: 1px 6px;
+  margin: 1px;
+  font: 600 11px/1.4 ui-monospace, "SF Mono", Menlo, monospace;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  color: #fff;
+}
+.welcome__row span i {
+  font-style: normal;
+  opacity: 0.5;
+  margin: 0 3px;
+}
+.welcome__btn {
+  width: 100%;
+  padding: 13px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--coral);
+  color: #fff;
+  font-size: 14.5px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.welcome__btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 30px rgba(255, 79, 109, 0.4);
+}
+.welcome__note {
+  margin-top: 12px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.5;
+}
 .loader-logo {
   height: 30px;
   filter: brightness(0) invert(1);

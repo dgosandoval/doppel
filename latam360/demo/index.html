@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/latam360/style.css?v=616c" />
+<link rel="stylesheet" href="/latam360/style.css?v=7e1a" />
 <script type="importmap">
 {
   "imports": {
@@ -139,6 +139,19 @@
     <div id="loader-pct">0%</div>
   </div>
 
-  <script type="module" src="/latam360/app.js?v=616c"></script>
+  <!-- Lightbox de bienvenida: explica los controles al entrar (contenido llenado por
+       app.js según el dispositivo). El splat carga por detrás. -->
+  <div id="welcome" class="welcome" hidden>
+    <div class="welcome__card">
+      <img class="welcome__logo" src="/latam360/assets/latam-logo.svg" alt="LATAM" />
+      <div class="welcome__eyebrow">360° Experience</div>
+      <h2 class="welcome__title">Cómo navegar</h2>
+      <div class="welcome__rows" id="welcome-rows"></div>
+      <button class="welcome__btn" id="welcome-start">Comenzar a explorar</button>
+      <div class="welcome__note" id="welcome-note"></div>
+    </div>
+  </div>
+
+  <script type="module" src="/latam360/app.js?v=7e1a"></script>
 </body>
 </html>

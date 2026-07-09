@@ -1940,6 +1940,65 @@ function setupAmbientUnlock() {
   );
 }
 
+// Lightbox de bienvenida: muestra CÓMO NAVEGAR al entrar al demo, para que nadie se
+// pierda. Contenido según el dispositivo (teclado en escritorio, dedos en móvil). El
+// splat carga por detrás; se cierra con el botón. Una vez por sesión de pestaña.
+function setupWelcome() {
+  const el = document.getElementById('welcome');
+  if (!el) return;
+  // No en el embebido de producto (iframe/showcase) ni si ya se vio en esta sesión.
+  if (L360_MODE === 'product' || window.self !== window.top) return;
+  try {
+    if (sessionStorage.getItem('l360_welcome_v1') === '1') return;
+  } catch (e) {
+    /* sessionStorage puede fallar en modo privado: mostramos igual */
+  }
+  const kbd = (k) => `<kbd class="welcome__kbd">${k}</kbd>`;
+  const rowsData = IS_TOUCH
+    ? [
+        ['👆', 'Avanzar y retroceder', 'Desliza un dedo (izquierda) arriba y abajo'],
+        ['✋', 'Cambiar la dirección', 'Desliza el otro dedo (derecha) a los lados'],
+        ['🤏', 'Acercar', 'Pellizca con dos dedos'],
+        ['◎', 'Vista AR', 'Mueve el dispositivo para mirar alrededor']
+      ]
+    : [
+        ['🖱️', 'Mirar alrededor', 'Arrastra con el mouse'],
+        ['⌨️', 'Moverte', kbd('W') + kbd('A') + kbd('S') + kbd('D') + ' <i>o</i> ' + kbd('↑') + kbd('↓') + kbd('←') + kbd('→')],
+        ['⚡', 'Ir más rápido', 'Mantén ' + kbd('Shift') + ' mientras te mueves'],
+        ['🔍', 'Acercar / alejar', 'Rueda del mouse']
+      ];
+  const rows = document.getElementById('welcome-rows');
+  if (rows) {
+    rows.innerHTML = rowsData
+      .map(
+        (r) =>
+          `<div class="welcome__row"><span class="welcome__ico">${r[0]}</span>` +
+          `<div><b>${r[1]}</b><span>${r[2]}</span></div></div>`
+      )
+      .join('');
+  }
+  const note = document.getElementById('welcome-note');
+  if (note) {
+    note.textContent = IS_TOUCH
+      ? 'También puedes iniciar el recorrido guiado desde la barra superior.'
+      : 'O inicia el recorrido guiado con locución desde la barra superior.';
+  }
+  el.hidden = false;
+  const close = () => {
+    el.classList.add('welcome--out');
+    try {
+      sessionStorage.setItem('l360_welcome_v1', '1');
+    } catch (e) {
+      /* noop */
+    }
+    setTimeout(() => {
+      el.hidden = true;
+    }, 400);
+  };
+  const btn = document.getElementById('welcome-start');
+  if (btn) btn.addEventListener('click', close);
+}
+
 function boot() {
   snapshotInitialDom(); // ANTES de cargar nada: todo lo que trae la página se conserva
   buildSceneMenu();
@@ -1948,6 +2007,7 @@ function boot() {
   setupIdleHide();
   setupAmbientUnlock();
   setupMuteButton();
+  setupWelcome();
   callouts.init();
   // Escena inicial: la fija la página huésped (producto) o el parámetro ?scene=
   // (el mapa de la red enlaza cada filial a su cápsula). Por defecto, la primera.
