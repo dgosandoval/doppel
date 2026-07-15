@@ -71,6 +71,7 @@ const CAROUSEL_IMAGES = [
   { src: 'assets/ford-chile.jpg', label: 'Lanzamientos' },
   { src: 'assets/te-quiero-verde.jpg', label: 'Te Quiero Verde' },
   { src: 'assets/walmart.jpg', label: 'Walmart Talento Digital' },
+  { src: 'assets/apps-collage.jpg', label: 'Apps · Software Propio' },
 ];
 
 // ── Small primitives ──────────────────────────────────────────

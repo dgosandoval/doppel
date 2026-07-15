@@ -723,11 +723,19 @@ function FunnelLanding() {
         </Reveal>
         <div className="apps-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20 }}>
           {[
-            ['Tachbook', 'tachbook.com', 'https://tachbook.com', 'Bitácora digital para pilotos y aeronaves: comunidad, meteo aeronáutica y análisis de vuelo. En el App Store.'],
-            ['WBCheck', 'wbcheck.com', 'https://wbcheck.com', 'Peso y balance para aviación general: cálculo visual, presets verificados, listo antes de rodar.'],
-            ['HazTuRadio', 'hazturadio.com', 'https://hazturadio.com', 'Tu radio online en minutos: programación, locutor IA y emisión continua, sin instalar nada.'],
-          ].map(([name, domain, url, d], i) => (
+            ['Tachbook', 'tachbook.com', 'https://tachbook.com', 'Bitácora digital para pilotos y aeronaves: comunidad, meteo aeronáutica y análisis de vuelo. En el App Store.', 'assets/apps/tachbook.jpg'],
+            ['WBCheck', 'wbcheck.com', 'https://wbcheck.com', 'Peso y balance para aviación general: cálculo visual, presets verificados, listo antes de rodar.', 'assets/apps/wbcheck.jpg'],
+            ['HazTuRadio', 'hazturadio.com', 'https://hazturadio.com', 'Tu radio online en minutos: programación, locutor IA y emisión continua, sin instalar nada.', 'assets/apps/hazturadio.jpg'],
+          ].map(([name, domain, url, d, img], i) => (
             <Reveal key={name} delay={200 + i * 130} style={{ border: `1px solid ${FL.paper}25`, padding: '26px 26px 22px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <a href={url} target="_blank" rel="noopener" style={{ display: 'block', margin: '-8px 0 6px' }}>
+                <img
+                  src={img}
+                  alt={`${name} — captura de pantalla`}
+                  loading="lazy"
+                  style={{ width: '100%', aspectRatio: '16/10', objectFit: 'cover', display: 'block', border: `1px solid ${FL.paper}20` }}
+                />
+              </a>
               <div style={{ fontFamily: FL.display, fontSize: 30, fontWeight: 400, letterSpacing: '-0.02em' }}>{name}</div>
               <p style={{ fontSize: 13, color: FL.muted, lineHeight: 1.55, margin: 0, flex: 1 }}>{d}</p>
               <a href={url} target="_blank" rel="noopener" style={{
