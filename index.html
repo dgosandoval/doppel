@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Doppel Agencia Creativa</title>
+<title>Doppel — Estudio Creativo y Laboratorio de Tecnología</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Archivo+Narrow:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Space+Mono:wght@400;700&family=Instrument+Serif:ital@0;1&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&display=swap" rel="stylesheet">
@@ -26,10 +26,14 @@
     .why-grid,
     .where-grid,
     .pod-grid,
+    .pillars-grid,
+    .lab-grid,
+    .apps-grid,
     .mini-features-grid,
     .reasons-grid,
     .testimonial-grid { grid-template-columns: 1fr !important; }
-    .hero-grid, .pod-grid, .why-grid, .where-grid, .mini-features-grid, .reasons-grid, .testimonial-grid, .work-grid { gap: 20px !important; }
+    .hero-grid, .pod-grid, .why-grid, .where-grid, .pillars-grid, .lab-grid, .apps-grid, .mini-features-grid, .reasons-grid, .testimonial-grid, .work-grid { gap: 20px !important; }
+    .pillars-grid > div { padding: 20px 0 8px !important; border-right: none !important; }
     /* Client strip on mobile: keep the 2-row flex layout but tighten cells */
     .clients-grid > div > div { height: 56px !important; padding: 0 8px !important; }
     /* Stats: keep 3 columns compact, fix asymmetric padding/dividers */
@@ -56,8 +60,8 @@
 <body>
 <div id="root"></div>
 
-<script type="text/babel" src="variations/shared.jsx?v=35"></script>
-<script type="text/babel" src="variations/funnel-landing.jsx?v=35"></script>
-<script type="text/babel" src="app.jsx?v=35"></script>
+<script type="text/babel" src="variations/shared.jsx?v=36"></script>
+<script type="text/babel" src="variations/funnel-landing.jsx?v=36"></script>
+<script type="text/babel" src="app.jsx?v=36"></script>
 </body>
 </html>

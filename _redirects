@@ -1,0 +1,3 @@
+# Ruta antigua de la sección Pod Factory → nueva ruta canónica
+/pod_factory /podfactory/ 301
+/pod_factory/* /podfactory/:splat 301

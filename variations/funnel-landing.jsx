@@ -10,6 +10,7 @@ const FL = {
   mutedDim: '#5a5854',
   accent: '#FF6633',
   podAccent: '#F4B81C',
+  labAccent: '#4FD8C7',
   whatsapp: '#25D366',   // Official WhatsApp green
   cream: '#F4EFE6',
   display: "'Fraunces', serif",
@@ -365,20 +366,21 @@ function FunnelLanding() {
             fontFamily: FL.mono, fontSize: 9, fontWeight: 600, letterSpacing: '0.18em',
             color: FL.muted, paddingLeft: 12, borderLeft: `1px solid ${FL.paper}25`,
             lineHeight: 1.3,
-          }}>AGENCIA<br />CREATIVA</span>
+          }}>ESTUDIO ·<br />LABORATORIO</span>
         </div>
         <nav style={{ display: 'flex', gap: 26, fontSize: 13, color: FL.paper + 'cc' }}>
           {[
-            ['Nosotros', '#cómo-trabajamos'],
+            ['Estudio', '#cómo-trabajamos'],
             ['Portafolio', '#trabajos'],
-            ['Por qué Doppel', '#por-qué-doppel'],
+            ['Lab', '#lab'],
+            ['Apps', '#apps'],
           ].map(([l, h]) => (
             <a key={l} href={h} style={{ color: 'inherit', textDecoration: 'none' }}>{l}</a>
           ))}
         </nav>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <a
-            href="https://podfactory.cl/"
+            href="/podfactory/"
             style={{
               background: FL.podAccent, color: FL.ink, padding: '10px 16px',
               fontSize: 12, fontWeight: 700, fontFamily: FL.sans, letterSpacing: '0.04em',
@@ -386,7 +388,7 @@ function FunnelLanding() {
               alignItems: 'center', gap: 6, lineHeight: 1,
             }}
           >
-            Pod Factory <span style={{ fontSize: 11, opacity: 0.8 }}>↗</span>
+            Pod Factory <span style={{ fontSize: 11, opacity: 0.8 }}>→</span>
           </a>
           <WAButton context="quiero conversar sobre un proyecto." label="Hablemos" size="sm" />
         </div>
@@ -396,7 +398,7 @@ function FunnelLanding() {
       <section style={{ padding: '70px 40px 50px', position: 'relative' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 28 }}>
           <div style={{ fontSize: 11, fontFamily: FL.mono, color: FL.muted, letterSpacing: '0.1em' }}>
-            ( AGENCIA CREATIVA 360° · DESDE 2012 )
+            ( ESTUDIO CREATIVO · LABORATORIO DE TECNOLOGÍA · DESDE 2012 )
           </div>
         </div>
 
@@ -407,16 +409,18 @@ function FunnelLanding() {
               fontFamily: FL.display, fontWeight: 300, fontSize: 'clamp(28px,4.5vw,72px)', lineHeight: 0.96,
               letterSpacing: '-0.04em', margin: 0, color: FL.paper,
             }}>
-              Tu idea<br />
-              <span style={{ fontStyle: 'italic', fontWeight: 400, color: FL.accent }}>merece producirse bien.</span>
+              Producimos historias<br />
+              <span style={{ fontStyle: 'italic', fontWeight: 400, color: FL.accent }}>y construimos las herramientas</span><br />
+              para contarlas.
             </h1>
 
             <p style={{
               fontSize: 17, lineHeight: 1.5, maxWidth: 540, marginTop: 28,
               color: FL.paper + 'cc', fontWeight: 400,
             }}>
-              Somos Doppel. Una agencia creativa que piensa, escribe y dirige.
-              Spots, brand films, documentales, podcasts y vodcasts.
+              Somos Doppel. Un estudio que piensa, filma y programa: spots,
+              brand films, documentales, podcasts, experiencias 3D en tiempo
+              real y aplicaciones propias.
             </p>
 
             {/* Primary CTA cluster */}
@@ -446,6 +450,29 @@ function FunnelLanding() {
             ['+40', 'marcas que confían'],
           ].map(([n, l], i, arr) => (
             <AnimatedStat key={i} value={n} label={l} delay={i * 180} isLast={i === arr.length - 1} />
+          ))}
+        </div>
+
+        {/* Tres pilares: Estudio / Lab / Apps */}
+        <div className="pillars-grid" style={{
+          display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 0,
+          marginTop: 44, borderTop: `1px solid ${FL.paper}20`,
+        }}>
+          {[
+            ['░ ESTUDIO', FL.accent, 'Producción audiovisual y podcast', 'Spots, brand films, documentales y Pod Factory: podcasts de la idea al capítulo 100.', '#cómo-trabajamos'],
+            ['░ LAB', FL.labAccent, 'Experiencias 3D, tiempo real e IA', 'Recorridos fotorrealistas, visualizaciones WebGL, gráfica generativa y pipelines con IA.', '#lab'],
+            ['░ APPS', FL.paper, 'Productos propios en producción', 'Tachbook, WBCheck y HazTuRadio: software real, con usuarios reales, hecho en casa.', '#apps'],
+          ].map(([tag, c, t, d, href], i) => (
+            <Reveal key={tag} delay={i * 140} style={{
+              padding: i === 0 ? '26px 24px 8px 0' : i === 2 ? '26px 0 8px 24px' : '26px 24px 8px',
+              borderRight: i < 2 ? `1px solid ${FL.paper}12` : 'none',
+            }}>
+              <a href={href} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
+                <div style={{ fontSize: 10, fontFamily: FL.mono, letterSpacing: '0.2em', color: c, marginBottom: 12 }}>{tag}</div>
+                <div style={{ fontFamily: FL.display, fontSize: 24, fontWeight: 400, lineHeight: 1.1 }}>{t}</div>
+                <p style={{ fontSize: 13, color: FL.muted, lineHeight: 1.55, marginTop: 8 }}>{d}</p>
+              </a>
+            </Reveal>
           ))}
         </div>
       </section>
@@ -534,9 +561,9 @@ function FunnelLanding() {
           </Reveal>
           <Reveal delay={280} style={{ paddingLeft: 24, borderLeft: `1px solid ${FL.paper}20` }}>
             <div style={{ fontSize: 10, fontFamily: FL.mono, letterSpacing: '0.2em', color: FL.podAccent, marginBottom: 10 }}>░ POD FACTORY · BY DOPPEL</div>
-            <div style={{ fontFamily: FL.display, fontSize: 26, fontWeight: 400, lineHeight: 1.1, marginBottom: 8 }}>Premium Podcast Studio</div>
+            <div style={{ fontFamily: FL.display, fontSize: 26, fontWeight: 400, lineHeight: 1.1, marginBottom: 8 }}>Producción de podcasts</div>
             <div style={{ fontSize: 13, color: FL.muted, lineHeight: 1.5 }}>
-              Estudio premium en Vitacura + estudio móvil. Multicámara 4K.
+              Estudio móvil multicámara 4K. Grabamos donde estés.
             </div>
           </Reveal>
         </div>
@@ -595,14 +622,14 @@ function FunnelLanding() {
             }}>
               <div style={{ color: FL.ink + '99' }}>POD FACTORY</div>
               <div style={{ color: FL.ink, fontWeight: 600 }}>BY DOPPEL</div>
-              <div style={{ marginTop: 6, color: FL.ink + '99' }}>EST. 2024 · EDUARDO MARQUINA 3937, VITACURA, SCL</div>
+              <div style={{ marginTop: 6, color: FL.ink + '99' }}>EST. 2024 · SANTIAGO, CHILE</div>
             </div>
           </div>
           <div style={{
             fontFamily: FL.display, fontStyle: 'italic', fontWeight: 400, fontSize: 22,
             color: FL.ink + 'aa', letterSpacing: '-0.01em',
           }}>
-            Premium Podcast Studio
+            Producción de podcasts
           </div>
         </Reveal>
 
@@ -612,13 +639,13 @@ function FunnelLanding() {
               ¿Quieres lanzar<br />tu podcast?
             </h2>
             <p style={{ fontSize: 16, lineHeight: 1.5, maxWidth: 480, marginTop: 24, color: '#2a2a2a' }}>
-              Pod Factory es el estudio premium de Doppel para podcast y vodcast,
-              ubicado en Vitacura. Multicámara 4K, masterización incluida y un equipo
-              que te acompaña desde la idea al capítulo 100.
+              Pod Factory es la casa de podcasts y vodcasts de Doppel.
+              Multicámara 4K, masterización incluida y un equipo que te acompaña
+              desde la idea al capítulo 100. Grabamos donde estés.
             </p>
             <div style={{ display: 'flex', gap: 16, marginTop: 28, alignItems: 'center', flexWrap: 'wrap' }}>
-              <WAButton context="quiero reservar Pod Factory para mi podcast." label="Reservar estudio" size="lg" variant="ink" />
-              <a href="https://podfactory.cl/" style={{
+              <WAButton context="quiero hacer mi podcast con Pod Factory." label="Quiero mi podcast" size="lg" variant="ink" />
+              <a href="/podfactory/" style={{
                 fontSize: 13, fontFamily: FL.mono, color: FL.ink, letterSpacing: '0.08em',
                 textDecoration: 'none', borderBottom: `1px solid ${FL.ink}`, paddingBottom: 4,
                 fontWeight: 600,
@@ -634,7 +661,7 @@ function FunnelLanding() {
               ['4 cámaras 4K', '#1F3FA3'],
               ['+300 episodios producidos', '#D92E2E'],
               ['24h entrega masterizada', '#EF6A1F'],
-              ['Estudio móvil + locación', '#F4B81C'],
+              ['Grabamos donde estés', '#F4B81C'],
             ].map(([t, c], i) => (
               <Reveal key={i} delay={300 + i * 110} style={{ border: `1.5px solid ${FL.ink}`, background: FL.paper, padding: 18, minHeight: 120, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 <div style={{ height: 6, background: c, width: 40 }} />
@@ -643,6 +670,80 @@ function FunnelLanding() {
             ))}
           </div>
         </div>
+      </section>
+
+      {/* ── LAB ── */}
+      <section id="lab" style={{ padding: '80px 40px', borderTop: `1px solid ${FL.paper}15` }}>
+        <Reveal style={{ fontSize: 10, fontFamily: FL.mono, letterSpacing: '0.2em', color: FL.labAccent, marginBottom: 14 }}>
+          LAB / TECNOLOGÍA APLICADA
+        </Reveal>
+        <Reveal as="h2" delay={100} style={{
+          fontFamily: FL.display, fontWeight: 300, fontSize: 56, letterSpacing: '-0.03em',
+          margin: '0 0 16px', maxWidth: 900, lineHeight: 1.02,
+        }}>
+          Espacios reales, <span style={{ fontStyle: 'italic', color: FL.labAccent }}>gemelos digitales.</span>
+        </Reveal>
+        <Reveal as="p" delay={200} style={{ fontSize: 16, lineHeight: 1.55, maxWidth: 600, color: FL.paper + 'bb', margin: '0 0 40px' }}>
+          Capturamos lugares reales y los convertimos en experiencias navegables
+          en el navegador: sin descargas, sin visores, en cualquier pantalla.
+          Y cuando el proyecto necesita una herramienta que no existe, la construimos.
+        </Reveal>
+        <div className="lab-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+          {[
+            ['GAUSSIAN SPLATTING', 'Recorridos 3D fotorrealistas', 'De un video de tu espacio a un recorrido virtual navegable: showrooms, cabinas, plantas, retail. Corre en el navegador, también en el teléfono.'],
+            ['WEBGL · TIEMPO REAL', 'Visualizaciones interactivas', 'Mapas, atlas y escenas 3D a medida para presentaciones, stands y activaciones de marca.'],
+            ['MOTION GENERATIVO', 'Gráfica programada', 'HUDs, lower thirds y piezas de motion generadas por código: precisión de pixel, iteración en minutos.'],
+            ['IA APLICADA', 'Voces, avatares y pipelines', 'Locución sintética, video generativo y automatización de flujos de producción, con dirección humana.'],
+          ].map(([tag, t, d], i) => (
+            <Reveal key={tag} delay={250 + i * 120} style={{ border: `1px solid ${FL.labAccent}40`, padding: '24px 26px' }}>
+              <div style={{ fontSize: 10, fontFamily: FL.mono, letterSpacing: '0.2em', color: FL.labAccent, marginBottom: 12 }}>{tag}</div>
+              <div style={{ fontFamily: FL.display, fontSize: 26, fontWeight: 400, lineHeight: 1.1 }}>{t}</div>
+              <p style={{ fontSize: 13, color: FL.muted, lineHeight: 1.55, marginTop: 8, marginBottom: 0 }}>{d}</p>
+            </Reveal>
+          ))}
+        </div>
+        <Reveal delay={500} style={{ display: 'flex', alignItems: 'center', gap: 20, marginTop: 34, flexWrap: 'wrap' }}>
+          <WAButton context="quiero ver una demo del Lab (3D / tiempo real / IA)." label="Pide una demo" size="lg" />
+          <span style={{ fontSize: 11, fontFamily: FL.mono, color: FL.muted, letterSpacing: '0.08em' }}>
+            LOS DEMOS DE CLIENTE SON PRIVADOS — TE MOSTRAMOS EN UNA LLAMADA.
+          </span>
+        </Reveal>
+      </section>
+
+      {/* ── APPS ── */}
+      <section id="apps" style={{ padding: '80px 40px', borderTop: `1px solid ${FL.paper}15` }}>
+        <Reveal style={{ fontSize: 10, fontFamily: FL.mono, letterSpacing: '0.2em', color: FL.muted, marginBottom: 14 }}>
+          APPS / PRODUCTOS PROPIOS
+        </Reveal>
+        <Reveal as="h2" delay={100} style={{
+          fontFamily: FL.display, fontWeight: 300, fontSize: 56, letterSpacing: '-0.03em',
+          margin: '0 0 40px', maxWidth: 900, lineHeight: 1.02,
+        }}>
+          Software que <span style={{ fontStyle: 'italic', color: FL.accent }}>ya vuela.</span>
+        </Reveal>
+        <div className="apps-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20 }}>
+          {[
+            ['Tachbook', 'tachbook.com', 'https://tachbook.com', 'Bitácora digital para pilotos y aeronaves: comunidad, meteo aeronáutica y análisis de vuelo. En el App Store.'],
+            ['WBCheck', 'wbcheck.com', 'https://wbcheck.com', 'Peso y balance para aviación general: cálculo visual, presets verificados, listo antes de rodar.'],
+            ['HazTuRadio', 'hazturadio.com', 'https://hazturadio.com', 'Tu radio online en minutos: programación, locutor IA y emisión continua, sin instalar nada.'],
+          ].map(([name, domain, url, d], i) => (
+            <Reveal key={name} delay={200 + i * 130} style={{ border: `1px solid ${FL.paper}25`, padding: '26px 26px 22px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ fontFamily: FL.display, fontSize: 30, fontWeight: 400, letterSpacing: '-0.02em' }}>{name}</div>
+              <p style={{ fontSize: 13, color: FL.muted, lineHeight: 1.55, margin: 0, flex: 1 }}>{d}</p>
+              <a href={url} target="_blank" rel="noopener" style={{
+                fontSize: 11, fontFamily: FL.mono, color: FL.accent, letterSpacing: '0.1em',
+                textDecoration: 'none', marginTop: 8,
+              }}>{domain.toUpperCase()} ↗</a>
+            </Reveal>
+          ))}
+        </div>
+        <Reveal delay={550} as="p" style={{ fontSize: 15, marginTop: 34, color: FL.paper + 'cc', maxWidth: 560, lineHeight: 1.55 }}>
+          ¿Tu operación necesita una herramienta así? La diseñamos, la construimos
+          y la dejamos corriendo.{' '}
+          <a href={waLink('necesito una aplicación para mi operación.')} target="_blank" rel="noopener" style={{ color: FL.accent }}>
+            Hablemos por WhatsApp →
+          </a>
+        </Reveal>
       </section>
 
       {/* ── WHY DOPPEL ── */}
@@ -659,7 +760,7 @@ function FunnelLanding() {
         <div className="why-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
           {[
             ['Pensamos, no sólo filmamos', 'Creamos el concepto o lo afilamos contigo. Antes de prender cámaras hay una idea sólida y un punto de vista.'],
-            ['Equipo propio y estudio físico', 'Cámaras, sonido, dirección, edición y Pod Factory — nuestro estudio de podcast en Vitacura. Todo bajo un mismo techo.'],
+            ['Producimos y programamos', 'Cámaras, sonido, dirección, edición, 3D y desarrollo de software. Un mismo equipo lleva la idea de la pantalla grande al navegador.'],
             ['15 años de track record', '+500 proyectos para Walmart, Ford, LATAM, Entel, Enel, Coca-Cola Andina y más. Sabemos cómo entregar a tiempo.'],
             ['Respondemos rápido', 'Sin formularios eternos ni cadenas de correos. Un humano del equipo te contesta directo.'],
           ].map(([t, d], i) => (
@@ -682,7 +783,7 @@ function FunnelLanding() {
         <div className="testimonial-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
           {[
             ['Doppel entendió la marca antes que nosotros mismos. La pieza final superó el brief.', 'M. González', 'Brand Manager · Walmart Chile'],
-            ['El studio de podcast es de otro nivel. Llegamos, grabamos, salimos con el episodio listo.', 'F. Vera', 'Conductora · Rutas Paralelas'],
+            ['El equipo de Pod Factory es de otro nivel. Grabamos y al día siguiente el episodio estaba listo.', 'F. Vera', 'Conductora · Rutas Paralelas'],
           ].map(([q, n, r], i) => (
             <Reveal key={i} delay={150 + i * 180} style={{ padding: '24px 28px', border: `1px solid ${FL.paper}20` }}>
               <div style={{ fontFamily: FL.display, fontSize: 24, fontStyle: 'italic', fontWeight: 300, lineHeight: 1.3, letterSpacing: '-0.01em', color: FL.paper }}>
@@ -706,7 +807,8 @@ function FunnelLanding() {
             ['¿Atienden proyectos chicos o solo grandes marcas?', 'Atendemos ambos. El equipo se arma según el alcance — desde un capítulo de podcast hasta una campaña full para una marca grande.'],
             ['¿Cuánto demora una producción?', 'Depende del formato. Un brand film promedio toma 4–8 semanas desde el brief. Un podcast lo grabas y editamos en 24–72h.'],
             ['¿Trabajan fuera de Santiago?', 'Sí. Producimos en todo Chile y tenemos estudio móvil para grabar podcasts en cualquier locación.'],
-            ['¿Cómo cobran?', 'Cotizamos por proyecto con todo incluido. Pod Factory tiene tarifa por hora. Cuéntanos y te respondemos rápido.'],
+            ['¿También hacen software y experiencias 3D?', 'Sí. El Lab de Doppel construye recorridos 3D fotorrealistas, visualizaciones en tiempo real y aplicaciones a medida. Tenemos productos propios en producción: Tachbook, WBCheck y HazTuRadio.'],
+            ['¿Cómo cobran?', 'Cotizamos por proyecto con todo incluido. Cuéntanos y te respondemos rápido.'],
           ].map(([q, a], i) => (
             <Reveal as="details" key={i} delay={150 + i * 100} style={{ borderBottom: `1px solid ${FL.paper}20`, padding: '18px 0' }}>
               <summary style={{
@@ -754,13 +856,12 @@ function FunnelLanding() {
           <div>
             <img src="assets/doppel-logo.png" alt="Doppel" style={{ height: 30, display: 'block', filter: 'invert(94%) sepia(8%) saturate(120%) hue-rotate(347deg) brightness(98%) contrast(94%)' }} />
             <div style={{ fontFamily: FL.mono, fontSize: 11, color: FL.muted, marginTop: 14, letterSpacing: '0.1em' }}>
-              AGENCIA CREATIVA 360° · DOPPEL + POD FACTORY · SANTIAGO
+              ESTUDIO CREATIVO · LABORATORIO DE TECNOLOGÍA · SANTIAGO
             </div>
           </div>
           <div style={{ textAlign: 'right', fontFamily: FL.mono, fontSize: 12, color: FL.muted, lineHeight: 1.8 }}>
             HOLA@DOPPEL.CL<br />
             +56 9 2797 0014<br />
-            EDUARDO MARQUINA 3937, VITACURA<br />
             SANTIAGO, CHILE
           </div>
         </div>

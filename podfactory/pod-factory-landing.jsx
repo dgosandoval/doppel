@@ -1,5 +1,6 @@
-// Pod Factory landing page — Doppel's podcast & vodcast studio.
-// Self-contained section dedicated to the recording studio offering.
+// Pod Factory — sección de podcasts dentro de doppel.cl.
+// Versión sin estudio físico: producción móvil/en locación, sin tarifas ni
+// reservas online; todo el funnel dirige a WhatsApp.
 
 const PF = {
   bg: '#F5EBD6',
@@ -27,8 +28,59 @@ function WhatsAppIcon({ size = 16, color = '#fff' }) {
   );
 }
 
+// Botón de WhatsApp solo-ícono (círculo verde).
+function WhatsAppButton({ dim = 44, waContext = 'quiero hacer mi podcast con Pod Factory.', style = {} }) {
+  return (
+    <a href={waLink(waContext)} target="_blank" rel="noopener" title="Escríbenos por WhatsApp" aria-label="WhatsApp"
+      style={{
+        background: '#25D366', borderRadius: '50%', width: dim, height: dim, flexShrink: 0,
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', ...style,
+      }}>
+      <WhatsAppIcon size={Math.round(dim * 0.5)} color="#fff" />
+    </a>
+  );
+}
+
+// CTA principal: botón de WhatsApp con texto (el funnel completo va a WhatsApp).
+function CTAButtons({ size = 'md', waContext = 'quiero hacer mi podcast con Pod Factory.', label = 'HABLEMOS', style = {} }) {
+  const pad = size === 'lg' ? '16px 26px' : size === 'sm' ? '11px 18px' : '14px 22px';
+  const fs = size === 'sm' ? 12 : 13;
+  const ic = size === 'lg' ? 17 : size === 'sm' ? 13 : 15;
+  return (
+    <div style={{ display: 'inline-flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', ...style }}>
+      <a href={waLink(waContext)} target="_blank" rel="noopener" style={{
+        padding: pad, fontSize: fs, fontWeight: 700, letterSpacing: '0.08em',
+        fontFamily: PF.display, textDecoration: 'none', borderRadius: 999,
+        background: PF.red, color: PF.bg, display: 'inline-flex', alignItems: 'center', gap: 10, lineHeight: 1,
+      }}>{label} <WhatsAppIcon size={ic} color={PF.bg} /></a>
+    </div>
+  );
+}
+
+// CTA flotante (WhatsApp) — aparece al desplazar, no al inicio
+// (donde ya están los del hero), para no duplicar en pantalla.
+function FloatingCTA() {
+  const [show, setShow] = React.useState(false);
+  React.useEffect(() => {
+    const onScroll = () => setShow(window.scrollY > 600);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+  return (
+    <div style={{
+      position: 'fixed', bottom: 22, right: 22, zIndex: 100,
+      display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'flex-end',
+      opacity: show ? 1 : 0, transform: show ? 'translateY(0)' : 'translateY(20px)',
+      transition: 'opacity .3s ease, transform .3s ease', pointerEvents: show ? 'auto' : 'none',
+    }}>
+      <WhatsAppButton dim={56} waContext="quiero hacer mi podcast con Pod Factory." style={{ boxShadow: '0 8px 28px rgba(0,0,0,0.25)' }} />
+    </div>
+  );
+}
+
 // Generic fade-up wrapper triggered by IntersectionObserver
-function Reveal({ children, delay = 0, distance = 22, duration = 750, threshold = 0.2, style = {}, className, as: Tag = 'div' }) {
+function Reveal({ children, delay = 0, distance = 22, duration = 750, threshold = 0.2, style = {}, className, id, as: Tag = 'div' }) {
   const [visible, setVisible] = React.useState(false);
   const ref = React.useRef(null);
   React.useEffect(() => {
@@ -49,6 +101,7 @@ function Reveal({ children, delay = 0, distance = 22, duration = 750, threshold 
   return (
     <Tag
       ref={ref}
+      id={id}
       className={className}
       style={{
         ...style,
@@ -75,8 +128,6 @@ function PFRays({ height = 10, gap = 3, width = '100%' }) {
 function PodFactoryLanding() {
   return (
     <div style={{ background: PF.bg, color: PF.ink, fontFamily: PF.display, minHeight: '100%' }}>
-      <SiteChrome url="doppel.cl/pod-factory" bg="#ecdfc3" fg={PF.ink} />
-
       {/* Parent brand bar — signals Pod Factory is part of Doppel ecosystem */}
       <div className="pf-brandbar" style={{
         background: PF.ink, color: PF.bg, padding: '10px 32px',
@@ -86,14 +137,14 @@ function PodFactoryLanding() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ color: PF.bg + '80' }}>ESTÁS EN</span>
           <span style={{ fontWeight: 700 }}>POD FACTORY</span>
-          <span style={{ color: PF.bg + '50' }}>→ POR</span>
+          <span style={{ color: PF.bg + '50' }}>· UNA SECCIÓN DE</span>
           <a href="/" style={{
             color: PF.yellow, fontWeight: 700, textDecoration: 'none',
             display: 'inline-flex', alignItems: 'center', gap: 4,
           }}>DOPPEL ↗</a>
-          <span style={{ color: PF.bg + '50', marginLeft: 6 }}>(agencia creativa)</span>
+          <span className="pf-bb-hide-mobile" style={{ color: PF.bg + '50', marginLeft: 6 }}>(estudio creativo + lab)</span>
         </div>
-        <span style={{ color: PF.bg + '80' }}>VITACURA · SANTIAGO</span>
+        <span className="pf-bb-hide-mobile" style={{ color: PF.bg + '80' }}>PODCAST · VODCAST</span>
       </div>
 
       {/* Header with Doppel logo + Pod Factory marker */}
@@ -115,19 +166,17 @@ function PodFactoryLanding() {
               alt="Pod Factory"
               style={{ height: 48, display: 'block' }}
             />
-            <div style={{ fontFamily: PF.mono, fontSize: 9, fontWeight: 700, letterSpacing: '0.18em', color: PF.ink + '99', lineHeight: 1.4 }}>
+            <div className="pf-header-sub" style={{ fontFamily: PF.mono, fontSize: 9, fontWeight: 700, letterSpacing: '0.18em', color: PF.ink + '99', lineHeight: 1.4 }}>
               PODCAST · VODCAST<br />EST. 2024
             </div>
           </div>
         </div>
         <nav style={{ display: 'flex', gap: 26, fontSize: 13, fontWeight: 500 }}>
           {[
-            ['El espacio',   '#espacio',     false],
             ['Servicios',    '#servicios',   false],
             ['Producciones', '#producciones', false],
-            ['Tarifas',      '#tarifas',     false],
-            ['Ubicación',    '#ubicacion',   false],
-            ['FAQ',          '#faq',         false],
+            ['Equipo técnico', '#equipo',    false],
+            ['Preguntas',    '#faq',         false],
             ['Contacto',     waLink('quiero conversar con Pod Factory.'), true],
           ].map(([l, h, ext]) => (
             <a
@@ -138,26 +187,14 @@ function PodFactoryLanding() {
             >{l}</a>
           ))}
         </nav>
-        <a
-          href={waLink('quiero reservar Pod Factory para mi podcast.')}
-          target="_blank" rel="noopener"
-          style={{
-            background: PF.red, color: PF.bg, padding: '12px 20px',
-            fontSize: 12, fontWeight: 700, letterSpacing: '0.1em',
-            fontFamily: PF.display, textDecoration: 'none', borderRadius: 999,
-            display: 'inline-flex', alignItems: 'center', gap: 10, lineHeight: 1,
-          }}
-        >
-          RESERVAR
-          <WhatsAppIcon size={14} color={PF.bg} />
-        </a>
+        <div className="pf-header-cta"><CTAButtons size="sm" waContext="quiero hacer mi podcast con Pod Factory." /></div>
       </header>
 
       {/* Hero */}
-      <section id="espacio" className="pf-hero" style={{ padding: '60px 80px 40px', display: 'grid', gridTemplateColumns: '1fr auto', gap: 28, alignItems: 'center', maxWidth: 1100, margin: '0 auto' }}>
+      <section id="espacio" className="pf-hero" style={{ padding: '60px 80px 40px 32px', display: 'grid', gridTemplateColumns: '1fr auto', gap: 28, alignItems: 'center' }}>
         <Reveal>
           <div style={{ fontSize: 11, fontFamily: PF.mono, letterSpacing: '0.18em', marginBottom: 18 }}>
-            ▸ ESTUDIO DE PODCAST &amp; VODCAST · DESDE 2024
+            ▸ PRODUCCIÓN DE PODCAST &amp; VODCAST · BY DOPPEL
           </div>
           <h1 style={{
             fontFamily: PF.display, fontWeight: 900, fontSize: 76, lineHeight: 0.95,
@@ -168,33 +205,19 @@ function PodFactoryLanding() {
             a la altura de <span style={{ fontFamily: PF.serif, fontStyle: 'italic', fontWeight: 400 }}>tu contenido.</span>
           </h1>
           <p style={{ fontSize: 16, lineHeight: 1.5, maxWidth: 540, marginTop: 22 }}>
-            Estudio premium en Vitacura con setup multicámara listo para vodcast,
+            La casa de podcasts de Doppel: setup multicámara broadcast,
             masterización incluida, y un equipo que produce, edita y distribuye.
-            Llegas, te sientas, grabas. Nosotros hacemos el resto.
+            Grabamos donde estés — tu oficina, una locación, un evento.
+            Tú hablas. Nosotros hacemos el resto.
           </p>
           <div className="pf-hero-cta" style={{ display: 'flex', gap: 12, marginTop: 28, alignItems: 'center', flexWrap: 'wrap' }}>
-            <a
-              href={waLink('quiero reservar Pod Factory.')}
-              target="_blank" rel="noopener"
-              style={{
-                background: PF.ink, color: PF.bg, padding: '16px 24px',
-                fontSize: 13, fontWeight: 700, letterSpacing: '0.1em', fontFamily: PF.display,
-                textDecoration: 'none', borderRadius: 999,
-                display: 'inline-flex', alignItems: 'center', gap: 12, lineHeight: 1,
-              }}
-            >
-              RESERVAR ESTUDIO
-              <WhatsAppIcon size={16} color={PF.bg} />
-            </a>
-            <a href="#tarifas" style={{
+            <CTAButtons size="lg" label="QUIERO MI PODCAST" />
+            <a href="#producciones" style={{
               background: 'transparent', color: PF.ink, border: `1.5px solid ${PF.ink}`,
               padding: '16px 26px', fontSize: 13, fontWeight: 700, letterSpacing: '0.1em',
               fontFamily: PF.display, textDecoration: 'none', display: 'inline-block',
               borderRadius: 999,
-            }}>VER TARIFAS</a>
-            <div style={{ fontSize: 11, fontFamily: PF.mono, color: PF.ink + 'aa', marginLeft: 8 }}>
-              Desde<br /><b style={{ color: PF.ink, fontSize: 14 }}>$199.990 + IVA / hora</b>
-            </div>
+            }}>VER PRODUCCIONES</a>
           </div>
         </Reveal>
 
@@ -217,7 +240,7 @@ function PodFactoryLanding() {
               fontFamily: PF.mono, fontSize: 11, letterSpacing: '0.1em',
               fontWeight: 700, textAlign: 'center',
             }}>
-              ESTUDIO PREMIUM MULTICÁMARA EN VITACURA
+              SETUP MULTICÁMARA BROADCAST · DONDE ESTÉS
             </div>
           </div>
           {/* Ray decoration */}
@@ -236,7 +259,7 @@ function PodFactoryLanding() {
           ['4', 'cámaras 6K/4K', PF.blue],
           ['+300', 'episodios producidos', PF.red],
           ['24h', 'entrega masterizada', PF.orange],
-          ['2', 'estudios + móvil', PF.yellow],
+          ['100%', 'móvil · donde estés', PF.yellow],
         ].map(([n, l, c], i) => (
           <Reveal key={i} delay={i * 120} style={{
             padding: '30px 20px', borderRight: i < 3 ? `1.5px solid ${PF.ink}` : 'none',
@@ -266,8 +289,8 @@ function PodFactoryLanding() {
             ['Audio broadcast', 'Micrófonos RØDE PodMic con procesamiento en tiempo real. Master de sonido en Fairlight (DaVinci Resolve).', PF.red],
             ['Dirección & producción', 'Un productor dedicado, guía de entrevista, y edición de primer corte.', PF.orange],
             ['Streaming opcional', 'Transmisión en vivo a YouTube, Spotify Video o tu plataforma.', PF.yellow],
-            ['Estudio móvil', 'Llevamos el estudio donde estés. Ideal para entrevistas fuera de Santiago.', PF.blue],
-            ['Distribución (con Edición Pro)', 'Subimos por ti a Spotify, Apple Podcasts, YouTube, Amazon. Incluido al elegir Edición Pro.', PF.red],
+            ['Estudio móvil', 'El estudio va donde estés: tu oficina, una locación, un evento. Santiago y regiones.', PF.blue],
+            ['Distribución (con Teaser)', 'Subimos por ti a Spotify, Apple Podcasts, YouTube, Amazon. Incluido al elegir el Teaser.', PF.red],
           ].map(([t, d, c], i) => (
             <Reveal key={i} delay={150 + i * 100} style={{ border: `1.5px solid ${PF.ink}`, background: PF.bg }}>
               <div style={{ height: 6, background: c }} />
@@ -355,213 +378,21 @@ function PodFactoryLanding() {
         </div>
       </section>
 
-      {/* Pricing table */}
-      <section id="tarifas" style={{ padding: '60px 32px' }}>
-        <Reveal style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8, flexWrap: 'wrap', gap: 12 }}>
-          <h2 style={{ fontFamily: PF.display, fontWeight: 800, fontSize: 48, letterSpacing: '-0.035em', margin: 0 }}>
-            Tarifas <span style={{ fontFamily: PF.serif, fontStyle: 'italic', fontWeight: 400, color: PF.red }}>y servicios</span>
-          </h2>
-          <div style={{ fontFamily: PF.mono, fontSize: 11, color: PF.ink + 'aa', letterSpacing: '0.1em' }}>
-            PRECIOS POR HORA · NO INCLUYEN IVA
-          </div>
-        </Reveal>
-        <Reveal delay={100} style={{ marginBottom: 28 }}>
-          <p style={{ fontSize: 14, lineHeight: 1.5, maxWidth: 620, color: PF.ink + 'cc' }}>
-            Cada sesión incluye 60 minutos efectivos de grabación + 20 minutos de setup. Reserva con $30.000 de adelanto.
-          </p>
-        </Reveal>
-
-        {/* Base price — single tier, up to 4 people */}
-        <Reveal delay={200} style={{ marginBottom: 16 }}>
-          <div style={{ fontFamily: PF.mono, fontSize: 10, letterSpacing: '0.18em', color: PF.ink + '99', marginBottom: 12, fontWeight: 700 }}>
-            ① TARIFA BASE · GRABACIÓN + EDICIÓN BÁSICA
-          </div>
-          <div style={{ border: `1.5px solid ${PF.ink}`, background: PF.bg, padding: '24px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap' }}>
-            <div>
-              <div style={{ width: 48, height: 6, background: PF.blue, marginBottom: 14 }} />
-              <div style={{ fontFamily: PF.display, fontWeight: 800, fontSize: 26, letterSpacing: '-0.02em' }}>
-                Sesión por hora · hasta 4 personas
-              </div>
-              <div style={{ fontSize: 13, color: PF.ink + 'aa', marginTop: 5 }}>
-                Grabación + Edición Básica · tarifa única independiente de la cantidad de invitados
-              </div>
-            </div>
-            <div style={{ fontFamily: PF.mono, fontWeight: 700, fontSize: 28, whiteSpace: 'nowrap' }}>
-              $199.990
-            </div>
-          </div>
-        </Reveal>
-
-        {/* Add-ons */}
-        <Reveal delay={350}>
-          <div style={{ fontFamily: PF.mono, fontSize: 10, letterSpacing: '0.18em', color: PF.ink + '99', marginBottom: 12, fontWeight: 700 }}>
-            ② ADICIONALES OPCIONALES · SUMA A LA TARIFA BASE
-          </div>
-          <div style={{ border: `1.5px solid ${PF.ink}`, background: PF.bg }}>
-            {[
-              {
-                name: 'Edición Pro',
-                desc: 'Teaser de mejores momentos al inicio + reel vertical para RRSS. Incluye distribución a Spotify, Apple Podcasts, YouTube y Amazon.',
-                delta: 99990,
-                color: PF.orange,
-              },
-              {
-                name: '3 Reels adicionales',
-                desc: 'Tres reels verticales de 60s editados, listos para redes',
-                delta: 99990,
-                color: PF.yellow,
-              },
-            ].map((a, i) => (
-              <div key={i} style={{
-                padding: '20px 24px',
-                borderTop: i > 0 ? `1px solid ${PF.ink}20` : 'none',
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20,
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                  <div style={{ width: 6, height: 44, background: a.color, flexShrink: 0 }} />
-                  <div>
-                    <div style={{ fontFamily: PF.display, fontWeight: 700, fontSize: 19, letterSpacing: '-0.015em' }}>
-                      {a.name}
-                    </div>
-                    <div style={{ fontSize: 13, color: PF.ink + 'aa', marginTop: 3, lineHeight: 1.4 }}>
-                      {a.desc}
-                    </div>
-                  </div>
-                </div>
-                <div style={{ fontFamily: PF.mono, fontWeight: 700, fontSize: 18, whiteSpace: 'nowrap', color: PF.ink }}>
-                  +${a.delta.toLocaleString('es-CL')}
-                </div>
-              </div>
-            ))}
-          </div>
-        </Reveal>
-
-        {/* Webinar special tier */}
-        <Reveal delay={500} style={{
-          marginTop: 14, padding: '20px 24px', background: PF.yellow,
-          border: `1.5px solid ${PF.ink}`,
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap',
-        }}>
-          <div>
-            <div style={{ fontFamily: PF.mono, fontSize: 10, letterSpacing: '0.18em', marginBottom: 6, fontWeight: 700 }}>
-              📡 WEBINAR · STREAMING
-            </div>
-            <div style={{ fontFamily: PF.display, fontWeight: 800, fontSize: 22, letterSpacing: '-0.02em' }}>
-              Streaming en vivo a la plataforma de tu elección
-            </div>
-            <div style={{ fontSize: 13, color: PF.ink + 'aa', marginTop: 4 }}>
-              Setup broadcast multicámara con transmisión directa a YouTube, LinkedIn, Zoom o tu plataforma.
-            </div>
-          </div>
-          <div style={{ fontFamily: PF.mono, fontWeight: 700, fontSize: 22, whiteSpace: 'nowrap' }}>
-            $149.990
-          </div>
-        </Reveal>
-
-        {/* What's included in base */}
-        <Reveal delay={650} style={{
-          marginTop: 28, padding: '20px 24px', background: PF.ink, color: PF.bg,
-        }}>
+      {/* Qué incluye la edición — franja oscura compacta */}
+      <section style={{ padding: '40px 32px', background: PF.ink, color: PF.bg }}>
+        <Reveal>
           <div style={{ fontFamily: PF.mono, fontSize: 10, letterSpacing: '0.18em', color: PF.yellow, marginBottom: 10, fontWeight: 700 }}>
-            ✂️ EDICIÓN BÁSICA INCLUYE
+            ✂️ LA EDICIÓN INCLUYE
           </div>
-          <div style={{ fontSize: 13, lineHeight: 1.55, color: PF.bg + 'cc', maxWidth: 760 }}>
+          <div style={{ fontSize: 14, lineHeight: 1.55, color: PF.bg + 'cc', maxWidth: 760 }}>
             Logo al inicio y final, música de intro/outro, sobreimpresos con nombre y cargo,
             corrección de color y sonido. Entrega de archivo de video + audio listo para publicar.
           </div>
         </Reveal>
-
-        <Reveal delay={800} style={{ display: 'flex', gap: 12, marginTop: 24, alignItems: 'center', flexWrap: 'wrap' }}>
-          <a
-            href={waLink('quiero reservar Pod Factory, cuéntame sobre disponibilidad.')}
-            target="_blank" rel="noopener"
-            style={{
-              background: PF.ink, color: PF.bg, padding: '16px 24px',
-              fontSize: 13, fontWeight: 700, letterSpacing: '0.1em', fontFamily: PF.display,
-              textDecoration: 'none', borderRadius: 999,
-              display: 'inline-flex', alignItems: 'center', gap: 12, lineHeight: 1,
-            }}
-          >
-            RESERVAR
-            <WhatsAppIcon size={16} color={PF.bg} />
-          </a>
-          <a
-            href={waLink('Hola! Quiero ver la disponibilidad de Pod Factory.')}
-            target="_blank" rel="noopener"
-            style={{
-              background: 'transparent', color: PF.ink, border: `1.5px solid ${PF.ink}`,
-              padding: '16px 24px', fontSize: 13, fontWeight: 700, letterSpacing: '0.1em',
-              fontFamily: PF.display, textDecoration: 'none', display: 'inline-block',
-              borderRadius: 999,
-            }}
-          >VER DISPONIBILIDAD ↗</a>
-        </Reveal>
       </section>
 
-      {/* Location — embedded Google Maps */}
-      <section id="ubicacion" style={{ padding: '60px 32px', borderTop: `1.5px solid ${PF.ink}` }}>
-        <Reveal style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
-          <h2 style={{ fontFamily: PF.display, fontWeight: 800, fontSize: 48, letterSpacing: '-0.035em', margin: 0 }}>
-            Dónde <span style={{ fontFamily: PF.serif, fontStyle: 'italic', fontWeight: 400, color: PF.blue }}>estamos</span>
-          </h2>
-          <div style={{ fontFamily: PF.mono, fontSize: 11, letterSpacing: '0.1em', color: PF.ink + 'aa' }}>
-            VITACURA · SANTIAGO
-          </div>
-        </Reveal>
-
-        <div className="pf-location-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 24, alignItems: 'stretch' }}>
-          <Reveal delay={150} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 18, padding: '24px 26px', border: `1.5px solid ${PF.ink}`, background: PF.bg }}>
-            <div>
-              <div style={{ fontFamily: PF.mono, fontSize: 10, letterSpacing: '0.18em', marginBottom: 10, color: PF.ink + 'aa', fontWeight: 700 }}>
-                📍 DIRECCIÓN
-              </div>
-              <div style={{ fontFamily: PF.display, fontWeight: 800, fontSize: 26, letterSpacing: '-0.025em', lineHeight: 1.1 }}>
-                Eduardo Marquina 3937
-              </div>
-              <div style={{ fontFamily: PF.display, fontWeight: 400, fontSize: 18, marginTop: 4, color: PF.ink + 'cc' }}>
-                Vitacura · Santiago, Chile
-              </div>
-            </div>
-            <div style={{ fontSize: 13, lineHeight: 1.55, color: PF.ink + 'cc' }}>
-              A pasos de Av. Vitacura. Estacionamiento disponible en la calle. Llegada fácil en auto, Uber o transporte público.
-            </div>
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              <a
-                href="https://www.google.com/maps/dir/?api=1&destination=Pod+Factory+Premium+Podcast+Studio&destination_place_id=ChIJX7coTmnPYpYRahuOLfgXst0"
-                target="_blank" rel="noopener"
-                style={{
-                  background: PF.ink, color: PF.bg, padding: '12px 18px',
-                  fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', fontFamily: PF.display,
-                  textDecoration: 'none', borderRadius: 999, display: 'inline-flex', alignItems: 'center', gap: 8, lineHeight: 1,
-                }}
-              >CÓMO LLEGAR ↗</a>
-              <a
-                href="https://maps.google.com/?cid=15974244234725613418"
-                target="_blank" rel="noopener"
-                style={{
-                  background: 'transparent', color: PF.ink, border: `1.5px solid ${PF.ink}`,
-                  padding: '12px 18px', fontSize: 12, fontWeight: 700, letterSpacing: '0.1em',
-                  fontFamily: PF.display, textDecoration: 'none', display: 'inline-block', borderRadius: 999,
-                }}
-              >ABRIR EN MAPS</a>
-            </div>
-          </Reveal>
-
-          <Reveal delay={250} style={{ position: 'relative', minHeight: 320, border: `1.5px solid ${PF.ink}`, overflow: 'hidden' }}>
-            <iframe
-              title="Pod Factory · Eduardo Marquina 3937, Vitacura"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3330.899404141137!2d-70.59428838915612!3d-33.399788573298764!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9662cf694e28b75f%3A0xddb217f82d8e1b6a!2sPod%20Factory%2C%20Premium%20Podcast%20Studio!5e0!3m2!1ses!2scl!4v1780004708510!5m2!1ses!2scl"
-              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0, display: 'block', filter: 'grayscale(0.2) contrast(1.05)' }}
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              allowFullScreen
-            />
-          </Reveal>
-        </div>
-      </section>
-
-      {/* Technical specs — what's inside the studio */}
-      <section style={{ padding: '60px 32px', background: PF.yellow }}>
+      {/* Technical specs — el equipo que llevamos */}
+      <section id="equipo" style={{ padding: '60px 32px', background: PF.yellow }}>
         <Reveal style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 24 }}>
           <div>
             <div style={{ fontFamily: PF.mono, fontSize: 11, letterSpacing: '0.2em', marginBottom: 14 }}>
@@ -576,7 +407,7 @@ function PodFactoryLanding() {
             </h2>
           </div>
           <div style={{ fontFamily: PF.mono, fontSize: 11, color: PF.ink + 'aa', maxWidth: 280, lineHeight: 1.5 }}>
-            Todo el gear actualizado y mantenido. Sin sorpresas, sin atajos.
+            Todo el gear viaja con nosotros. Sin sorpresas, sin atajos.
           </div>
         </Reveal>
 
@@ -611,7 +442,7 @@ function PodFactoryLanding() {
             fontFamily: PF.display, fontWeight: 900, fontSize: 64,
             letterSpacing: '-0.04em', margin: 0, lineHeight: 0.92, maxWidth: 820,
           }}>
-            Lo que <span style={{ fontFamily: PF.serif, fontStyle: 'italic', fontWeight: 400, color: PF.red }}>siempre</span> nos preguntan.
+            Preguntas <span style={{ fontFamily: PF.serif, fontStyle: 'italic', fontWeight: 400, color: PF.red }}>frecuentes</span>.
           </h2>
         </Reveal>
 
@@ -647,36 +478,32 @@ function PodFactoryLanding() {
         <Reveal delay={150} className="pf-faq" style={{ maxWidth: 920 }}>
           {[
             {
-              q: '¿Cuánto dura una sesión?',
-              a: <>Cada sesión incluye <b>60 minutos de grabación</b> + <b>20 minutos de setup</b>. Recomendamos llegar 10 minutos antes para coordinar la pauta y revisar el material que vayas a usar.</>,
+              q: '¿Dónde graban?',
+              a: <>Donde estés: tu oficina, una locación, un evento. Llevamos el <b>estudio móvil completo</b> —cámaras, audio, luces— en Santiago y regiones. Tú pones el lugar y la conversación; nosotros el resto.</>,
             },
             {
               q: '¿Hasta cuántas personas pueden grabar al mismo tiempo?',
-              a: <>El estudio acomoda <b>hasta 4 personas</b> en cabina con calidad broadcast. La tarifa es plana: <b>$199.990 + IVA por hora</b>, independiente de si grabas solo o con 3 invitados.</>,
+              a: <>El setup acomoda <b>hasta 4 personas</b> con calidad broadcast, cada una con su cámara y micrófono dedicados.</>,
             },
             {
-              q: '¿Qué incluye la Edición Básica?',
+              q: '¿Qué incluye la Edición?',
               a: <>Logo al inicio y final, música de intro/outro, sobreimpresos con nombre y cargo, corrección de color y master de sonido. Entregamos el archivo de video + audio listo para publicar.</>,
             },
             {
-              q: '¿Qué suma la Edición Pro?',
-              a: <>Edición Pro (<b>+$99.990</b>) agrega un teaser de mejores momentos al inicio del episodio, un reel vertical para redes sociales y la <b>distribución</b> a Spotify, Apple Podcasts, YouTube y Amazon Music desde nuestras cuentas hacia tu canal.</>,
+              q: '¿Qué suma el Teaser?',
+              a: <>El Teaser agrega un resumen de los mejores momentos al inicio del episodio, un reel vertical para redes sociales y la <b>distribución</b> a Spotify, Apple Podcasts, YouTube y Amazon Music desde nuestras cuentas hacia tu canal.</>,
             },
             {
               q: '¿Hacen streaming en vivo?',
-              a: <>Sí. El paquete de Streaming (<b>$149.990</b>) transmite multicámara en vivo a YouTube, LinkedIn, Zoom o la plataforma que prefieras. Necesitamos los accesos y datos RTMP el día de la sesión.</>,
+              a: <>Sí. Transmitimos multicámara en vivo a YouTube, LinkedIn, Zoom o la plataforma que prefieras. Necesitamos los accesos y datos RTMP el día de la sesión.</>,
             },
             {
-              q: '¿Cómo reservo y qué medios de pago aceptan?',
-              a: <>Reservas directo desde el calendario en la sección Tarifas. Confirmamos con <b>$30.000 de adelanto</b> y el saldo se paga el día de la sesión. Aceptamos MercadoPago (crédito, débito y transferencia).</>,
-            },
-            {
-              q: '¿Puedo cancelar o reagendar?',
-              a: <>Sí, con al menos <b>24 horas de antelación</b> reagendamos sin costo. Después de esa ventana, o por no presentarse, la sesión se considera realizada y el adelanto no es reembolsable.</>,
+              q: '¿Cómo agendo una grabación?',
+              a: <>Escríbenos por <b>WhatsApp</b>: nos cuentas la idea, coordinamos fecha, lugar y formato, y te enviamos una propuesta a la medida. Sin formularios ni esperas.</>,
             },
             {
               q: '¿Cuándo recibo el material?',
-              a: <>Entregamos el master en <b>24 horas</b> a través de un link de descarga (formato .mp4 Full HD + audio WAV). Para Edición Pro, los entregables completos llegan en hasta 5 días hábiles.</>,
+              a: <>Entregamos el master en <b>24 horas</b> a través de un link de descarga (formato .mp4 Full HD + audio WAV). Para el Teaser, los entregables completos llegan en hasta 5 días hábiles.</>,
             },
             {
               q: '¿Necesito experiencia previa?',
@@ -719,19 +546,20 @@ function PodFactoryLanding() {
               alt="Pod Factory"
               style={{ height: 80, display: 'block', marginBottom: 14 }}
             />
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 12, fontFamily: PF.mono, letterSpacing: '0.1em', color: PF.yellow }}>
+            <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 12, fontFamily: PF.mono, letterSpacing: '0.1em', color: PF.yellow, textDecoration: 'none' }}>
               <img src="assets/doppel-logo.png" alt="Doppel" style={{ height: 16, display: 'block', filter: 'invert(94%) sepia(8%) saturate(120%) hue-rotate(347deg) brightness(98%) contrast(94%)' }} />
-              <span>POR DOPPEL ↗</span>
-            </div>
+              <span>UNA SECCIÓN DE DOPPEL ↗</span>
+            </a>
             <p style={{ fontSize: 12, lineHeight: 1.5, maxWidth: 320, marginTop: 12, color: PF.bg + 'aa' }}>
-              Estudio premium de podcast y vodcast en Vitacura, Santiago.
+              La casa de podcasts y vodcasts de Doppel.
               Multicámara Blackmagic 6K/4K, audio broadcast, masterización en Fairlight.
+              Grabamos donde estés.
             </p>
           </div>
           {[
-            ['ESTUDIO',  ['Eduardo Marquina 3937', 'Vitacura · Santiago', 'Lun–Sáb · Reserva online']],
-            ['RESERVAS', ['hola@doppel.cl', '+56 9 2797 0014', 'WhatsApp']],
-            ['DOPPEL',   ['Agencia creativa 360°', 'Producción audiovisual', 'Ver doppel.cl ↗']],
+            ['PRODUCCIÓN', ['Podcast & vodcast', 'Estudio móvil · Santiago y regiones', 'Grabación · edición · distribución']],
+            ['CONTACTO',   ['hola@doppel.cl', '+56 9 2797 0014', 'WhatsApp']],
+            ['DOPPEL',     ['Estudio creativo + Lab', 'Audiovisual · 3D · Apps', 'Volver a doppel.cl ↗']],
           ].map(([h, items]) => (
             <div key={h}>
               <div style={{ fontFamily: PF.mono, fontSize: 10, letterSpacing: '0.15em', color: PF.yellow, marginBottom: 10 }}>{h}</div>
@@ -745,22 +573,7 @@ function PodFactoryLanding() {
         </Reveal>
       </footer>
 
-      {/* Floating "Reservar" CTA — persistent across scroll */}
-      <a
-        href={waLink('quiero reservar Pod Factory.')}
-        target="_blank" rel="noopener"
-        style={{
-          position: 'fixed', bottom: 22, right: 22, zIndex: 100,
-          background: PF.red, color: PF.bg, borderRadius: 999,
-          padding: '14px 22px', fontFamily: PF.display, fontWeight: 700,
-          fontSize: 13, letterSpacing: '0.08em', textDecoration: 'none',
-          display: 'inline-flex', alignItems: 'center', gap: 10, lineHeight: 1,
-          boxShadow: '0 8px 28px rgba(0,0,0,0.25)',
-        }}
-      >
-        RESERVAR
-        <WhatsAppIcon size={16} color={PF.bg} />
-      </a>
+      <FloatingCTA />
     </div>
   );
 }
