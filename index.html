@@ -4,12 +4,47 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Doppel — Estudio Creativo y Laboratorio de Tecnología</title>
+<meta name="description" content="Producimos historias y construimos las herramientas para contarlas: cine publicitario, documentales, podcasts, experiencias 3D en tiempo real y aplicaciones propias. Santiago, Chile.">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="apple-touch-icon" href="assets/favicon.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Doppel — Estudio Creativo y Laboratorio de Tecnología">
+<meta property="og:description" content="Producimos historias y construimos las herramientas para contarlas: cine publicitario, documentales, podcasts, experiencias 3D en tiempo real y aplicaciones propias.">
+<meta property="og:image" content="https://doppel.cl/assets/og-image.jpg">
+<meta property="og:url" content="https://doppel.cl/">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Archivo+Narrow:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Space+Mono:wght@400;700&family=Instrument+Serif:ital@0;1&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&display=swap" rel="stylesheet">
 <style>
   html, body, #root { margin: 0; padding: 0; height: 100%; background: #0E0E0E; font-family: 'Archivo', sans-serif; }
   * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  h1, h2, h3 { text-wrap: balance; }
+  /* Accesibilidad: foco visible al navegar con teclado */
+  a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid #FF6633; outline-offset: 3px; border-radius: 2px; }
+  /* Estados hover/active (los estilos inline no definen estos) */
+  header nav a { transition: color .2s ease; }
+  header nav a:hover { color: #FF6633 !important; }
+  .pillars-grid img, .lab-grid img, .apps-grid img, .work-grid iframe + * img { transition: transform .35s ease; }
+  .pillars-grid a:hover img, .lab-grid > div:hover img, .apps-grid > div:hover img { transform: scale(1.03); }
+  .apps-grid a, footer a { transition: opacity .2s ease; }
+  .apps-grid a:hover { opacity: .75; }
+  a[href^="https://wa.me"], a[href^="#"], a[href^="/"] { transition: transform .15s ease; }
+  a[href^="https://wa.me"]:active { transform: scale(0.97); }
+  /* Grano de cine: rompe lo plano digital, muy sutil */
+  body::after {
+    content: ''; position: fixed; inset: 0; z-index: 60; pointer-events: none;
+    opacity: 0.05; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  /* Contenedor en pantallas anchas: el contenido no se estira de borde a borde */
+  @media (min-width: 1600px) {
+    #root section, #root footer, #root header {
+      padding-left: calc((100vw - 1520px) / 2) !important;
+      padding-right: calc((100vw - 1520px) / 2) !important;
+    }
+  }
   /* Mundo de partículas three.js: fijo detrás del contenido; las secciones
      con fondo claro lo tapan, las oscuras (transparentes) lo dejan ver. */
   #fx3d { position: fixed; inset: 0; z-index: 0; pointer-events: none; display: block; }
