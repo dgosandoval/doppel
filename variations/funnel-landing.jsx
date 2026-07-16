@@ -813,30 +813,8 @@ function FunnelLanding() {
         </div>
       </section>
 
-      {/* ── TESTIMONIALS ── */}
-      <section style={{ padding: '40px 40px 70px', borderTop: `1px solid ${FL.paper}15` }}>
-        <Reveal style={{ fontSize: 10, fontFamily: FL.mono, letterSpacing: '0.2em', color: FL.muted, marginBottom: 32 }}>
-          LO QUE DICEN
-        </Reveal>
-        <div className="testimonial-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
-          {[
-            ['Doppel entendió la marca antes que nosotros mismos. La pieza final superó el brief.', 'M. González', 'Brand Manager · Walmart Chile'],
-            ['El equipo de Pod Factory es de otro nivel. Grabamos y al día siguiente el episodio estaba listo.', 'F. Vera', 'Conductora · Rutas Paralelas'],
-          ].map(([q, n, r], i) => (
-            <Reveal key={i} delay={150 + i * 180} style={{ padding: '24px 28px', border: `1px solid ${FL.paper}20` }}>
-              <div style={{ fontFamily: FL.display, fontSize: 24, fontStyle: 'italic', fontWeight: 300, lineHeight: 1.3, letterSpacing: '-0.01em', color: FL.paper }}>
-                "{q}"
-              </div>
-              <div style={{ marginTop: 18, fontSize: 12, fontFamily: FL.mono, color: FL.muted, letterSpacing: '0.06em' }}>
-                <b style={{ color: FL.paper }}>{n}</b> · {r}
-              </div>
-            </Reveal>
-          ))}
-        </div>
-      </section>
-
       {/* ── FAQ ── */}
-      <section style={{ padding: '40px 40px 70px' }}>
+      <section style={{ padding: '40px 40px 70px', borderTop: `1px solid ${FL.paper}15` }}>
         <Reveal style={{ fontSize: 10, fontFamily: FL.mono, letterSpacing: '0.2em', color: FL.muted, marginBottom: 32 }}>
           PREGUNTAS FRECUENTES
         </Reveal>
