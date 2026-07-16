@@ -690,12 +690,18 @@ function FunnelLanding() {
         </Reveal>
         <div className="lab-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
           {[
-            ['GAUSSIAN SPLATTING', 'Recorridos 3D fotorrealistas', 'De un video de tu espacio a un recorrido virtual navegable: showrooms, cabinas, plantas, retail. Corre en el navegador, también en el teléfono.'],
-            ['WEBGL · TIEMPO REAL', 'Visualizaciones interactivas', 'Mapas, atlas y escenas 3D a medida para presentaciones, stands y activaciones de marca.'],
-            ['MOTION GENERATIVO', 'Gráfica programada', 'HUDs, lower thirds y piezas de motion generadas por código: precisión de pixel, iteración en minutos.'],
-            ['IA APLICADA', 'Voces, avatares y pipelines', 'Locución sintética, video generativo y automatización de flujos de producción, con dirección humana.'],
-          ].map(([tag, t, d], i) => (
+            ['GAUSSIAN SPLATTING', 'Recorridos 3D fotorrealistas', 'De un video de tu espacio a un recorrido virtual navegable: showrooms, cabinas, plantas, retail. Corre en el navegador, también en el teléfono.', 'assets/lab/splatting.jpg'],
+            ['WEBGL · TIEMPO REAL', 'Visualizaciones interactivas', 'Mapas, atlas y escenas 3D a medida para presentaciones, stands y activaciones de marca.', 'assets/lab/webgl.jpg'],
+            ['MOTION GENERATIVO', 'Gráfica programada', 'HUDs, lower thirds y piezas de motion generadas por código: precisión de pixel, iteración en minutos.', 'assets/lab/motion.jpg'],
+            ['IA APLICADA', 'Voces, avatares y pipelines', 'Locución sintética, video generativo y automatización de flujos de producción, con dirección humana.', 'assets/lab/ia.jpg'],
+          ].map(([tag, t, d, img], i) => (
             <Reveal key={tag} delay={250 + i * 120} style={{ border: `1px solid ${FL.labAccent}40`, padding: '24px 26px' }}>
+              <img
+                src={img}
+                alt={t}
+                loading="lazy"
+                style={{ width: '100%', aspectRatio: '16/9', objectFit: 'cover', display: 'block', marginBottom: 18, border: `1px solid ${FL.labAccent}25` }}
+              />
               <div style={{ fontSize: 10, fontFamily: FL.mono, letterSpacing: '0.2em', color: FL.labAccent, marginBottom: 12 }}>{tag}</div>
               <div style={{ fontFamily: FL.display, fontSize: 26, fontWeight: 400, lineHeight: 1.1 }}>{t}</div>
               <p style={{ fontSize: 13, color: FL.muted, lineHeight: 1.55, marginTop: 8, marginBottom: 0 }}>{d}</p>
@@ -767,16 +773,24 @@ function FunnelLanding() {
         </Reveal>
         <div className="why-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
           {[
-            ['Pensamos, no sólo filmamos', 'Creamos el concepto o lo afilamos contigo. Antes de prender cámaras hay una idea sólida y un punto de vista.'],
-            ['Producimos y programamos', 'Cámaras, sonido, dirección, edición, 3D y desarrollo de software. Un mismo equipo lleva la idea de la pantalla grande al navegador.'],
-            ['15 años de track record', '+500 proyectos para Walmart, Ford, LATAM, Entel, Enel, Coca-Cola Andina y más. Sabemos cómo entregar a tiempo.'],
-            ['Respondemos rápido', 'Sin formularios eternos ni cadenas de correos. Un humano del equipo te contesta directo.'],
-          ].map(([t, d], i) => (
-            <Reveal key={i} delay={250 + i * 140} style={{ padding: '24px 0', borderTop: `1px solid ${FL.paper}20`, display: 'flex', gap: 20 }}>
-              <div style={{ fontFamily: FL.mono, fontSize: 14, color: FL.accent, minWidth: 30 }}>0{i + 1}</div>
-              <div>
-                <div style={{ fontFamily: FL.display, fontSize: 30, fontWeight: 400, lineHeight: 1.1, letterSpacing: '-0.02em' }}>{t}</div>
-                <div style={{ fontSize: 14, color: FL.muted, lineHeight: 1.5, marginTop: 8, maxWidth: 480 }}>{d}</div>
+            ['Pensamos, no sólo filmamos', 'Creamos el concepto o lo afilamos contigo. Antes de prender cámaras hay una idea sólida y un punto de vista.', 'assets/why/concepto.jpg'],
+            ['Producimos y programamos', 'Cámaras, sonido, dirección, edición, 3D y desarrollo de software. Un mismo equipo lleva la idea de la pantalla grande al navegador.', 'assets/why/produce.jpg'],
+            ['15 años de track record', '+500 proyectos para Walmart, Ford, LATAM, Entel, Enel, Coca-Cola Andina y más. Sabemos cómo entregar a tiempo.', 'assets/why/track-record.jpg'],
+            ['Respondemos rápido', 'Sin formularios eternos ni cadenas de correos. Un humano del equipo te contesta directo.', 'assets/why/respuesta.jpg'],
+          ].map(([t, d, img], i) => (
+            <Reveal key={i} delay={250 + i * 140} style={{ padding: '24px 0 28px', borderTop: `1px solid ${FL.paper}20` }}>
+              <img
+                src={img}
+                alt={t}
+                loading="lazy"
+                style={{ width: '100%', aspectRatio: '16/9', objectFit: 'cover', display: 'block', marginBottom: 20, border: `1px solid ${FL.paper}15` }}
+              />
+              <div style={{ display: 'flex', gap: 20 }}>
+                <div style={{ fontFamily: FL.mono, fontSize: 14, color: FL.accent, minWidth: 30 }}>0{i + 1}</div>
+                <div>
+                  <div style={{ fontFamily: FL.display, fontSize: 30, fontWeight: 400, lineHeight: 1.1, letterSpacing: '-0.02em' }}>{t}</div>
+                  <div style={{ fontSize: 14, color: FL.muted, lineHeight: 1.5, marginTop: 8, maxWidth: 480 }}>{d}</div>
+                </div>
               </div>
             </Reveal>
           ))}
