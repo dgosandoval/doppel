@@ -20,6 +20,9 @@
   html, body, #root { margin: 0; padding: 0; height: 100%; background: #0E0E0E; font-family: 'Archivo', sans-serif; }
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
+  /* Con Lenis activo, el smooth nativo debe apagarse (doble suavizado) */
+  html.lenis { scroll-behavior: auto !important; height: auto; }
+  .lenis.lenis-smooth { scroll-behavior: auto !important; }
   h1, h2, h3 { text-wrap: balance; }
   /* Accesibilidad: foco visible al navegar con teclado */
   a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid #FF6633; outline-offset: 3px; border-radius: 2px; }
@@ -104,5 +107,18 @@
 <script type="text/babel" src="variations/funnel-landing.jsx?v=41"></script>
 <script type="text/babel" src="app.jsx?v=41"></script>
 <script type="module" src="fx3d.js?v=41"></script>
+
+<!-- Scroll con inercia (solo desktop con mouse/trackpad; touch y reduced-motion quedan nativos) -->
+<script src="https://unpkg.com/lenis@1.1.14/dist/lenis.min.js"></script>
+<script>
+(function () {
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var touch = window.matchMedia('(pointer: coarse)').matches;
+  if (reduced || touch || typeof Lenis === 'undefined') return;
+  var lenis = new Lenis({ lerp: 0.09, wheelMultiplier: 1.05, anchors: true });
+  function raf(t) { lenis.raf(t); requestAnimationFrame(raf); }
+  requestAnimationFrame(raf);
+})();
+</script>
 </body>
 </html>
