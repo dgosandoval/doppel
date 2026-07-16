@@ -353,12 +353,13 @@ function ClientLogo({ client }) {
 
 function FunnelLanding() {
   return (
-    <div style={{ background: FL.bg, color: FL.paper, fontFamily: FL.sans, minHeight: '100vh' }}>
+    <div style={{ background: 'transparent', color: FL.paper, fontFamily: FL.sans, minHeight: '100vh' }}>
       {/* ── STICKY HEADER ── */}
       <header style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '20px 40px', borderBottom: `1px solid ${FL.paper}15`,
-        position: 'sticky', top: 0, background: FL.bg, zIndex: 10,
+        position: 'sticky', top: 0, background: 'rgba(14,14,14,0.72)',
+        backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', zIndex: 10,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <img src="assets/doppel-logo.png" alt="Doppel" style={{ height: 24, display: 'block', filter: 'invert(94%) sepia(8%) saturate(120%) hue-rotate(347deg) brightness(98%) contrast(94%)' }} />
@@ -459,15 +460,21 @@ function FunnelLanding() {
           marginTop: 44, borderTop: `1px solid ${FL.paper}20`,
         }}>
           {[
-            ['░ ESTUDIO', FL.accent, 'Producción audiovisual y podcast', 'Spots, brand films, documentales y Pod Factory: podcasts de la idea al capítulo 100.', '#cómo-trabajamos'],
-            ['░ LAB', FL.labAccent, 'Experiencias 3D, tiempo real e IA', 'Recorridos fotorrealistas, visualizaciones WebGL, gráfica generativa y pipelines con IA.', '#lab'],
-            ['░ APPS', FL.paper, 'Productos propios en producción', 'Tachbook, WBCheck y HazTuRadio: software real, con usuarios reales, hecho en casa.', '#apps'],
-          ].map(([tag, c, t, d, href], i) => (
+            ['░ ESTUDIO', FL.accent, 'Producción audiovisual y podcast', 'Spots, brand films, documentales y Pod Factory: podcasts de la idea al capítulo 100.', '#cómo-trabajamos', 'assets/pillars/estudio.jpg'],
+            ['░ LAB', FL.labAccent, 'Experiencias 3D, tiempo real e IA', 'Recorridos fotorrealistas, visualizaciones WebGL, gráfica generativa y pipelines con IA.', '#lab', 'assets/pillars/lab.jpg'],
+            ['░ APPS', FL.paper, 'Productos propios en producción', 'Tachbook, WBCheck y HazTuRadio: software real, con usuarios reales, hecho en casa.', '#apps', 'assets/pillars/apps.jpg'],
+          ].map(([tag, c, t, d, href, img], i) => (
             <Reveal key={tag} delay={i * 140} style={{
               padding: i === 0 ? '26px 24px 8px 0' : i === 2 ? '26px 0 8px 24px' : '26px 24px 8px',
               borderRight: i < 2 ? `1px solid ${FL.paper}12` : 'none',
             }}>
               <a href={href} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
+                <img
+                  src={img}
+                  alt={t}
+                  loading="lazy"
+                  style={{ width: '100%', aspectRatio: '16/9', objectFit: 'cover', display: 'block', marginBottom: 16, border: `1px solid ${FL.paper}15` }}
+                />
                 <div style={{ fontSize: 10, fontFamily: FL.mono, letterSpacing: '0.2em', color: c, marginBottom: 12 }}>{tag}</div>
                 <div style={{ fontFamily: FL.display, fontSize: 24, fontWeight: 400, lineHeight: 1.1 }}>{t}</div>
                 <p style={{ fontSize: 13, color: FL.muted, lineHeight: 1.55, marginTop: 8 }}>{d}</p>
@@ -517,6 +524,15 @@ function FunnelLanding() {
           letterSpacing: '-0.03em', margin: '0 0 40px', maxWidth: 900, lineHeight: 1.02,
         }}>
           Pensamos antes <span style={{ fontStyle: 'italic', color: FL.accent }}>de filmar.</span>
+        </Reveal>
+
+        <Reveal delay={150} style={{ marginBottom: 40 }}>
+          <img
+            src="assets/proceso.jpg"
+            alt="Storyboard y guion sobre la mesa de trabajo"
+            loading="lazy"
+            style={{ width: '100%', aspectRatio: '21/9', objectFit: 'cover', display: 'block', border: `1px solid ${FL.paper}15` }}
+          />
         </Reveal>
 
         <div className="reasons-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: 0, borderTop: `1px solid ${FL.paper}25` }}>
