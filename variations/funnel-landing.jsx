@@ -35,6 +35,27 @@ function WhatsAppIcon({ size = 16, color = '#fff' }) {
   );
 }
 
+// Iconos de trazo propios (24x24, stroke uniforme)
+function StrokeIcon({ children, size = 22, color = '#141414' }) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke={color}
+      strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block' }}>
+      {children}
+    </svg>
+  );
+}
+const ICONS = {
+  camara: <><rect x="2.5" y="6.5" width="12.5" height="11" rx="2" /><path d="M15 10.5l6.5-3.5v10l-6.5-3.5" /></>,
+  episodios: <path d="M4 10v4M8 7v10M12 4v16M16 7v10M20 10v4" />,
+  reloj: <><circle cx="12" cy="12" r="8.5" /><path d="M12 7.5V12l3.5 2" /></>,
+  movil: <><path d="M12 21.5s-7-5.4-7-11.2A7 7 0 0 1 19 10.3c0 5.8-7 11.2-7 11.2z" /><circle cx="12" cy="10.3" r="2.4" /></>,
+  concepto: <><path d="M12 3a6 6 0 0 0-3.4 10.9c.7.5 1.1 1.3 1.3 2.1h4.2c.2-.8.6-1.6 1.3-2.1A6 6 0 0 0 12 3z" /><path d="M9.5 19.5h5M10.5 22h3" /></>,
+  guion: <path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />,
+  rodaje: <><path d="M3.5 8.5v10a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-10H3.5z" /><path d="M3.5 8.5L6 3.5h14.5l-2.5 5M9.5 3.5L7 8.5M15 3.5l-2.5 5" /></>,
+  post: <><path d="M4 7h7M17 7h3M4 12h3M11 12h9M4 17h11M19 17h1" /><circle cx="14.5" cy="7" r="2" /><circle cx="8.5" cy="12" r="2" /><circle cx="16.5" cy="17" r="2" /></>,
+  distribucion: <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />,
+};
+
 function WAButton({ context, label = 'Hablemos', size = 'md', variant = 'cream', style = {} }) {
   const sizes = {
     sm: { pad: '10px 18px', fs: 12, ic: 13 },
@@ -537,18 +558,20 @@ function FunnelLanding() {
 
         <div className="reasons-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: 0, borderTop: `1px solid ${FL.paper}25` }}>
           {[
-            ['01', 'Concepto', 'Conversamos contigo y proponemos la idea que mueve el proyecto.'],
-            ['02', 'Guion & arte', 'Escribimos, dirigimos arte, planificamos producción.'],
-            ['03', 'Rodaje', 'Equipo propio, set o locación. Cámara, sonido, dirección.'],
-            ['04', 'Post', 'Edición, color, sonido, masterizado.'],
-            ['05', 'Distribución', 'Te dejamos listo para publicar en cualquier canal.'],
-          ].map(([n, t, d], i) => (
+            ['01', 'Concepto', 'Conversamos contigo y proponemos la idea que mueve el proyecto.', 'concepto'],
+            ['02', 'Guion & arte', 'Escribimos, dirigimos arte, planificamos producción.', 'guion'],
+            ['03', 'Rodaje', 'Equipo propio, set o locación. Cámara, sonido, dirección.', 'rodaje'],
+            ['04', 'Post', 'Edición, color, sonido, masterizado.', 'post'],
+            ['05', 'Distribución', 'Te dejamos listo para publicar en cualquier canal.', 'distribucion'],
+          ].map(([n, t, d, ic], i) => (
             <Reveal key={n} delay={i * 120} style={{
-              padding: '24px 16px 24px 0',
+              padding: '24px 16px',
               borderRight: i < 4 ? `1px solid ${FL.paper}15` : 'none',
-              paddingLeft: i > 0 ? 16 : 0,
             }}>
-              <div style={{ fontFamily: FL.mono, fontSize: 11, color: FL.accent, marginBottom: 16 }}>{n}</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <div style={{ fontFamily: FL.mono, fontSize: 11, color: FL.accent }}>{n}</div>
+                <StrokeIcon color={FL.accent} size={20}>{ICONS[ic]}</StrokeIcon>
+              </div>
               <div style={{ fontFamily: FL.display, fontSize: 22, fontWeight: 400, marginBottom: 8, lineHeight: 1.1 }}>{t}</div>
               <div style={{ fontSize: 12, color: FL.muted, lineHeight: 1.5 }}>{d}</div>
             </Reveal>
@@ -674,13 +697,14 @@ function FunnelLanding() {
           {/* Mini features grid */}
           <div className="mini-features-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             {[
-              ['4 cámaras 4K', '#1F3FA3'],
-              ['+300 episodios producidos', '#D92E2E'],
-              ['24h entrega masterizada', '#EF6A1F'],
-              ['Grabamos donde estés', '#F4B81C'],
-            ].map(([t, c], i) => (
-              <Reveal key={i} delay={300 + i * 110} style={{ border: `1.5px solid ${FL.ink}`, background: FL.paper, padding: 18, minHeight: 120, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              ['4 cámaras 4K', '#1F3FA3', 'camara'],
+              ['+300 episodios producidos', '#D92E2E', 'episodios'],
+              ['24h entrega masterizada', '#EF6A1F', 'reloj'],
+              ['Grabamos donde estés', '#F4B81C', 'movil'],
+            ].map(([t, c, ic], i) => (
+              <Reveal key={i} delay={300 + i * 110} style={{ border: `1.5px solid ${FL.ink}`, background: FL.paper, padding: 18, minHeight: 132, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 12 }}>
                 <div style={{ height: 6, background: c, width: 40 }} />
+                <StrokeIcon color={FL.ink} size={26}>{ICONS[ic]}</StrokeIcon>
                 <div style={{ fontFamily: FL.sans, fontWeight: 700, fontSize: 18, letterSpacing: '-0.015em' }}>{t}</div>
               </Reveal>
             ))}
