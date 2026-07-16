@@ -844,23 +844,35 @@ function FunnelLanding() {
 
       {/* ── FINAL CTA ── */}
       <section style={{ padding: '90px 40px', background: FL.accent, color: FL.ink }}>
-        <Reveal style={{ fontSize: 11, fontFamily: FL.mono, letterSpacing: '0.2em', marginBottom: 18 }}>
-          ⏁ CONVERSEMOS
-        </Reveal>
-        <Reveal as="h2" delay={120} style={{
-          fontFamily: FL.display, fontWeight: 300, fontSize: 112, lineHeight: 0.88,
-          letterSpacing: '-0.04em', margin: 0, color: FL.ink,
-        }}>
-          Pensemos<br />
-          <span style={{ fontStyle: 'italic', fontWeight: 400 }}>algo bueno.</span>
-        </Reveal>
-        <Reveal as="p" delay={280} style={{ fontSize: 19, lineHeight: 1.4, maxWidth: 580, marginTop: 28, color: FL.ink }}>
-          Respondemos rápido en horario hábil. Sin formularios, sin esperas:
-          un humano del equipo que va a producir tu proyecto.
-        </Reveal>
-        <Reveal delay={440} style={{ display: 'flex', alignItems: 'center', gap: 20, marginTop: 40 }}>
-          <WAButton context="vengo desde la web, conversemos." label="Hablemos" size="xl" variant="ink" />
-        </Reveal>
+        <div className="final-cta-grid" style={{ display: 'grid', gridTemplateColumns: '1.15fr 1fr', gap: 56, alignItems: 'center' }}>
+          <div>
+            <Reveal style={{ fontSize: 11, fontFamily: FL.mono, letterSpacing: '0.2em', marginBottom: 18 }}>
+              ⏁ CONVERSEMOS
+            </Reveal>
+            <Reveal as="h2" delay={120} style={{
+              fontFamily: FL.display, fontWeight: 300, fontSize: 'clamp(56px,7.5vw,112px)', lineHeight: 0.88,
+              letterSpacing: '-0.04em', margin: 0, color: FL.ink,
+            }}>
+              Pensemos<br />
+              <span style={{ fontStyle: 'italic', fontWeight: 400 }}>algo bueno.</span>
+            </Reveal>
+            <Reveal as="p" delay={280} style={{ fontSize: 19, lineHeight: 1.4, maxWidth: 580, marginTop: 28, color: FL.ink }}>
+              Respondemos rápido en horario hábil. Sin formularios, sin esperas:
+              un humano del equipo que va a producir tu proyecto.
+            </Reveal>
+            <Reveal delay={440} style={{ display: 'flex', alignItems: 'center', gap: 20, marginTop: 40 }}>
+              <WAButton context="vengo desde la web, conversemos." label="Hablemos" size="xl" variant="ink" />
+            </Reveal>
+          </div>
+          <Reveal delay={250}>
+            <img
+              src="assets/pensemos.jpg"
+              alt="Rincón de conversación con café y cuaderno a la luz de la tarde"
+              loading="lazy"
+              style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', display: 'block', border: `2px solid ${FL.ink}` }}
+            />
+          </Reveal>
+        </div>
       </section>
 
       {/* ── FOOTER ── */}
